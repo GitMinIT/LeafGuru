@@ -104,6 +104,24 @@
         locationChanges: (locationChanges ?? []).filter((c) => c.plantId === plant.id),
         photos: (photos ?? []).filter((p) => p.plantId === plant.id)
       };
+    },
+
+    /**
+     * Progress through the current stage vs. the strain template's
+     * expected duration. Returns null when unknown (no open log or no
+     * expected duration for the stage), else
+     * { day, expected, remaining, overdue } — day is whole days since
+     * the stage was entered, remaining may be negative (past schedule),
+     * overdue is true when remaining < 0.
+     */
+    stageProgress({ plant, stageLogs, strainTemplate = null, now = null }) {
+      const open = this.openStage(stageLogs ?? [], plant.id);
+      if (!open) return null;
+      const expected = strainTemplate?.stageDurations?.[plant.stage];
+      if (expected == null) return null;
+      const day = this.daysSince(open.enteredAt, now ?? new Date().toISOString());
+      const remaining = expected - day;
+      return { day, expected, remaining, overdue: remaining < 0 };
     }
   };
 })();

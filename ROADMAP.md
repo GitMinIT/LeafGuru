@@ -41,11 +41,13 @@
 - [x] Page-level smoke tests (DOM stub): renderList recursion
       regression, row/action rendering per page
 
-## Phase 2 — Insights
-- [ ] Stage countdowns / day counters vs. strain template durations
-      (auto from StageLog + stageDurations)
-- [ ] Harvest statistics (yield, duration per stage, costs)
-- [ ] Cost tracking per grow (equipment amortization)
+## Phase 2 — Insights (in progress)
+- [x] Stage countdowns vs. strain template durations — plant detail shows
+      "day N of ~M" (+ days past schedule) from StageLog + stageDurations
+- [x] Cost tracking per grow — equipment cost summary per currency in
+      grow detail (shared availableEverywhere items excluded)
+- [ ] Harvest statistics (yield, duration per stage, costs) — needs
+      schema extension (yield per plant)
 - [ ] Timeline/calendar visualization
 - [ ] Growth charts: multi-series (all plants of a grow), expected-height
       overlay from strain template

@@ -259,7 +259,19 @@
 
       const open = d.openStage(stageLogs, plant.id);
       const days = d.daysSince(open?.enteredAt ?? plant.germinationDate ?? plant.createdAt);
-      $("[data-detail-stage]").textContent = t("stages." + plant.stage) + (days != null ? ` · ${t("plant.daysInStage")}: ${days}` : "");
+      let stageText = t("stages." + plant.stage) + (days != null ? ` · ${t("plant.daysInStage")}: ${days}` : "");
+      // stage countdown vs. strain template expectation
+      const strainTemplate = plant.strainTemplateId
+        ? await storage.get("strainTemplates", plant.strainTemplateId)
+        : null;
+      const progress = d.stageProgress({ plant, stageLogs, strainTemplate });
+      if (progress) {
+        stageText += ` · ${t("plant.stageProgress", {
+          day: progress.day, expected: progress.expected
+        })}`;
+        if (progress.overdue) stageText += ` (${t("plant.stageOverdue", { count: -progress.remaining })})`;
+      }
+      $("[data-detail-stage]").textContent = stageText;
       $("[data-detail-age]").textContent = plant.germinationDate
         ? ` · ${t("plant.age")}: ${d.daysSince(plant.germinationDate)}` : "";
       $("[data-detail-location]").textContent =

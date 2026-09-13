@@ -188,6 +188,17 @@
       fill("[data-detail-tasks]", tasks, (k) =>
         `${k.title}${k.dueDate ? ` (${t("task.dueDate")}: ${k.dueDate})` : ""}`);
 
+      // equipment cost summary per currency
+      const costs = window.LeafGuru.growDomain.costSummary(cache.equipment, grow.id);
+      const costsUl = $("[data-detail-costs]");
+      costsUl.replaceChildren();
+      $("[data-detail-costs-title]").hidden = costs.length === 0;
+      for (const c of costs) {
+        const li = document.createElement("li");
+        li.textContent = `${c.total.toFixed(2)} ${c.currency || t("common.unknown")} · ${t("grow.equipmentCosts", { count: c.count })}`;
+        costsUl.append(li);
+      }
+
       $("[data-grow-detail]").showModal();
     }
 

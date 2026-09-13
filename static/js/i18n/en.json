@@ -177,7 +177,9 @@
     "photoUnsupported": "Unsupported file type (JPEG/PNG/WebP only).",
     "growthChart": "Growth chart",
     "editMeasurement": "Edit measurement (type|value|unit|note)",
-    "confirmCascade": "This plant has {count} linked records (stage logs, measurements, location changes, photos). Delete them all?"
+    "confirmCascade": "This plant has {count} linked records (stage logs, measurements, location changes, photos). Delete them all?",
+    "stageProgress": "day {day} of ~{expected}",
+    "stageOverdue": "{count}d past schedule"
   },
   "task": {
     "title": "Tasks",
@@ -233,6 +235,7 @@
     "createTitle": "Create grow",
     "detail": "Detail",
     "day": "Day",
+    "equipmentCosts": "{count} equipment items",
     "status": {
       "planned": "Planned",
       "active": "Active",

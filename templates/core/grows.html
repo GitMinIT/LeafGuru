@@ -52,6 +52,8 @@
         <ul data-detail-equipment class="crud-list"></ul>
         <h3>Open tasks</h3>
         <ul data-detail-tasks class="crud-list"></ul>
+        <h3 data-detail-costs-title hidden>Equipment costs</h3>
+        <ul data-detail-costs class="record-counts"></ul>
         <div class="crud-dialog-actions">
             <button type="button" data-detail-close>Close</button>
         </div>
@@ -60,5 +62,6 @@
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="/static/js/model/grow-domain.js"></script>
 <script src="/static/js/pages/grows.js"></script>
 {% endblock %}
