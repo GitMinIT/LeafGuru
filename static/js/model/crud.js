@@ -43,23 +43,37 @@
 
   class CrudPage {
     /**
-     * @param cfg {entity, container, listColumns:[{path,label}], fields:[{path,label,required?,options?}], emptyHint}
+     * @param cfg {entity, container, listColumns:[{path,label,sortable?}], fields:[{path,label,required?,options?}],
+     *   emptyHint, searchable?: boolean, searchPaths?: [path],
+     *   rowActions?: (rec) => [HTMLElement] — extra buttons per row,
+     *   onDelete?: async (rec) => boolean — return false to veto removal}
      */
     constructor(cfg) {
       this.cfg = cfg;
       this.storage = window.LeafGuru.storage;
+      this.records = [];
+      this._sort = { path: null, dir: 1 };
+      this._search = "";
     }
 
     async refresh() {
-      const records = await this.storage.list(this.cfg.entity);
+      this.records = await this.storage.list(this.cfg.entity);
+      this.renderList();
+    }
+
+    renderList() {
       const listEl = document.querySelector("[data-crud-list]");
       const emptyEl = document.querySelector("[data-crud-empty]");
+      const rows = this._visibleRecords();
       listEl.replaceChildren();
-      const sorted = records.slice().sort((a, b) =>
-        (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
-      emptyEl.hidden = sorted.length > 0;
-      listEl.hidden = sorted.length === 0;
-      for (const rec of sorted) {
+      emptyEl.hidden = rows.length > 0;
+      listEl.hidden = rows.length === 0;
+      if (emptyEl.hidden === false && this._search) {
+        emptyEl.textContent = t("common.noSearchResults");
+      } else if (!this.cfg.keepEmptyHint) {
+        emptyEl.textContent = this.cfg.emptyHint ?? t("messages.noRecords");
+      }
+      for (const rec of rows) {
         const row = document.createElement("li");
         row.className = "crud-row";
         for (const col of this.cfg.listColumns) {
@@ -70,6 +84,9 @@
         }
         const actions = document.createElement("span");
         actions.className = "crud-cell crud-actions";
+        if (this.cfg.rowActions) {
+          for (const btn of this.cfg.rowActions(rec) ?? []) actions.append(btn);
+        }
         const editBtn = document.createElement("button");
         editBtn.type = "button";
         editBtn.textContent = t("common.edit");
@@ -82,6 +99,48 @@
         row.append(actions);
         listEl.append(row);
       }
+    }
+
+    /** search filter + column sort (stable) over the cached records */
+    _visibleRecords() {
+      let rows = this.records;
+      if (this._search) {
+        const q = this._search.toLowerCase();
+        const paths = this.cfg.searchPaths ?? this.cfg.listColumns.map((c) => c.path);
+        rows = rows.filter((rec) => paths.some((p) =>
+          String(this._cellValue(rec, p) ?? "").toLowerCase().includes(q)));
+      }
+      const { path, dir } = this._sort;
+      if (path) {
+        const col = this.cfg.listColumns.find((c) => c.path === path);
+        rows = rows.slice().sort((a, b) => {
+          const av = this._sortValue(a, col);
+          const bv = this._sortValue(b, col);
+          if (av == null && bv == null) return 0;
+          if (av == null) return 1; // nulls last regardless of dir
+          if (bv == null) return -1;
+          const cmp = typeof av === "number" && typeof bv === "number"
+            ? av - bv : String(av).localeCompare(String(bv));
+          return dir * cmp || a.id.localeCompare(b.id);
+        });
+      } else {
+        rows = rows.slice().sort((a, b) =>
+          (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+      }
+      return rows;
+    }
+
+    _sortValue(rec, col) {
+      const raw = this._cellValue(rec, col.path);
+      if (raw == null || raw === "") return null;
+      return typeof raw === "number" ? raw : String(raw);
+    }
+
+    /** toggle sort by column; expects a click on a [data-sort] element */
+    sortBy(path) {
+      if (this._sort.path === path) this._sort.dir = -this._sort.dir;
+      else this._sort = { path, dir: 1 };
+      this.renderList();
     }
 
     _cellValue(rec, path) {
@@ -172,6 +231,7 @@
     async _remove(record) {
       const label = record.name ?? record.title ?? record.id.slice(0, 8);
       if (!window.confirm(t("messages.confirmDelete", { name: label }))) return;
+      if (this.cfg.onDelete && !(await this.cfg.onDelete(record))) return;
       await this.storage.delete(this.cfg.entity, record.id);
       await this.refresh();
       this._flash(t("messages.deleted"));
@@ -186,7 +246,7 @@
       this._flashTimer = setTimeout(() => { elx.hidden = true; }, 3500);
     }
 
-    /** wire page DOM: new-button, dialog form submit, initial list */
+    /** wire page DOM: new-button, dialog form submit, search, sort, initial list */
     async mount() {
       const dialog = document.querySelector("[data-crud-dialog]");
       const form = dialog.querySelector("form");
@@ -207,6 +267,20 @@
       form.append(submitBtn);
       form.addEventListener("submit", (e) => this.submit(e));
       document.querySelector("[data-crud-new]").addEventListener("click", () => this.openForm(null));
+
+      if (this.cfg.searchable) {
+        const search = document.querySelector("[data-crud-search]");
+        if (search) search.addEventListener("input", () => {
+          this._search = search.value.trim();
+          this.renderList();
+        });
+      }
+      const sortRoot = document.querySelector("[data-crud-sort]");
+      if (sortRoot) {
+        for (const head of sortRoot.querySelectorAll("[data-sort]")) {
+          head.addEventListener("click", () => this.sortBy(head.dataset.sort));
+        }
+      }
       await this.refresh();
     }
   }

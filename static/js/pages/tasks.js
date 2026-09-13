@@ -20,6 +20,7 @@
 
     const statusFilter = $("#task-status-filter");
     let cache = { tasks: [], plants: [], locations: [] };
+    let searchTerm = "";
     let flashTimer;
 
     function flash(msg, isError = false) {
@@ -72,6 +73,12 @@
       const emptyEl = $("[data-crud-empty]");
       let rows = cache.tasks;
       if (filter !== "all") rows = rows.filter((task) => task.status === filter);
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        rows = rows.filter((task) =>
+          [task.title, task.description].some((v) =>
+            String(v ?? "").toLowerCase().includes(q)));
+      }
       rows = rows.slice().sort((a, b) => {
         const ao = td.isOverdue(a, today) ? 0 : 1, bo = td.isOverdue(b, today) ? 0 : 1;
         if (ao !== bo) return ao - bo;
@@ -85,7 +92,9 @@
       listEl.replaceChildren();
       emptyEl.hidden = rows.length > 0;
       listEl.hidden = rows.length === 0;
-      emptyEl.textContent = filter === "all" ? t("messages.noTasks") : t("task.emptyFilter");
+      emptyEl.textContent = searchTerm
+        ? t("common.noSearchResults")
+        : filter === "all" ? t("messages.noTasks") : t("task.emptyFilter");
 
       for (const task of rows) {
         const row = document.createElement("li");
@@ -223,6 +232,10 @@
     $("[data-crud-dialog] form").addEventListener("submit", submitForm);
     $("[data-crud-cancel]").addEventListener("click", () => $("[data-crud-dialog]").close());
     statusFilter.addEventListener("change", renderList);
+    $("[data-crud-search]").addEventListener("input", (event) => {
+      searchTerm = event.target.value.trim();
+      renderList();
+    });
 
     await refresh();
   });

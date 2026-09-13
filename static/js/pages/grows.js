@@ -17,6 +17,7 @@
     const $ = (sel) => document.querySelector(sel);
 
     let cache = { grows: [], locations: [], plants: [], equipment: [], tasks: [] };
+    let searchTerm = "";
     let flashTimer;
 
     function flash(msg, isError = false) {
@@ -46,11 +47,17 @@
       const listEl = $("[data-crud-list]");
       const emptyEl = $("[data-crud-empty]");
       const statusOrder = { active: 0, planned: 1, harvested: 2, closed: 3 };
-      const rows = cache.grows.slice().sort((a, b) =>
+      let rows = cache.grows.slice().sort((a, b) =>
         (statusOrder[a.status] ?? 9) - (statusOrder[b.status] ?? 9) ||
         a.name.localeCompare(b.name));
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        rows = rows.filter((g) =>
+          [g.name, g.notes].some((v) => String(v ?? "").toLowerCase().includes(q)));
+      }
       emptyEl.hidden = rows.length > 0;
       listEl.hidden = rows.length === 0;
+      emptyEl.textContent = searchTerm ? t("common.noSearchResults") : t("messages.noRecords");
       listEl.replaceChildren();
       for (const grow of rows) {
         const row = document.createElement("li");
@@ -189,6 +196,10 @@
     $("[data-crud-dialog] form").addEventListener("submit", submitForm);
     $("[data-crud-cancel]").addEventListener("click", () => $("[data-crud-dialog]").close());
     $("[data-detail-close]").addEventListener("click", () => $("[data-grow-detail]").close());
+    $("[data-crud-search]").addEventListener("input", (event) => {
+      searchTerm = event.target.value.trim();
+      renderList();
+    });
 
     await refresh();
   });

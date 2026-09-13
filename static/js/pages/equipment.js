@@ -16,6 +16,7 @@
     const $ = (sel) => document.querySelector(sel);
 
     let cache = { equipment: [], locations: [], grows: [] };
+    let searchTerm = "";
     let flashTimer;
 
     function flash(msg, isError = false) {
@@ -63,9 +64,15 @@
     function renderList() {
       const listEl = $("[data-crud-list]");
       const emptyEl = $("[data-crud-empty]");
-      const rows = cache.equipment.slice().sort((a, b) => a.name.localeCompare(b.name));
+      let rows = cache.equipment.slice().sort((a, b) => a.name.localeCompare(b.name));
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        rows = rows.filter((e) =>
+          [e.name, e.specs, e.notes].some((v) => String(v ?? "").toLowerCase().includes(q)));
+      }
       emptyEl.hidden = rows.length > 0;
       listEl.hidden = rows.length === 0;
+      emptyEl.textContent = searchTerm ? t("common.noSearchResults") : t("messages.noRecords");
       listEl.replaceChildren();
       for (const eq of rows) {
         const row = document.createElement("li");
@@ -107,6 +114,13 @@
         row.append(name, cat, status, place, cost, actions);
         listEl.append(row);
       }
+      // keep the toolbar equipment select in sync with the list
+      const sel = $("[data-assign-equipment]");
+      const cur = sel.value;
+      sel.replaceChildren(new Option(t("common.none"), ""));
+      for (const eq of cache.equipment.slice().sort((a, b) => a.name.localeCompare(b.name)))
+        sel.append(new Option(eq.name, eq.id));
+      sel.value = cur;
     }
 
     function currentLocationId(eq) {
@@ -205,6 +219,10 @@
     $("[data-crud-new]").addEventListener("click", () => openForm(null));
     $("[data-crud-dialog] form").addEventListener("submit", submitForm);
     $("[data-crud-cancel]").addEventListener("click", () => $("[data-crud-dialog]").close());
+    $("[data-crud-search]").addEventListener("input", (event) => {
+      searchTerm = event.target.value.trim();
+      renderList();
+    });
     $("[data-assign-action]").addEventListener("click", () => {
       const sel = $("#equip-assign-location");
       const eqId = $("[data-assign-equipment]").value;
@@ -212,18 +230,6 @@
       if (eq) assign(eq, sel.value || null);
       else flash(t("equipment.noLocationPicked"), true);
     });
-
-    // keep the toolbar equipment select in sync with the list
-    const origRenderList = renderList;
-    function renderList() {
-      origRenderList();
-      const sel = $("[data-assign-equipment]");
-      const cur = sel.value;
-      sel.replaceChildren(new Option(t("common.none"), ""));
-      for (const eq of cache.equipment.slice().sort((a, b) => a.name.localeCompare(b.name)))
-        sel.append(new Option(eq.name, eq.id));
-      sel.value = cur;
-    }
 
     await refresh();
   });
