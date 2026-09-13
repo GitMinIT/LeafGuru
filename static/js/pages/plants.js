@@ -18,6 +18,7 @@
     const $ = (sel) => document.querySelector(sel);
 
     const STAGES = d.stages;
+    const urlPool = [];
 
     async function refresh() {
       const [plants, locations, strainTemplates, stageLogs] = await Promise.all([
@@ -164,6 +165,40 @@
         lh.append(li);
       }
 
+      // photos
+      const photos = (await storage.list("photos")).filter((p) => p.plantId === plant.id)
+        .sort((a, b) => b.takenAt.localeCompare(a.takenAt));
+      const grid = $("[data-photo-grid]");
+      grid.replaceChildren();
+      $("[data-photos-empty]").hidden = photos.length > 0;
+      for (const photo of photos) {
+        const card = document.createElement("figure");
+        card.className = "photo-card";
+        const img = document.createElement("img");
+        const url = await window.LeafGuru.photos.urlFor(photo);
+        urlPool.push(url);
+        img.src = url;
+        img.alt = photo.note || "photo";
+        img.loading = "lazy";
+        const caption = document.createElement("figcaption");
+        caption.className = "muted";
+        caption.textContent = `${photo.takenAt.slice(0, 10)}`
+          + (photo.phaseTag ? ` · ${t("stages." + photo.phaseTag)}` : "")
+          + (photo.note ? ` · ${photo.note}` : "");
+        const del = document.createElement("button");
+        del.type = "button";
+        del.textContent = t("common.delete");
+        del.addEventListener("click", async () => {
+          if (!window.confirm(t("messages.confirmDelete", { name: "photo " + photo.takenAt.slice(0, 10) }))) return;
+          await storage.delete("photos", photo.id);
+          URL.revokeObjectURL(url);
+          flash(t("messages.deleted"));
+          await openDetail(plantId);
+        });
+        card.append(img, caption, del);
+        grid.append(card);
+      }
+
       // measurements
       const ms = measurements.filter((m) => m.plantId === plant.id)
         .sort((a, b) => b.measuredAt.localeCompare(a.measuredAt));
@@ -224,7 +259,29 @@
       } catch (e) { flash(formatErrors(e), true); }
     });
 
+    $("[data-action='add-photos']").addEventListener("click", () => $("#photo-input").click());
+    $("#photo-input").addEventListener("change", async (event) => {
+      const files = [...event.target.files];
+      event.target.value = "";
+      if (!files.length) return;
+      const plantId = $("[data-plant-detail]").dataset.plantId;
+      const plant = await storage.get("plants", plantId);
+      const phaseTag = $("#photo-phase").value || null;
+      const note = $("#photo-note").value.trim();
+      let added = 0, failed = 0;
+      for (const file of files) {
+        try {
+          const rec = window.LeafGuru.photos.buildRecord({ plant, file, note, phaseTag });
+          await storage.put("photos", rec);
+          added++;
+        } catch (e) { failed++; flash(e.message, true); }
+      }
+      if (added) { flash(t("plant.photoAdded") + (failed ? ` (${failed} failed)` : "")); await openDetail(plantId); }
+    });
+
     $("[data-action='close-detail']").addEventListener("click", () => {
+      for (const url of urlPool) URL.revokeObjectURL(url);
+      urlPool.length = 0;
       $("[data-plant-detail]").hidden = true;
     });
 

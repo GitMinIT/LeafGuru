@@ -132,7 +132,7 @@
     "measure": "Add measurement",
     "moveTo": "Move to location",
     "photos": "Photos",
-    "addPhoto": "Add photo",
+    "addPhoto": "Add photos",
     "detail": "Plant detail",
     "strainTemplate": "Strain template",
     "customStrain": "Custom strain",
@@ -151,7 +151,13 @@
     "emptyMeasurements": "No measurements yet.",
     "emptyPhotos": "No photos yet.",
     "daysInStage": "Days in current stage",
-    "age": "Age (days since germination)"
+    "age": "Age (days since germination)",
+    "photoNote": "Note (optional)",
+    "photoPhase": "Phase",
+    "deletePhoto": "Delete photo",
+    "photoAdded": "Photo added.",
+    "photoTooBig": "File too large (max 10 MB per photo).",
+    "photoUnsupported": "Unsupported file type (JPEG/PNG/WebP only)."
   },
   "task": {
     "title": "Tasks",

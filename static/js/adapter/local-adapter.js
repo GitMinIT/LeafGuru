@@ -102,7 +102,12 @@
       const bundle = {
         meta: { app: "LeafGuru", schemaVersion: 1, exportedAt: new Date().toISOString() }
       };
-      for (const name of ENTITIES) bundle[name] = await this.list(name);
+      for (const name of ENTITIES) {
+        const records = await this.list(name);
+        bundle[name] = name === "photos"
+          ? await window.LeafGuru.photos.exportRecords(records)
+          : records;
+      }
       return bundle;
     }
 
@@ -112,7 +117,9 @@
       await this.wipe();
       const db = await this._open();
       for (const name of ENTITIES) {
-        const records = bundle[name] ?? [];
+        const records = name === "photos"
+          ? window.LeafGuru.photos.importRecords(bundle[name])
+          : bundle[name] ?? [];
         if (!records.length) continue;
         await new Promise((resolve, reject) => {
           const tx = db.transaction(name, "readwrite");

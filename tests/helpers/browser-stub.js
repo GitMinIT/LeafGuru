@@ -17,8 +17,20 @@ const vm = require("node:vm");
 
 const ROOT = path.join(__dirname, "..", "..");
 
-function createIndexedDbStub() {
+function createIndexedDbStub({ BlobClass } = {}) {
   const store = {}; // entityName -> Map(id -> record)
+  // blob-preserving clone: Blob instances are immutable — keep identity;
+  // plain objects deep-copied (JSON path is fine for test data)
+  const clone = (v) => {
+    if (BlobClass && v instanceof BlobClass) return v;
+    if (Array.isArray(v)) return v.map(clone);
+    if (v && typeof v === "object") {
+      const out = {};
+      for (const [k, val] of Object.entries(v)) out[k] = clone(val);
+      return out;
+    }
+    return v;
+  };
 
   class FakeRequest {
     constructor(apply) {
@@ -33,7 +45,7 @@ function createIndexedDbStub() {
   class FakeTx {
     objectStore(name) {
       return {
-        put(rec) { return new FakeRequest(() => { (store[name] ??= new Map()).set(rec.id, structuredClone(rec)); return rec; }); },
+        put(rec) { return new FakeRequest(() => { (store[name] ??= new Map()).set(rec.id, clone(rec)); return rec; }); },
         delete(id) { return new FakeRequest(() => { store[name]?.delete(id); return undefined; }); },
         clear() { return new FakeRequest(() => { store[name] = new Map(); return undefined; }); },
         get(id) { return new FakeRequest(() => store[name]?.get(id) ?? null); },
@@ -63,13 +75,33 @@ function createIndexedDbStub() {
   };
 }
 
+class BlobStub {
+  constructor(parts, opts) {
+    this.parts = parts;
+    this.type = opts?.type ?? "";
+    const joined = (parts ?? []).join("");
+    if (joined.startsWith("data:")) this.__dataUrl = joined;
+  }
+  get size() { return (this.parts ?? []).join("").length; }
+}
+
 async function setup({ locale = "en" } = {}) {
-  const idb = createIndexedDbStub();
+  const idb = createIndexedDbStub({ BlobClass: BlobStub });
   const fetched = [];
 
   const sandbox = {
     console, Promise, Map, Set, Date, JSON, Error, TypeError, setTimeout, queueMicrotask,
-    structuredClone, crypto: require("node:crypto").webcrypto,
+    structuredClone: (v) => {
+      if (v instanceof BlobStub) return v; // Blobs are immutable — identity is fine
+      if (Array.isArray(v)) return v.map((x) => sandbox.structuredClone(x));
+      if (v && typeof v === "object") {
+        const out = {};
+        for (const [k, val] of Object.entries(v)) out[k] = sandbox.structuredClone(val);
+        return out;
+      }
+      return v;
+    },
+    crypto: require("node:crypto").webcrypto,
     navigator: {},
     indexedDB: idb.indexedDB,
     fetch: async (url) => {
@@ -85,7 +117,22 @@ async function setup({ locale = "en" } = {}) {
       return { ok: false, status: 404, json: async () => ({}) };
     },
     URL: { createObjectURL: () => "blob:fake", revokeObjectURL: () => {} },
-    Blob: class { constructor(parts) { this.parts = parts; } },
+    atob: (s) => Buffer.from(s, "base64").toString("binary"),
+    btoa: (s) => Buffer.from(s, "binary").toString("base64"),
+    FileReader: class {
+      readAsDataURL(blob) {
+        queueMicrotask(() => {
+          if (typeof blob === "string" && blob.startsWith("data:")) { this.result = blob; }
+          else if (blob && blob.__dataUrl) { this.result = blob.__dataUrl; }
+          else { this.result = "data:application/octet-stream;base64,"; }
+          this.onload?.();
+        });
+      }
+      set onload(fn) { this._onload = fn; }
+      get onload() { return this._onload; }
+      set onerror(fn) { this._onerror = fn; }
+    },
+    Blob: BlobStub,
     document: {
       createElement: () => ({ click() {}, set href(_) {}, set download(_) {} }),
       querySelector: () => null,
@@ -101,6 +148,7 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/adapter/storage-adapter.js");
   load("static/js/adapter/local-adapter.js");
   load("static/js/model/data-io.js");
+  load("static/js/model/photos.js");
   load("static/js/model/plant-domain.js");
   await sandbox.window.LeafGuru.loadSchemas();
   await sandbox.window.LeafGuru.i18n.init(locale);
