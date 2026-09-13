@@ -152,3 +152,47 @@ test("dashboard data shape: counts match stored entities", async () => {
   assert.equal(due.length, 2);
   assert.equal(due.filter((t) => t.dueDate < today).length, 1, "one overdue");
 });
+
+test("task lifecycle: linked task open→done→reopen via task domain", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  window.LeafGuru.storage = storage;
+  const td = window.LeafGuru.taskDomain;
+  const d = window.LeafGuru.plantDomain;
+
+  const loc = await storage.put("locations", { name: "Box", type: "indoor", active: true });
+  const plant = await storage.put("plants", {
+    name: "Grow", strainTemplateId: null, customStrain: null,
+    sex: "unknown", germinationDate: "2026-09-01", stage: "planned",
+    locationId: loc.id, status: "growing"
+  });
+  const { stageLogs } = d.applyStageChange({ plant, stageLogs: [], newStage: "planned" });
+  for (const log of stageLogs) await storage.put("stageLogs", log);
+
+  // create task the way the Tasks page form submits it
+  const record = {
+    title: "Check pH", description: "", dueDate: "2026-09-20",
+    priority: "high", plantId: plant.id, locationId: null, stageHint: "vegetative",
+    status: "open"
+  };
+  await storage.put("tasks", record);
+  const stored = (await storage.list("tasks"))[0];
+  assert.equal(stored.plantId, plant.id);
+  assert.equal(stored.stageHint, "vegetative");
+
+  // mark done, then reopen
+  const done = td.applyStatusChange({ task: stored, newStatus: "done" });
+  await storage.put("tasks", done);
+  assert.equal((await storage.get("tasks", stored.id)).completedAt != null, true);
+
+  const reopened = td.applyStatusChange({ task: { ...done }, newStatus: "open" });
+  await storage.put("tasks", reopened);
+  const final = await storage.get("tasks", stored.id);
+  assert.equal(final.status, "open");
+  assert.equal(final.completedAt, null);
+
+  // overdue check against a fixed "today"
+  const overdueList = td.dueList([{ ...final, dueDate: "2026-01-01" }], { today: "2026-09-13" });
+  assert.equal(overdueList.length, 1);
+});

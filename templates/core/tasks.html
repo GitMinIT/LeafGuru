@@ -6,22 +6,62 @@
 <h1>Tasks</h1>
 <div class="crud-toolbar">
     <button type="button" data-crud-new>Create</button>
+    <label class="task-filter">
+        <span class="muted">Show</span>
+        <select id="task-status-filter">
+            <option value="open">Open</option>
+            <option value="done">Done</option>
+            <option value="skipped">Skipped</option>
+            <option value="all">All</option>
+        </select>
+    </label>
+    <span class="muted task-counts">
+        <span data-count-open>0</span> open · <span data-count-overdue>0</span> overdue
+    </span>
     <p class="muted" data-crud-flash hidden aria-live="polite"></p>
 </div>
-<p class="muted" data-crud-empty>No records yet.</p>
+<p class="muted" data-crud-empty>No open tasks.</p>
 <ul class="crud-list" data-crud-list hidden></ul>
+
 <dialog data-crud-dialog class="crud-dialog">
-    <form method="dialog">
+    <form>
         <h2 data-crud-form-title></h2>
-        <div class="crud-fields"></div>
+        <div class="crud-fields">
+            <label>Title <input name="title" required maxlength="200"></label>
+            <label>Description <textarea name="description" maxlength="5000" rows="3"></textarea></label>
+            <label>Due date <input type="date" name="dueDate"></label>
+            <label>Priority
+                <select id="task-priority">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </label>
+            <label>Plant <select id="task-plant"></select></label>
+            <label>Location <select id="task-location"></select></label>
+            <label>Stage hint
+                <select id="task-stage-hint">
+                    <option value="">–</option>
+                    <option value="germinating">Germinating</option>
+                    <option value="seedling">Seedling</option>
+                    <option value="vegetative">Vegetative</option>
+                    <option value="flowering">Flowering</option>
+                    <option value="harvest">Harvest</option>
+                    <option value="drying">Drying</option>
+                    <option value="cured">Cured</option>
+                </select>
+            </label>
+        </div>
+        <input type="hidden" id="task-status-hidden" value="open">
         <div class="crud-dialog-actions">
             <button type="button" data-crud-cancel>Cancel</button>
+            <button type="submit">Save</button>
         </div>
     </form>
 </dialog>
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="/static/js/model/crud.js"></script>
+<script src="/static/js/model/task-domain.js"></script>
 <script src="/static/js/pages/tasks.js"></script>
 {% endblock %}

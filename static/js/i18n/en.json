@@ -171,7 +171,13 @@
       "high": "High"
     },
     "stageHint": "Stage hint",
-    "completed": "Completed"
+    "completed": "Completed",
+    "createTitle": "Create task",
+    "emptyFilter": "No tasks with this status.",
+    "overdue": "Overdue",
+    "markDone": "Done",
+    "markSkipped": "Skip",
+    "reopen": "Reopen"
   },
   "data": {
     "export": "Export data",

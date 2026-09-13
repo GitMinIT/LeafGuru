@@ -153,6 +153,7 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/model/photos.js");
   load("static/js/model/crud.js");
   load("static/js/model/plant-domain.js");
+  load("static/js/model/task-domain.js");
   await sandbox.window.LeafGuru.loadSchemas();
   await sandbox.window.LeafGuru.i18n.init(locale);
 
