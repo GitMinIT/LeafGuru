@@ -229,11 +229,79 @@ test("validation errors now surface in the dialog (data-crud-error element)", as
   // empty name → required error must appear IN the dialog, not only behind it
   submitForm(doc, "[data-crud-dialog] form", { name: "", genotype: "unknown" });
   await new Promise((r) => setImmediate(r));
-  const errEl = doc.querySelector("[data-crud-dialog] form").closest("dialog")
-    ? doc.querySelector("[data-crud-dialog]").querySelector("[data-crud-error]")
-    : doc.querySelector("[data-crud-error]");
+  const errEl = doc.querySelector("[data-crud-dialog]").querySelector("[data-crud-error]");
   assert.ok(errEl, "error element exists in dialog");
   assert.equal(errEl.hidden, false, "error is shown");
   assert.match(String(errEl.textContent), /Validation failed/i);
   assert.equal((await storage.list("strainTemplates")).length, 0, "nothing saved");
+});
+
+test("REGRESSION cancel: CrudPage dialogs close on Cancel (strains/locations)", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const setupResult = await setup();
+  const storage = new setupResult.window.LeafGuru.LocalAdapter();
+  setupResult.window.LeafGuru.storage = storage;
+
+  for (const pageFile of ["static/js/pages/strains.js", "static/js/pages/locations.js"]) {
+    const { doc } = await bootPage(setupResult, pageFile, { withCrud: true });
+    const dialog = doc.querySelector("[data-crud-dialog]");
+    const cancelBtn = doc.querySelector("[data-crud-cancel]");
+    assert.ok(cancelBtn, "cancel button exists");
+    assert.ok(cancelBtn._listeners?.click?.length >= 1,
+      `${pageFile}: cancel button has a click listener`);
+    cancelBtn.dispatch("click");
+    assert.equal(dialog._closed, true, `${pageFile}: dialog closed on cancel`);
+  }
+});
+
+test("REGRESSION cancel: custom-page dialogs close on Cancel (tasks/equipment/grows)", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const setupResult = await setup();
+  const storage = new setupResult.window.LeafGuru.LocalAdapter();
+  setupResult.window.LeafGuru.storage = storage;
+
+  for (const pageFile of ["static/js/pages/tasks.js", "static/js/pages/equipment.js", "static/js/pages/grows.js"]) {
+    const { doc } = await bootPage(setupResult, pageFile);
+    const dialog = doc.querySelector("[data-crud-dialog]");
+    const cancelBtn = doc.querySelector("[data-crud-cancel]");
+    assert.ok(cancelBtn?._listeners?.click?.length >= 1,
+      `${pageFile}: cancel button has a click listener`);
+    cancelBtn.dispatch("click");
+    assert.equal(dialog._closed, true, `${pageFile}: dialog closed on cancel`);
+  }
+});
+
+test("REGRESSION cancel: plant edit dialog closes on Cancel", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const setupResult = await setup();
+  const storage = new setupResult.window.LeafGuru.LocalAdapter();
+  setupResult.window.LeafGuru.storage = storage;
+
+  const { doc } = await bootPage(setupResult, "static/js/pages/plants.js");
+  const cancelBtn = doc.querySelector("[data-edit-cancel]");
+  const editDialog = doc.querySelector("[data-plant-edit]");
+  assert.ok(cancelBtn?._listeners?.click?.length >= 1, "edit-cancel wired");
+  cancelBtn.dispatch("click");
+  assert.equal(editDialog._closed, true, "edit dialog closed");
+});
+
+test("strain form labels durations as days (not plant counts)", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const setupResult = await setup();
+  const storage = new setupResult.window.LeafGuru.LocalAdapter();
+  setupResult.window.LeafGuru.storage = storage;
+
+  const { doc } = await bootPage(setupResult, "static/js/pages/strains.js", { withCrud: true });
+  // CrudPage.mount creates labels from field.label i18n keys — verify the
+  // generated labels name DAYS, not plant counts
+  const form = doc.querySelector("[data-crud-dialog] form");
+  const labels = form.children
+    .filter((c) => c.tag === "label")
+    .map((c) => c.textContent);
+  assert.ok(labels.some((l) => /Days as seedling/i.test(l)), "seedling label names days");
+  assert.ok(labels.some((l) => /Days in vegetative stage/i.test(l)), "vegetative label names days");
+  assert.ok(labels.some((l) => /Days in flowering stage/i.test(l)), "flowering label names days");
+  assert.ok(labels.some((l) => /Typical final height/i.test(l)), "height label says 'typical'");
+  assert.ok(!labels.some((l) => /^Seedling$/i.test(l) || /^Vegetative$/i.test(l)),
+    "no bare stage-name labels that read like counts");
 });

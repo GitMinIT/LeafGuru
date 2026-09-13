@@ -11,7 +11,7 @@
     "dashboard": "Dashboard",
     "locations": "Locations",
     "equipment": "Equipment",
-    "strains": "Strain Templates",
+    "strains": "Strains",
     "plants": "Plants",
     "tasks": "Tasks",
     "settings": "Settings",
@@ -111,7 +111,7 @@
     "noLocationPicked": "Pick a location first."
   },
   "strain": {
-    "title": "Strain Templates",
+    "title": "Strains",
     "breeder": "Breeder",
     "genotype": "Genotype",
     "genotypes": {
@@ -120,8 +120,13 @@
       "hybrid": "Hybrid",
       "unknown": "Unknown"
     },
-    "expectedHeight": "Expected height (cm)",
-    "stageDurations": "Expected stage durations (days)",
+    "pageHint": "A strain is a variety of plant — a category, not a plant. Create your plants from a strain.",
+    "createHint": "Describe the variety. The expectations below are typical values for this variety — individual plants may differ.",
+    "expectedHeight": "Typical final height (cm)",
+    "stageDurations": "Typical time per stage (days)",
+    "durationSeedling": "Days as seedling",
+    "durationVegetative": "Days in vegetative stage",
+    "durationFlowering": "Days in flowering stage",
     "characteristics": "Characteristics",
     "name": "Strain name"
   },
@@ -151,7 +156,6 @@
     "photos": "Photos",
     "addPhoto": "Add photos",
     "detail": "Plant detail",
-    "strainTemplate": "Strain template",
     "customStrain": "Custom strain",
     "stageHistory": "Stage history",
     "locationHistory": "Location history",

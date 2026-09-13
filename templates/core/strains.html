@@ -4,15 +4,18 @@
 
 {% block content %}
 <h1>Strains</h1>
+<p class="muted" data-strain-page-hint>A strain is a variety of plant — a category, not a plant. Create your plants from a strain.</p>
 <div class="crud-toolbar">
     <button type="button" data-crud-new>Create</button>
     <p class="muted" data-crud-flash hidden aria-live="polite"></p>
 </div>
-<p class="muted" data-crud-empty>No records yet.</p>
+<p class="muted" data-crud-empty>No strains yet.</p>
 <ul class="crud-list" data-crud-list hidden></ul>
+
 <dialog data-crud-dialog class="crud-dialog">
-    <form method="dialog">
+    <form>
         <h2 data-crud-form-title></h2>
+        <p class="muted" data-strain-create-hint>Describe the variety. The expectations below are typical values for this variety — individual plants may differ.</p>
         <div class="crud-fields"></div>
         <p class="muted crud-error" data-crud-error hidden aria-live="polite"></p>
         <div class="crud-dialog-actions">

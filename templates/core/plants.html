@@ -16,8 +16,8 @@
     <h2>Create plant</h2>
     <form id="plant-create" class="form-grid">
         <label>Name <input name="name" required maxlength="120"></label>
-        <label>Strain template <select id="plant-template" name="strainTemplateId"></select></label>
-        <label>Custom strain <input name="customStrain" maxlength="120" placeholder="if no template"></label>
+        <label>Strain <select id="plant-template" name="strainTemplateId"></select></label>
+        <label>Custom strain <input name="customStrain" maxlength="120" placeholder="if the variety is not in the list"></label>
         <label>Sex
             <select name="sex">
                 <option value="unknown">Unknown</option>
@@ -48,7 +48,7 @@
         <h2 data-edit-title></h2>
         <div class="crud-fields">
             <label>Name <input name="name" required maxlength="120"></label>
-            <label>Strain template <select id="edit-template"></select></label>
+            <label>Strain <select id="edit-template"></select></label>
             <label>Custom strain <input name="customStrain" maxlength="120"></label>
             <label>Sex
                 <select id="edit-sex">

@@ -264,6 +264,9 @@
       form.append(submitBtn);
       form.addEventListener("submit", (e) => this.submit(e));
       document.querySelector("[data-crud-new]").addEventListener("click", () => this.openForm(null));
+      const cancelBtn = document.querySelector("[data-crud-cancel]");
+      if (cancelBtn) cancelBtn.addEventListener("click", () =>
+        document.querySelector("[data-crud-dialog]").close());
 
       if (this.cfg.searchable) {
         const search = document.querySelector("[data-crud-search]");
