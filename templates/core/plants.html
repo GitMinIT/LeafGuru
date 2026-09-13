@@ -5,22 +5,82 @@
 {% block content %}
 <h1>Plants</h1>
 <div class="crud-toolbar">
-    <button type="button" data-crud-new>Create</button>
     <p class="muted" data-crud-flash hidden aria-live="polite"></p>
 </div>
-<p class="muted" data-crud-empty>No records yet.</p>
-<ul class="crud-list" data-crud-list hidden></ul>
-<dialog data-crud-dialog class="crud-dialog">
-    <form method="dialog">
-        <h2 data-crud-form-title></h2>
-        <div class="crud-fields"></div>
-        <div class="crud-dialog-actions">
-            <button type="button" data-crud-cancel>Cancel</button>
-        </div>
+
+<section class="card">
+    <h2>Create plant</h2>
+    <form id="plant-create" class="form-grid">
+        <label>Name <input name="name" required maxlength="120"></label>
+        <label>Strain template <select id="plant-template" name="strainTemplateId"></select></label>
+        <label>Custom strain <input name="customStrain" maxlength="120" placeholder="if no template"></label>
+        <label>Sex
+            <select name="sex">
+                <option value="unknown">Unknown</option>
+                <option value="regular">Regular</option>
+                <option value="female">Female</option>
+                <option value="male">Male</option>
+            </select>
+        </label>
+        <label>Initial stage
+            <select name="stage">
+                <option value="planned">Planned</option>
+                <option value="germinating">Germinating</option>
+                <option value="seedling">Seedling</option>
+            </select>
+        </label>
+        <label>Germination date <input type="date" name="germinationDate"></label>
+        <label>Location <select id="plant-location" name="locationId"></select></label>
+        <button type="submit">Create</button>
     </form>
-</dialog>
+</section>
+
+<p class="muted" data-crud-empty>No plants yet — create your first above.</p>
+<ul class="crud-list" data-crud-list hidden></ul>
+
+<section class="card" data-plant-detail hidden>
+    <h2><span data-detail-name></span> <small class="muted" data-detail-status></small></h2>
+    <p class="muted">
+        <span data-detail-strain></span> ·
+        <span data-detail-stage></span> ·
+        <span data-detail-location></span>
+        <span data-detail-age></span>
+    </p>
+
+    <div class="plant-actions form-grid">
+        <label>Change stage
+            <select id="new-stage"></select>
+        </label>
+        <button type="button" data-action="change-stage">Change stage</button>
+
+        <label>Move to location <select id="move-location"></select></label>
+        <label>Reason <input id="move-reason" maxlength="500" placeholder="optional"></label>
+        <button type="button" data-action="move-location">Move</button>
+
+        <label>Type <input id="measure-type" value="height" maxlength="40"></label>
+        <label>Value <input type="number" step="0.1" id="measure-value"></label>
+        <label>Unit <input id="measure-unit" value="cm" maxlength="10"></label>
+        <label>Note <input id="measure-note" maxlength="500"></label>
+        <button type="button" data-action="add-measurement">Add measurement</button>
+    </div>
+
+    <h3>Stage history</h3>
+    <ul data-stage-history></ul>
+    <p class="muted" data-stage-history-empty>No stage changes recorded yet.</p>
+
+    <h3>Location history</h3>
+    <ul data-location-history></ul>
+    <p class="muted" data-location-history-empty>No location changes yet.</p>
+
+    <h3>Measurements</h3>
+    <ul data-measurement-list></ul>
+    <p class="muted" data-measurements-empty>No measurements yet.</p>
+
+    <button type="button" data-action="close-detail">Close</button>
+</section>
 {% endblock %}
 
 {% block extra_scripts %}
+<script src="/static/js/model/plant-domain.js"></script>
 <script src="/static/js/pages/plants.js"></script>
 {% endblock %}

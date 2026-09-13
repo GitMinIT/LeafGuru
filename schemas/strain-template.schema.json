@@ -58,6 +58,21 @@
     "notes": {
       "type": "string",
       "maxLength": 5000
+    },
+    "createdAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
     }
-  }
+  },
+  "additionalProperties": false
 }

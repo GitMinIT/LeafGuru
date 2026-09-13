@@ -110,3 +110,11 @@ ul { padding-left: 1.2rem; }
 .crud-fields { display: grid; gap: 0.7rem; margin-bottom: 1rem; }
 .crud-fields label { display: grid; gap: 0.25rem; font-size: 0.88rem; color: var(--muted); }
 .crud-dialog-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+
+/* forms + plant detail */
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.7rem; align-items: end; }
+.form-grid label { display: grid; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); }
+.form-grid button { margin-top: 0.1rem; }
+.plant-actions { border-top: 1px solid var(--line); padding-top: 0.9rem; margin-bottom: 1rem; }
+[data-plant-detail] h3 { margin: 1.1rem 0 0.4rem; font-size: 1rem; }
+[data-plant-detail] small { font-weight: 400; }

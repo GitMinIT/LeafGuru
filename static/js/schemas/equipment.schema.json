@@ -83,6 +83,21 @@
           }
         }
       }
+    },
+    "createdAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
     }
-  }
+  },
+  "additionalProperties": false
 }

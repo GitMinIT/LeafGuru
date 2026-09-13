@@ -89,7 +89,9 @@
       "sold": "Sold"
     },
     "assignments": "Location assignments",
-    "assignedTo": "Assigned to"
+    "assignedTo": "Assigned to",
+    "cost": "Cost",
+    "purchaseDate": "Purchase date"
   },
   "strain": {
     "title": "Strain Templates",
@@ -103,7 +105,8 @@
     },
     "expectedHeight": "Expected height (cm)",
     "stageDurations": "Expected stage durations (days)",
-    "characteristics": "Characteristics"
+    "characteristics": "Characteristics",
+    "name": "Strain name"
   },
   "plant": {
     "title": "Plants",
@@ -129,7 +132,26 @@
     "measure": "Add measurement",
     "moveTo": "Move to location",
     "photos": "Photos",
-    "addPhoto": "Add photo"
+    "addPhoto": "Add photo",
+    "detail": "Plant detail",
+    "strainTemplate": "Strain template",
+    "customStrain": "Custom strain",
+    "stageHistory": "Stage history",
+    "locationHistory": "Location history",
+    "measurements": "Measurements",
+    "measurementType": "Type (e.g. height)",
+    "value": "Value",
+    "unit": "Unit",
+    "changeStage": "Change stage",
+    "newStage": "New stage",
+    "changeLocation": "Move to location",
+    "noLocation": "— none —",
+    "reason": "Reason (optional)",
+    "emptyTimeline": "No stage changes recorded yet.",
+    "emptyMeasurements": "No measurements yet.",
+    "emptyPhotos": "No photos yet.",
+    "daysInStage": "Days in current stage",
+    "age": "Age (days since germination)"
   },
   "task": {
     "title": "Tasks",
@@ -163,7 +185,9 @@
     "importFailed": "Import failed: {reason}",
     "confirmDelete": "Really delete “{name}”? This cannot be undone.",
     "validationFailed": "Validation failed",
-    "noTasks": "No open tasks."
+    "noTasks": "No open tasks.",
+    "locationChanged": "Location updated.",
+    "stageChanged": "Stage updated."
   },
   "crud": {
     "create": "Create",
