@@ -91,6 +91,19 @@
       return (stageLogs ?? [])
         .filter((l) => l.plantId === plantId)
         .sort((a, b) => a.enteredAt.localeCompare(b.enteredAt));
+    },
+
+    /**
+     * records to delete along with a plant (its stage logs, measurements,
+     * location changes, photos). Pure — the caller persists the deletions.
+     */
+    cascadeRecords({ plant, stageLogs = [], measurements = [], locationChanges = [], photos = [] }) {
+      return {
+        stageLogs: (stageLogs ?? []).filter((l) => l.plantId === plant.id),
+        measurements: (measurements ?? []).filter((m) => m.plantId === plant.id),
+        locationChanges: (locationChanges ?? []).filter((c) => c.plantId === plant.id),
+        photos: (photos ?? []).filter((p) => p.plantId === plant.id)
+      };
     }
   };
 })();

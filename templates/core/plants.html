@@ -5,6 +5,10 @@
 {% block content %}
 <h1>Plants</h1>
 <div class="crud-toolbar">
+    <label class="task-filter">
+        <span class="muted">Search</span>
+        <input type="search" data-crud-search placeholder="Name, strain…">
+    </label>
     <p class="muted" data-crud-flash hidden aria-live="polite"></p>
 </div>
 
@@ -38,6 +42,42 @@
 
 <p class="muted" data-crud-empty>No plants yet — create your first above.</p>
 <ul class="crud-list" data-crud-list hidden></ul>
+
+<dialog data-plant-edit class="crud-dialog">
+    <form>
+        <h2 data-edit-title></h2>
+        <div class="crud-fields">
+            <label>Name <input name="name" required maxlength="120"></label>
+            <label>Strain template <select id="edit-template"></select></label>
+            <label>Custom strain <input name="customStrain" maxlength="120"></label>
+            <label>Sex
+                <select id="edit-sex">
+                    <option value="unknown">Unknown</option>
+                    <option value="regular">Regular</option>
+                    <option value="female">Female</option>
+                    <option value="male">Male</option>
+                </select>
+            </label>
+            <label>Germination date <input type="date" name="germinationDate"></label>
+            <label>Status
+                <select id="edit-status">
+                    <option value="growing">Growing</option>
+                    <option value="harvested">Harvested</option>
+                    <option value="dried">Dried</option>
+                    <option value="cured">Cured</option>
+                    <option value="died">Died</option>
+                </select>
+            </label>
+            <label>Location <select id="edit-location"></select></label>
+            <label>Grow <select id="edit-grow"></select></label>
+            <label>Notes <textarea name="notes" maxlength="5000" rows="2"></textarea></label>
+        </div>
+        <div class="crud-dialog-actions">
+            <button type="button" data-edit-cancel>Cancel</button>
+            <button type="submit">Save</button>
+        </div>
+    </form>
+</dialog>
 
 <section class="card" data-plant-detail hidden>
     <h2><span data-detail-name></span> <small class="muted" data-detail-status></small></h2>
@@ -96,6 +136,7 @@
     <h3>Measurements</h3>
     <ul data-measurement-list></ul>
     <p class="muted" data-measurements-empty>No measurements yet.</p>
+    <div data-growth-chart hidden></div>
 
     <button type="button" data-action="close-detail">Close</button>
 </section>
@@ -103,6 +144,6 @@
 
 {% block extra_scripts %}
 <script src="/static/js/model/plant-domain.js"></script>
-<script src="/static/js/model/photos.js"></script>
+<script src="/static/js/model/chart.js"></script>
 <script src="/static/js/pages/plants.js"></script>
 {% endblock %}

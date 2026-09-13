@@ -1,9 +1,9 @@
 /**
  * LeafGuru — Plants page controller.
  *
- * List + create + detail (timeline, stage change, location move,
- * measurements). Uses CrudPage for list/form mechanics where possible,
- * custom logic for plant lifecycle actions (plant-domain).
+ * List (searchable) + create + edit + delete-with-cascade + detail
+ * (timeline, stage change, location move, measurements with edit/remove,
+ * photos, SVG growth chart). Uses plant-domain for lifecycle logic.
  */
 (function () {
   "use strict";
@@ -13,29 +13,102 @@
     await window.LeafGuru.loadSchemas();
     window.LeafGuru.storage = new window.LeafGuru.LocalAdapter();
     const d = window.LeafGuru.plantDomain;
+    const chart = window.LeafGuru.chart;
     const t = (k, p) => window.LeafGuru.i18n.t(k, p);
     const storage = window.LeafGuru.storage;
     const $ = (sel) => document.querySelector(sel);
 
     const STAGES = d.stages;
     const urlPool = [];
+    let cache = { plants: [], locations: [], strainTemplates: [], grows: [] };
+    let searchTerm = "";
+
+    function flash(msg, isError = false) {
+      const el = $("[data-crud-flash]");
+      el.textContent = msg;
+      el.hidden = false;
+      el.style.color = isError ? "var(--danger)" : "";
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => { el.hidden = true; }, 4000);
+    }
+    let flashTimer;
+
+    function formatErrors(e) {
+      return `${t("messages.validationFailed")}: ` +
+        e.errors.slice(0, 3).map((x) => `${x.path.replace(/^\$./, "")} ${x.message}`).join("; ");
+    }
+
+    const actionBtn = (label, fn) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = label;
+      btn.addEventListener("click", fn);
+      return btn;
+    };
 
     async function refresh() {
-      const [plants, locations, strainTemplates, stageLogs, grows] = await Promise.all([
+      const [plants, locations, strainTemplates, grows] = await Promise.all([
         storage.list("plants"), storage.list("locations"),
-        storage.list("strainTemplates"), storage.list("stageLogs"),
-        storage.list("grows")
+        storage.list("strainTemplates"), storage.list("grows")
       ]);
+      cache = { plants, locations, strainTemplates, grows };
+      renderList();
+      fillSelectors();
+    }
 
-      // --- list ---
+    function fillSelectors() {
+      const growSel = $("#plant-grow");
+      const growCur = growSel.value;
+      growSel.replaceChildren(new Option(t("common.none"), ""));
+      for (const g of cache.grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
+        growSel.append(new Option(g.name, g.id));
+      growSel.value = growCur;
+
+      const tplSelect = $("#plant-template");
+      tplSelect.replaceChildren(new Option(t("common.none"), ""));
+      for (const tpl of cache.strainTemplates.slice().sort((a, b) => a.name.localeCompare(b.name))) {
+        tplSelect.append(new Option(tpl.name + (tpl.breeder ? ` (${tpl.breeder})` : ""), tpl.id));
+      }
+
+      const locSelects = [$("#plant-location"), $("#move-location"), $("#edit-location")];
+      for (const sel of locSelects) {
+        const current = sel.value;
+        sel.replaceChildren(new Option(t("plant.noLocation"), ""));
+        for (const loc of cache.locations.filter((l) => l.active)) {
+          sel.append(new Option(loc.name, loc.id));
+        }
+        sel.value = current;
+      }
+
+      const stageSel = $("#new-stage");
+      stageSel.replaceChildren();
+      for (const s of STAGES) stageSel.append(new Option(t("stages." + s), s));
+    }
+
+    function renderList() {
       const listEl = $("[data-crud-list]");
       const emptyEl = $("[data-crud-empty]");
+      let plants = cache.plants;
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        plants = plants.filter((p) =>
+          [p.name, p.customStrain, p.notes].some((v) =>
+            String(v ?? "").toLowerCase().includes(q)) ||
+          cache.strainTemplates.find((tpl) => tpl.id === p.strainTemplateId)?.name
+            ?.toLowerCase().includes(q));
+      }
+      plants = plants.slice().sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+
       listEl.replaceChildren();
       emptyEl.hidden = plants.length > 0;
       listEl.hidden = plants.length === 0;
-      const locName = (id) => locations.find((l) => l.id === id)?.name ?? t("plant.noLocation");
-      const growName = (id) => grows.find((g) => g.id === id)?.name ?? "–";
-      for (const plant of plants.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))) {
+      emptyEl.textContent = searchTerm
+        ? t("common.noSearchResults")
+        : t("messages.noRecords");
+
+      const locName = (id) => cache.locations.find((l) => l.id === id)?.name ?? t("plant.noLocation");
+      const growName = (id) => cache.grows.find((g) => g.id === id)?.name ?? "–";
+      for (const plant of plants) {
         const row = document.createElement("li");
         row.className = "crud-row";
         const name = document.createElement("span");
@@ -54,46 +127,15 @@
         status.className = "crud-cell";
         status.textContent = t("plant.status." + plant.status);
         const actions = document.createElement("span");
-        actions.className = "crud-cell";
-        const detailBtn = document.createElement("button");
-        detailBtn.type = "button";
-        detailBtn.textContent = t("plant.detail");
-        detailBtn.addEventListener("click", () => openDetail(plant.id));
-        actions.append(detailBtn);
+        actions.className = "crud-cell task-actions";
+        actions.append(
+          actionBtn(t("plant.detail"), () => openDetail(plant.id)),
+          actionBtn(t("common.edit"), () => openEdit(plant)),
+          actionBtn(t("common.delete"), () => removePlant(plant))
+        );
         row.append(name, stage, loc, grow, status, actions);
         listEl.append(row);
       }
-
-      // grow select options (create form)
-      const growSel = $("#plant-grow");
-      const growCur = growSel.value;
-      growSel.replaceChildren(new Option(t("common.none"), ""));
-      for (const g of grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
-        growSel.append(new Option(g.name, g.id));
-      growSel.value = growCur;
-
-      // --- create form: strain template select options ---
-      const tplSelect = $("#plant-template");
-      tplSelect.replaceChildren(new Option(t("common.none"), ""));
-      for (const tpl of strainTemplates.sort((a, b) => a.name.localeCompare(b.name))) {
-        tplSelect.append(new Option(tpl.name + (tpl.breeder ? ` (${tpl.breeder})` : ""), tpl.id));
-      }
-      // location select options
-      const locSelects = [$("#plant-location"), $("#move-location")];
-      for (const sel of locSelects) {
-        const current = sel.value;
-        sel.replaceChildren(new Option(t("plant.noLocation"), ""));
-        for (const loc of locations.filter((l) => l.active)) {
-          sel.append(new Option(loc.name, loc.id));
-        }
-        sel.value = current;
-      }
-      // stage select options
-      const stageSel = $("#new-stage");
-      stageSel.replaceChildren();
-      for (const s of STAGES) stageSel.append(new Option(t("stages." + s), s));
-
-      return { plants, locations, stageLogs };
     }
 
     // --- create plant (opens initial StageLog) ---
@@ -115,7 +157,6 @@
       };
       try {
         const plant = await storage.put("plants", base);
-        // initial stage log
         const { stageLogs } = d.applyStageChange({ plant, stageLogs: [], newStage: stage });
         for (const log of stageLogs) await storage.put("stageLogs", log);
         f.reset();
@@ -124,12 +165,85 @@
       } catch (e) { flash(e.name === "LeafGuruValidationError" ? formatErrors(e) : e.message, true); }
     });
 
+    // --- edit ---
+    async function openEdit(plant) {
+      const dialog = $("[data-plant-edit]");
+      const form = dialog.querySelector("form");
+      form.reset();
+      form.dataset.plantId = plant.id;
+      $("[data-edit-title]").textContent = `${t("common.edit")}: ${plant.name}`;
+      form.elements["name"].value = plant.name ?? "";
+      form.elements["customStrain"].value = plant.customStrain ?? "";
+      form.elements["germinationDate"].value = plant.germinationDate ?? "";
+      form.elements["notes"].value = plant.notes ?? "";
+      $("#edit-sex").value = plant.sex ?? "unknown";
+      $("#edit-status").value = plant.status ?? "growing";
+      // template select
+      const tplSel = $("#edit-template");
+      tplSel.replaceChildren(new Option(t("common.none"), ""));
+      for (const tpl of cache.strainTemplates.slice().sort((a, b) => a.name.localeCompare(b.name)))
+        tplSel.append(new Option(tpl.name + (tpl.breeder ? ` (${tpl.breeder})` : ""), tpl.id));
+      tplSel.value = plant.strainTemplateId ?? "";
+      // grow select
+      const growSel = $("#edit-grow");
+      growSel.replaceChildren(new Option(t("common.none"), ""));
+      for (const g of cache.grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
+        growSel.append(new Option(g.name, g.id));
+      growSel.value = plant.growId ?? "";
+      // location select (filled in fillSelectors)
+      $("#edit-location").value = plant.locationId ?? "";
+      dialog.showModal();
+    }
+
+    $("[data-plant-edit] form").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const form = event.target;
+      const plantId = form.dataset.plantId;
+      const record = await storage.get("plants", plantId);
+      record.name = form.elements["name"].value.trim();
+      record.strainTemplateId = $("#edit-template").value || null;
+      record.customStrain = form.elements["customStrain"].value.trim() || null;
+      record.sex = $("#edit-sex").value;
+      record.germinationDate = form.elements["germinationDate"].value || null;
+      record.status = $("#edit-status").value;
+      record.locationId = $("#edit-location").value || null;
+      record.growId = $("#edit-grow").value || null;
+      record.notes = form.elements["notes"].value.trim() || null;
+      try {
+        await storage.put("plants", record);
+        $("[data-plant-edit]").close();
+        await refresh();
+        flash(t("messages.saved"));
+      } catch (e) {
+        flash(e.name === "LeafGuruValidationError" ? formatErrors(e) : e.message, true);
+      }
+    });
+    $("[data-edit-cancel]").addEventListener("click", () => $("[data-plant-edit]").close());
+
+    // --- delete with cascade ---
+    async function removePlant(plant) {
+      if (!window.confirm(t("messages.confirmDelete", { name: plant.name }))) return;
+      const [stageLogs, measurements, locationChanges, photos] = await Promise.all([
+        storage.list("stageLogs"), storage.list("measurements"),
+        storage.list("locationChanges"), storage.list("photos")
+      ]);
+      const cascade = d.cascadeRecords({ plant, stageLogs, measurements, locationChanges, photos });
+      const n = Object.values(cascade).reduce((sum, list) => sum + list.length, 0);
+      if (n && !window.confirm(t("plant.confirmCascade", { count: n }))) return;
+      for (const [entity, list] of Object.entries(cascade))
+        for (const rec of list) await storage.delete(entity, rec.id);
+      await storage.delete("plants", plant.id);
+      flash(t("messages.deleted"));
+      $("[data-plant-detail]").hidden = true;
+      await refresh();
+    }
+
     // --- detail panel ---
     async function openDetail(plantId) {
-      const [plant, stageLogs, locations, measurements, locationChanges] = await Promise.all([
+      const [plant, stageLogs, locations, measurements, locationChanges, photosAll] = await Promise.all([
         storage.get("plants", plantId), storage.list("stageLogs"),
         storage.list("locations"), storage.list("measurements"),
-        storage.list("locationChanges")
+        storage.list("locationChanges"), storage.list("photos")
       ]);
       const panel = $("[data-plant-detail]");
       panel.hidden = false;
@@ -147,7 +261,7 @@
       const days = d.daysSince(open?.enteredAt ?? plant.germinationDate ?? plant.createdAt);
       $("[data-detail-stage]").textContent = t("stages." + plant.stage) + (days != null ? ` · ${t("plant.daysInStage")}: ${days}` : "");
       $("[data-detail-age]").textContent = plant.germinationDate
-        ? `${t("plant.age")}: ${d.daysSince(plant.germinationDate)}` : "";
+        ? ` · ${t("plant.age")}: ${d.daysSince(plant.germinationDate)}` : "";
       $("[data-detail-location]").textContent =
         locations.find((l) => l.id === plant.locationId)?.name ?? t("plant.noLocation");
 
@@ -180,7 +294,7 @@
       }
 
       // photos
-      const photos = (await storage.list("photos")).filter((p) => p.plantId === plant.id)
+      const photos = photosAll.filter((p) => p.plantId === plant.id)
         .sort((a, b) => b.takenAt.localeCompare(a.takenAt));
       const grid = $("[data-photo-grid]");
       grid.replaceChildren();
@@ -213,7 +327,7 @@
         grid.append(card);
       }
 
-      // measurements
+      // measurements (with edit/remove)
       const ms = measurements.filter((m) => m.plantId === plant.id)
         .sort((a, b) => b.measuredAt.localeCompare(a.measuredAt));
       const ml = $("[data-measurement-list]");
@@ -221,9 +335,62 @@
       $("[data-measurements-empty]").hidden = ms.length > 0;
       for (const m of ms) {
         const li = document.createElement("li");
-        li.textContent = `${m.measuredAt.slice(0, 10)} — ${m.type}: ${m.value} ${m.unit}${m.note ? ` (${m.note})` : ""}`;
+        li.className = "crud-row";
+        const text = document.createElement("span");
+        text.className = "crud-cell";
+        text.textContent = `${m.measuredAt.slice(0, 10)} — ${m.type}: ${m.value} ${m.unit}${m.note ? ` (${m.note})` : ""}`;
+        const actions = document.createElement("span");
+        actions.className = "crud-cell task-actions";
+        actions.append(
+          actionBtn(t("common.edit"), () => editMeasurement(m)),
+          actionBtn(t("common.delete"), async () => {
+            if (!window.confirm(t("messages.confirmDelete", { name: `${m.type} ${m.measuredAt.slice(0, 10)}` }))) return;
+            await storage.delete("measurements", m.id);
+            flash(t("messages.deleted"));
+            await openDetail(plantId);
+          })
+        );
+        li.append(text, actions);
         ml.append(li);
       }
+
+      // growth chart (height series)
+      const chartEl = $("[data-growth-chart]");
+      chartEl.replaceChildren();
+      const series = chart.seriesFromMeasurements(
+        measurements.filter((m) => m.plantId === plant.id), "height");
+      if (series.length >= 2) {
+        const title = document.createElement("h4");
+        title.textContent = `${t("plant.growthChart")} (cm)`;
+        chartEl.append(title, chart.lineChart(series, { yLabel: "cm" }));
+        chartEl.hidden = false;
+      } else {
+        chartEl.hidden = true;
+      }
+    }
+
+    // measurement editing
+    async function editMeasurement(m) {
+      const type = $("#measure-type");
+      const value = $("#measure-value");
+      const unit = $("#measure-unit");
+      const note = $("#measure-note");
+      const updated = window.prompt(
+        t("plant.editMeasurement"),
+        `${m.type}|${m.value}|${m.unit}|${m.note ?? ""}`);
+      if (updated == null) return;
+      const [nType, nValue, nUnit, nNote] = updated.split("|");
+      const record = await storage.get("measurements", m.id);
+      if (nType?.trim()) record.type = nType.trim();
+      const parsed = Number(nValue);
+      if (nValue?.trim() !== "" && !Number.isNaN(parsed)) record.value = parsed;
+      if (nUnit?.trim()) record.unit = nUnit.trim();
+      record.note = (nNote ?? "").trim();
+      try {
+        await storage.put("measurements", record);
+        flash(t("messages.saved"));
+        await openDetail(m.plantId);
+      } catch (e) { flash(formatErrors(e), true); }
     }
 
     // stage change
@@ -299,19 +466,11 @@
       $("[data-plant-detail]").hidden = true;
     });
 
-    function formatErrors(e) {
-      return `${t("messages.validationFailed")}: ` +
-        e.errors.slice(0, 3).map((x) => `${x.path.replace(/^\$./, "")} ${x.message}`).join("; ");
-    }
-    let flashTimer;
-    function flash(msg, isError = false) {
-      const el = $("[data-crud-flash]");
-      el.textContent = msg;
-      el.hidden = false;
-      el.style.color = isError ? "var(--danger)" : "";
-      clearTimeout(flashTimer);
-      flashTimer = setTimeout(() => { el.hidden = true; }, 4000);
-    }
+    // search
+    $("[data-crud-search]").addEventListener("input", (event) => {
+      searchTerm = event.target.value.trim();
+      renderList();
+    });
 
     await refresh();
   });
