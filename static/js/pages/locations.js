@@ -32,7 +32,7 @@
       ],
       fields: [
         { path: "name", label: "common.name", type: "string", required: true },
-        { path: "type", label: "location.size", type: "string" }, // replaced below by select
+        { path: "type", label: "location.indoor", type: "string" }, // select via DOM patch
         { path: "size.widthCm", label: "location.width", type: "number" },
         { path: "size.depthCm", label: "location.depth", type: "number" },
         { path: "size.heightCm", label: "location.height", type: "number" },

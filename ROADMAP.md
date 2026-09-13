@@ -16,6 +16,12 @@
 - [ ] i18n loader, `en.json` only
 - [ ] German legal-neutral wording, AI-notice discipline for docs
 
+## Phase 1.5 — Design pass (planned, deliberately deferred)
+- [ ] **Dedicated CSS/UI design pass** — design follows function: only now,
+      with all workflows stable, do we invest in look & feel (typography,
+      spacing system, color accents per entity, dialog polish, animations).
+      Current CSS is intentionally minimal placeholder styling.
+
 ## Phase 2 — Insights
 - [ ] Growth charts per plant (measurement history)
 - [ ] Stage countdowns / day counters (auto from StageLog)

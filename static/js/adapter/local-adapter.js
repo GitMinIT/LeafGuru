@@ -100,7 +100,7 @@
 
     async exportBundle() {
       const bundle = {
-        meta: { app: "LeafGuru", schemaVersion: 1, exportedAt: new Date().toISOString() }
+        meta: { app: "LeafGuru", appVersion: window.LeafGuru.VERSION, schemaVersion: 1, exportedAt: new Date().toISOString() }
       };
       for (const name of ENTITIES) {
         const records = await this.list(name);

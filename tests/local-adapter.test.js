@@ -125,3 +125,21 @@ test("usage returns bytes estimate shape", async () => {
   const u = await storage.usage();
   assert.ok(typeof u.bytes === "number");
 });
+test("exportBundle carries appVersion provenance", async () => {
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  const bundle = await storage.exportBundle();
+  assert.equal(bundle.meta.app, "LeafGuru");
+  assert.equal(bundle.meta.appVersion, window.LeafGuru.VERSION);
+  assert.equal(window.LeafGuru.VERSION, "0.1.0");
+});
+
+test("importBundle accepts bundles with appVersion", async () => {
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  const bundle = {
+    meta: { app: "LeafGuru", appVersion: "0.9.9", schemaVersion: 1, exportedAt: "2026-09-13T12:00:00Z" },
+    locations: [], equipment: [], strainTemplates: [], plants: []
+  };
+  await storage.importBundle(bundle); // must not throw
+});

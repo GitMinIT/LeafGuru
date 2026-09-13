@@ -111,6 +111,8 @@
       }
       const meta = bundle.meta ?? {};
       if (meta.app !== "LeafGuru") errors.push({ path: "$.meta.app", message: "must be LeafGuru" });
+      if (meta.appVersion !== undefined && typeof meta.appVersion !== "string")
+        errors.push({ path: "$.meta.appVersion", message: "must be a string" });
       if (meta.schemaVersion !== 1) errors.push({ path: "$.meta.schemaVersion", message: "unsupported schemaVersion (want 1)" });
       const ENTITY_FILES = {
         locations: "location.schema.json",

@@ -142,6 +142,7 @@ async function setup({ locale = "en" } = {}) {
   vm.createContext(sandbox);
 
   const load = (rel) => vm.runInContext(fs.readFileSync(path.join(ROOT, rel), "utf8"), sandbox, { filename: rel });
+  load("static/js/version.js");
   load("static/js/model/uuid.js");
   load("static/js/i18n/loader.js");
   load("static/js/model/schema-loader.js");
@@ -150,6 +151,7 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/adapter/local-adapter.js");
   load("static/js/model/data-io.js");
   load("static/js/model/photos.js");
+  load("static/js/model/crud.js");
   load("static/js/model/plant-domain.js");
   await sandbox.window.LeafGuru.loadSchemas();
   await sandbox.window.LeafGuru.i18n.init(locale);
