@@ -4,7 +4,7 @@ services:
     container_name: leafguru
     restart: unless-stopped
     ports:
-      - "8090:8090"
+      - "6016:8090"
     environment:
       - LEAFGURU_DEBUG=0
       - LEAFGURU_ALLOWED_HOSTS=*
