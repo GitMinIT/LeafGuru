@@ -90,7 +90,9 @@ async function setup({ locale = "en" } = {}) {
   const fetched = [];
 
   const sandbox = {
-    console, Promise, Map, Set, Date, JSON, Error, TypeError, setTimeout, clearTimeout, queueMicrotask,
+    console, Promise, Map, Set, Date, JSON, Error, TypeError,
+    setTimeout, clearTimeout, queueMicrotask,
+    Boolean, Number, String, Math, Object, Array, RegExp, Intl, Uint8Array,
     structuredClone: (v) => {
       if (v instanceof BlobStub) return v; // Blobs are immutable — identity is fine
       if (Array.isArray(v)) return v.map((x) => sandbox.structuredClone(x));
@@ -135,6 +137,16 @@ async function setup({ locale = "en" } = {}) {
     Blob: BlobStub,
     document: {
       createElement: () => ({ click() {}, set href(_) {}, set download(_) {} }),
+      // minimal SVG element stub for chart.js: attribute storage + children
+      createElementNS: (ns, tag) => {
+        const node = {
+          tag, ns, children: [], attrs: {}, textContent: "",
+          append(...nodes) { node.children.push(...nodes); },
+          setAttribute(k, v) { node.attrs[k] = String(v); },
+          getAttribute(k) { return node.attrs[k]; },
+        };
+        return node;
+      },
       querySelector: () => null,
     },
   };
@@ -154,6 +166,8 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/model/crud.js");
   load("static/js/model/plant-domain.js");
   load("static/js/model/task-domain.js");
+  load("static/js/model/location-domain.js");
+  load("static/js/model/chart.js");
   await sandbox.window.LeafGuru.loadSchemas();
   await sandbox.window.LeafGuru.i18n.init(locale);
 

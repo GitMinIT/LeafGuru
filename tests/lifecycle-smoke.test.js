@@ -132,6 +132,64 @@ test("plant lifecycle end-to-end via controllers' storage calls", async () => {
   assert.equal(final.locationId, outdoor.id);
 });
 
+test("plant edit round-trip and cascade delete remove linked records", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  window.LeafGuru.storage = storage;
+  const d = window.LeafGuru.plantDomain;
+
+  const loc = await storage.put("locations", { name: "Box", type: "indoor", active: true });
+  const plant = await storage.put("plants", {
+    name: "Cascade Me", strainTemplateId: null, customStrain: null,
+    sex: "female", germinationDate: "2026-09-01", stage: "seedling",
+    locationId: loc.id, status: "growing", notes: ""
+  });
+  const { stageLogs } = d.applyStageChange({ plant, stageLogs: [], newStage: "seedling" });
+  for (const log of stageLogs) await storage.put("stageLogs", log);
+  const m = d.buildMeasurement({ plant, type: "height", value: 5, unit: "cm" });
+  await storage.put("measurements", m);
+
+  // --- edit flow the Plants page performs (status + name + notes) ---
+  const record = await storage.get("plants", plant.id);
+  record.name = "Cascade Me II";
+  record.status = "died";
+  record.notes = "updated via edit dialog";
+  await storage.put("plants", record);
+  const edited = await storage.get("plants", plant.id);
+  assert.equal(edited.name, "Cascade Me II");
+  assert.equal(edited.status, "died");
+  assert.equal(edited.notes, "updated via edit dialog");
+
+  // --- measurement edit flow (value + note changed in place) ---
+  const mRec = await storage.get("measurements", m.id);
+  mRec.value = 6.5;
+  mRec.note = "corrected";
+  await storage.put("measurements", mRec);
+  assert.equal((await storage.get("measurements", m.id)).value, 6.5);
+
+  // --- cascade delete the way removePlant() does it ---
+  const [stageLogs2, measurements2, locationChanges2, photos2] = await Promise.all([
+    storage.list("stageLogs"), storage.list("measurements"),
+    storage.list("locationChanges"), storage.list("photos")
+  ]);
+  const cascade = d.cascadeRecords({
+    plant: edited, stageLogs: stageLogs2, measurements: measurements2,
+    locationChanges: locationChanges2, photos: photos2
+  });
+  assert.equal(cascade.stageLogs.length, 1);
+  assert.equal(cascade.measurements.length, 1);
+  for (const [entity, list] of Object.entries(cascade))
+    for (const rec of list) await storage.delete(entity, rec.id);
+  await storage.delete("plants", plant.id);
+
+  assert.equal(await storage.get("plants", plant.id), null);
+  assert.equal((await storage.list("stageLogs")).length, 0);
+  assert.equal((await storage.list("measurements")).length, 0);
+  // the location itself survives
+  assert.equal((await storage.list("locations")).length, 1);
+});
+
 test("dashboard data shape: counts match stored entities", async () => {
   const { setup } = require("./helpers/browser-stub");
   const { window } = await setup();
