@@ -52,32 +52,19 @@
       await origRefresh();
     };
 
-    // type field is an enum — replace the auto text input with a select
-    const dialog = document.querySelector("[data-crud-dialog]");
-    const form = dialog.querySelector("form");
-    const typeLabel = form.querySelector('input[name="type"]').closest("label");
-    const select = document.createElement("select");
-    select.name = "type";
-    for (const [value, key] of [["indoor", "location.indoor"], ["outdoor", "location.outdoor"]]) {
-      const opt = document.createElement("option");
-      opt.value = value;
-      opt.textContent = t(key);
-      select.append(opt);
-    }
-    typeLabel.querySelector("input").replaceWith(select);
-
-    // CrudPage._fillField/submit use form.elements — select is there too;
-    // but openForm default for type must be "indoor"
-    form.elements.type.closest("label").querySelector("select").value = "indoor";
-
-    // grow selector (dynamic field): label + select live in the dialog,
-    // options refreshed on every openForm
+    // grow selector (dynamic field): label + select live in the dialog
+    const form = document.querySelector("[data-crud-dialog] form");
     const growLabel = document.createElement("label");
     growLabel.textContent = t("nav.grows");
-    const growSelect = document.createElement("select");
-    growSelect.dataset.dynamic = "growId";
-    growLabel.append(growSelect);
+    const growSel = document.createElement("select");
+    growSel.dataset.dynamic = "growId";
+    growLabel.append(growSel);
     form.querySelector(".crud-fields").append(growLabel);
+
+    await page.mount();
+
+    // grow selector options refreshed on every openForm (dynamic field)
+    const growSelect = form.querySelector('select[data-dynamic="growId"]');
     const origOpenForm = page.openForm.bind(page);
     page.openForm = async (record = null) => {
       grows = await window.LeafGuru.storage.list("grows");
@@ -88,6 +75,18 @@
       growSelect.value = record?.growId ?? "";
     };
 
-    await page.mount();
+    // type field is an enum — replace the auto text input AFTER mount()
+    // has created the inputs (mount is synchronous)
+    const typeLabel = form.querySelector('input[name="type"]').closest("label");
+    const select = document.createElement("select");
+    select.name = "type";
+    for (const [value, key] of [["indoor", "location.indoor"], ["outdoor", "location.outdoor"]]) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = t(key);
+      select.append(opt);
+    }
+    typeLabel.querySelector("input").replaceWith(select);
+    form.elements.type.closest("label").querySelector("select").value = "indoor";
   });
 })();

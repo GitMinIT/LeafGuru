@@ -90,7 +90,7 @@ async function setup({ locale = "en" } = {}) {
   const fetched = [];
 
   const sandbox = {
-    console, Promise, Map, Set, Date, JSON, Error, TypeError, setTimeout, queueMicrotask,
+    console, Promise, Map, Set, Date, JSON, Error, TypeError, setTimeout, clearTimeout, queueMicrotask,
     structuredClone: (v) => {
       if (v instanceof BlobStub) return v; // Blobs are immutable — identity is fine
       if (Array.isArray(v)) return v.map((x) => sandbox.structuredClone(x));
