@@ -29,7 +29,7 @@
     for (const grow of activeGrows) {
       const li = document.createElement("li");
       const nPlants = plants.filter((p) => p.growId === grow.id && p.status === "growing").length;
-      const nLocs = locations.filter((l) => l.growId === grow.id).length;
+      const nLocs = (grow.locationIds ?? []).length;
       const nTasks = tasks.filter((k) => k.growId === grow.id && td.isOverdue(k)).length;
       li.textContent = `${grow.name} (${t("grow.status." + grow.status)}) — ` +
         `${nPlants} ${t("nav.plants")} · ${nLocs} ${t("nav.locations")}` +

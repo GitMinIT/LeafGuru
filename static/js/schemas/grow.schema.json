@@ -26,6 +26,15 @@
         "closed"
       ]
     },
+    "locationIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "description": "locations used by this grow",
+      "default": []
+    },
     "startDate": {
       "type": [
         "string",

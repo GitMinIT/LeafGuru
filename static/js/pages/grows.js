@@ -1,7 +1,8 @@
 /**
  * LeafGuru — Grows page controller.
- * A Grow groups locations, plants, equipment and tasks (each carries an
- * optional growId). CRUD dialog + detail dialog with linked entities.
+ * A Grow groups locations (locationIds[]), plants, equipment and tasks
+ * (each carries an optional growId). CRUD dialog with multi-select for
+ * locations + detail dialog with linked entities.
  */
 (function () {
   "use strict";
@@ -65,8 +66,10 @@
         dates.textContent = [grow.startDate, grow.endDate].filter(Boolean).join(" → ") || "–";
         const counts = document.createElement("span");
         counts.className = "crud-cell";
-        const n = (list, key) => list.filter((x) => x.growId === grow.id).length;
-        counts.textContent = `${n(cache.locations, "loc")} ${t("nav.locations")} · ${n(cache.plants, "p")} ${t("nav.plants")} · ${n(cache.tasks, "t")} ${t("nav.tasks")}`;
+        const nLocs = (grow.locationIds ?? []).length;
+        const nPlants = cache.plants.filter((p) => p.growId === grow.id).length;
+        const nTasks = cache.tasks.filter((x) => x.growId === grow.id).length;
+        counts.textContent = `${nLocs} ${t("nav.locations")} · ${nPlants} ${t("nav.plants")} · ${nTasks} ${t("nav.tasks")}`;
         const actions = document.createElement("span");
         actions.className = "crud-cell task-actions";
         actions.append(
@@ -87,7 +90,7 @@
       return btn;
     }
 
-    function openForm(record = null) {
+    async function openForm(record = null) {
       const dialog = $("[data-crud-dialog]");
       const form = dialog.querySelector("form");
       form.reset();
@@ -99,6 +102,17 @@
       $("#grow-end").value = record?.endDate ?? "";
       $("#grow-notes").value = record?.notes ?? "";
       form.elements["name"].value = record?.name ?? "";
+      // locations multi-select
+      const locSel = $("#grow-locations");
+      const selected = new Set(record?.locationIds ?? []);
+      locSel.replaceChildren();
+      const locs = cache.locations.length
+        ? cache.locations : await storage.list("locations");
+      for (const l of locs.slice().sort((a, b) => a.name.localeCompare(b.name))) {
+        const opt = new Option(`${l.name} (${t("location." + l.type)})`, l.id);
+        opt.selected = selected.has(l.id);
+        locSel.append(opt);
+      }
       dialog.showModal();
     }
 
@@ -112,8 +126,9 @@
       record.startDate = $("#grow-start").value || null;
       record.endDate = $("#grow-end").value || null;
       record.notes = $("#grow-notes").value.trim();
+      record.locationIds = [...$("#grow-locations").selectedOptions].map((o) => o.value);
       try {
-        const saved = await storage.put("grows", record);
+        await storage.put("grows", record);
         $("[data-crud-dialog]").close();
         await refresh();
         flash(t("messages.saved"));
@@ -130,7 +145,8 @@
     }
 
     async function openDetail(grow) {
-      const locs = cache.locations.filter((l) => l.growId === grow.id);
+      const locIds = new Set(grow.locationIds ?? []);
+      const locs = cache.locations.filter((l) => locIds.has(l.id));
       const plants = cache.plants.filter((p) => p.growId === grow.id);
       const equip = cache.equipment.filter((e) => e.growId === grow.id);
       const tasks = cache.tasks.filter((k) => k.growId === grow.id && k.status === "open");

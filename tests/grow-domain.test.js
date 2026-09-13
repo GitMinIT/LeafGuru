@@ -17,11 +17,11 @@ test("grows store accepts valid record and enforces status enum", async () => {
   );
 });
 
-test("locations/plants/equipment/tasks accept optional growId", async () => {
+test("plants/equipment/tasks accept optional growId; locations link via grow.locationIds", async () => {
   const { window } = await setup();
   const storage = new window.LeafGuru.LocalAdapter();
   const grow = await storage.put("grows", { name: "G", status: "planned" });
-  const loc = await storage.put("locations", { name: "Box", type: "indoor", active: true, growId: grow.id });
+  const loc = await storage.put("locations", { name: "Box", type: "indoor", active: true });
   const plant = await storage.put("plants", {
     name: "P", strainTemplateId: null, customStrain: null, sex: "unknown",
     germinationDate: "2026-09-01", stage: "planned", locationId: loc.id,
@@ -33,14 +33,17 @@ test("locations/plants/equipment/tasks accept optional growId", async () => {
   const task = await storage.put("tasks", {
     title: "T", status: "open", priority: "medium", growId: grow.id, description: ""
   });
-  const [locs, plants, equips, tasks] = await Promise.all([
+  // grow lists its locations
+  const grow2 = await storage.put("grows", { ...grow, locationIds: [loc.id] });
+  const [locs, plants, equips, tasks, grows] = await Promise.all([
     storage.list("locations"), storage.list("plants"),
-    storage.list("equipment"), storage.list("tasks")
+    storage.list("equipment"), storage.list("tasks"), storage.list("grows")
   ]);
-  assert.equal(locs[0].growId, grow.id);
+  assert.equal(locs[0].growId, undefined, "locations no longer carry growId");
   assert.equal(plants[0].growId, grow.id);
   assert.equal(equips[0].availableEverywhere, true);
   assert.equal(tasks[0].growId, grow.id);
+  assert.deepEqual(grows[0].locationIds, [loc.id]);
 });
 
 test("equipment locationAssignments allow open assignment (to: null)", async () => {

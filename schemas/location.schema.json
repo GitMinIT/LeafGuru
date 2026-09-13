@@ -14,14 +14,6 @@
       "type": "string",
       "format": "uuid"
     },
-    "growId": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "format": "uuid",
-      "description": "optional grow this record belongs to"
-    },
     "name": {
       "type": "string",
       "minLength": 1,
