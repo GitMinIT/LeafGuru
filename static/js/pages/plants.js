@@ -33,11 +33,6 @@
     }
     let flashTimer;
 
-    function formatErrors(e) {
-      return `${t("messages.validationFailed")}: ` +
-        e.errors.slice(0, 3).map((x) => `${x.path.replace(/^\$./, "")} ${x.message}`).join("; ");
-    }
-
     const actionBtn = (label, fn) => {
       const btn = document.createElement("button");
       btn.type = "button";
@@ -162,7 +157,9 @@
         f.reset();
         await refresh();
         flash(t("messages.saved"));
-      } catch (e) { flash(e.name === "LeafGuruValidationError" ? formatErrors(e) : e.message, true); }
+      } catch (e) {
+        flash(e.name === "LeafGuruValidationError" ? window.LeafGuru.ui.formatErrors(e) : e.message, true);
+      }
     });
 
     // --- edit ---
@@ -170,6 +167,8 @@
       const dialog = $("[data-plant-edit]");
       const form = dialog.querySelector("form");
       form.reset();
+      const errEl = dialog.querySelector("[data-crud-error]");
+      if (errEl) { errEl.hidden = true; errEl.textContent = ""; }
       form.dataset.plantId = plant.id;
       $("[data-edit-title]").textContent = `${t("common.edit")}: ${plant.name}`;
       form.elements["name"].value = plant.name ?? "";
@@ -215,7 +214,7 @@
         await refresh();
         flash(t("messages.saved"));
       } catch (e) {
-        flash(e.name === "LeafGuruValidationError" ? formatErrors(e) : e.message, true);
+        window.LeafGuru.ui.reportSubmitError(form, e);
       }
     });
     $("[data-edit-cancel]").addEventListener("click", () => $("[data-plant-edit]").close());
@@ -402,7 +401,7 @@
         await storage.put("measurements", record);
         flash(t("messages.saved"));
         await openDetail(m.plantId);
-      } catch (e) { flash(formatErrors(e), true); }
+      } catch (e) { flash(e.name === "LeafGuruValidationError" ? window.LeafGuru.ui.formatErrors(e) : e.message, true); }
     }
 
     // stage change
@@ -449,7 +448,7 @@
         await storage.put("measurements", m);
         flash(t("messages.saved"));
         await openDetail(plantId);
-      } catch (e) { flash(formatErrors(e), true); }
+      } catch (e) { flash(e.name === "LeafGuruValidationError" ? window.LeafGuru.ui.formatErrors(e) : e.message, true); }
     });
 
     $("[data-action='add-photos']").addEventListener("click", () => $("#photo-input").click());

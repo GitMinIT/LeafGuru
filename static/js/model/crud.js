@@ -157,6 +157,8 @@
       const dialog = document.querySelector("[data-crud-dialog]");
       const form = dialog.querySelector("form");
       form.reset();
+      const errEl = dialog.querySelector("[data-crud-error]");
+      if (errEl) { errEl.hidden = true; errEl.textContent = ""; }
       form.dataset.editingId = record?.id ?? "";
       dialog.querySelector("[data-crud-form-title]").textContent =
         record ? `${t("common.edit")}: ${record.name ?? record.title ?? record.id.slice(0, 8)}` : `${t("common.create")} ${t(this.cfg.entityTitleKey)}`;
@@ -219,12 +221,7 @@
         await this.refresh();
         this._flash(t("messages.saved"));
       } catch (e) {
-        if (e.name === "LeafGuruValidationError") {
-          this._flash(`${t("messages.validationFailed")}: ` +
-            e.errors.slice(0, 3).map((x) => `${x.path.replace(/^\$./, "")} ${x.message}`).join("; "));
-          return;
-        }
-        this._flash(e.message);
+        window.LeafGuru.ui.reportSubmitError(form, e);
       }
     }
 

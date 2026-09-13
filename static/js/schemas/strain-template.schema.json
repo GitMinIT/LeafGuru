@@ -18,7 +18,10 @@
       "maxLength": 120
     },
     "breeder": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 120
     },
     "genotype": {
@@ -30,33 +33,54 @@
       ]
     },
     "stageDurations": {
-      "type": "object",
+      "type": [
+        "object",
+        "null"
+      ],
       "description": "expected days per stage",
       "properties": {
         "seedling": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 0
         },
         "vegetative": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 0
         },
         "flowering": {
-          "type": "integer",
+          "type": [
+            "integer",
+            "null"
+          ],
           "minimum": 0
         }
       }
     },
     "expectedHeightCm": {
-      "type": "number",
+      "type": [
+        "number",
+        "null"
+      ],
       "minimum": 0
     },
     "characteristics": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 2000
     },
     "notes": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 5000
     },
     "createdAt": {

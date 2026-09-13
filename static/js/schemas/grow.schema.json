@@ -50,7 +50,10 @@
       "format": "date"
     },
     "notes": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 5000
     },
     "createdAt": {

@@ -32,11 +32,6 @@
       flashTimer = setTimeout(() => { el.hidden = true; }, 4000);
     }
 
-    function formatErrors(e) {
-      return `${t("messages.validationFailed")}: ` +
-        e.errors.slice(0, 3).map((x) => `${x.path.replace(/^\$./, "")} ${x.message}`).join("; ");
-    }
-
     const nameOf = (list, id) => list.find((x) => x.id === id)?.name ?? null;
 
     async function refresh() {
@@ -183,6 +178,8 @@
       const dialog = $("[data-crud-dialog]");
       const form = dialog.querySelector("form");
       form.reset();
+      const errEl = dialog.querySelector("[data-crud-error]");
+      if (errEl) { errEl.hidden = true; errEl.textContent = ""; }
       form.dataset.editingId = record?.id ?? "";
       $("[data-crud-form-title]").textContent = record
         ? `${t("common.edit")}: ${record.title}`
@@ -223,7 +220,7 @@
         await refresh();
         flash(t("messages.saved"));
       } catch (e) {
-        flash(e.name === "LeafGuruValidationError" ? formatErrors(e) : e.message, true);
+        window.LeafGuru.ui.reportSubmitError(form, e);
       }
     }
 

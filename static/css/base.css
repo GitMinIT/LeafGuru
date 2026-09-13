@@ -109,6 +109,8 @@ ul { padding-left: 1.2rem; }
 .crud-dialog h2 { margin-top: 0; }
 .crud-fields { display: grid; gap: 0.7rem; margin-bottom: 1rem; }
 .crud-fields label { display: grid; gap: 0.25rem; font-size: 0.88rem; color: var(--muted); }
+.crud-error { margin: 0 0 0.6rem; font-size: 0.88rem; }
+.crud-error:not([hidden]) { color: var(--danger); }
 .crud-dialog-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
 
 /* tasks */

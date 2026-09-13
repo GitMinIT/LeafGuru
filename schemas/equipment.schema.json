@@ -40,19 +40,31 @@
       ]
     },
     "specs": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 2000
     },
     "purchaseDate": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date"
     },
     "cost": {
-      "type": "number",
+      "type": [
+        "number",
+        "null"
+      ],
       "minimum": 0
     },
     "currency": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "minLength": 3,
       "maxLength": 3
     },
@@ -65,7 +77,10 @@
       ]
     },
     "notes": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 5000
     },
     "locationAssignments": {

@@ -45,13 +45,15 @@ python manage.py migrate && python manage.py runserver
 docker run --rm -v "$PWD":/w -w /w node:22-alpine node --test tests/*.test.js
 ```
 
-87 tests: schema validator, LocalAdapter (incl. atomic failed import),
-data IO, i18n, plant domain (stage/location transitions, cascade),
-location domain (back-references), task domain, chart (SVG builder),
-grow domain, lifecycle smoke + page-level smoke tests (DOM stub, incl.
-renderList recursion regression). The browser-environment stubs
-(`tests/helpers/browser-stub.js`, `tests/page-smoke.test.js`) mirror the
-IndexedDB/DOM contracts the adapter and pages rely on.
+99 tests: schema validator, LocalAdapter (incl. atomic failed import),
+data IO, i18n, plant domain (stage/location transitions, cascade, stage
+progress), location domain (back-references), task domain, chart (SVG
+builder), grow domain (costs), lifecycle smoke, page-level smoke tests
+(DOM stub, incl. renderList recursion regression) and minimal-create
+regression tests per entity (empty optional fields must be nullable).
+The browser-environment stubs (`tests/helpers/browser-stub.js`,
+`tests/helpers/dom-stub.js`) mirror the IndexedDB/DOM contracts the
+adapter and pages rely on.
 
 ## Repo layout
 

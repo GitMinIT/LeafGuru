@@ -26,29 +26,47 @@
       ]
     },
     "size": {
-      "type": "object",
+      "type": [
+        "object",
+        "null"
+      ],
       "properties": {
         "widthCm": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "depthCm": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "heightCm": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         },
         "areaM2": {
-          "type": "number",
+          "type": [
+            "number",
+            "null"
+          ],
           "minimum": 0
         }
       },
       "additionalProperties": false
     },
     "notes": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 5000
     },
     "active": {

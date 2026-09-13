@@ -51,7 +51,10 @@
       "default": "unknown"
     },
     "germinationDate": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "format": "date"
     },
     "stage": {
@@ -83,7 +86,10 @@
       ]
     },
     "notes": {
-      "type": "string",
+      "type": [
+        "string",
+        "null"
+      ],
       "maxLength": 5000
     },
     "createdAt": {
