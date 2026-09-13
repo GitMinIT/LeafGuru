@@ -84,7 +84,7 @@
     async put(entity, record) {
       if (!ENTITIES_META[entity]) throw new Error(`unknown entity: ${entity}`);
       if (!record.id) {
-        record.id = crypto.randomUUID();
+        record.id = window.LeafGuru.uuid();
         if (!record.createdAt) record.createdAt = new Date().toISOString();
       }
       record.updatedAt = new Date().toISOString();

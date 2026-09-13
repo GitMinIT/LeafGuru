@@ -142,6 +142,7 @@ async function setup({ locale = "en" } = {}) {
   vm.createContext(sandbox);
 
   const load = (rel) => vm.runInContext(fs.readFileSync(path.join(ROOT, rel), "utf8"), sandbox, { filename: rel });
+  load("static/js/model/uuid.js");
   load("static/js/i18n/loader.js");
   load("static/js/model/schema-loader.js");
   load("static/js/model/validator.js");

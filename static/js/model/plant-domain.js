@@ -26,7 +26,7 @@
       const updatedLogs = logs.map((l) =>
         l.id === open?.id && l.leftAt == null ? { ...l, leftAt: now } : l);
       updatedLogs.push({
-        id: crypto.randomUUID(),
+        id: window.LeafGuru.uuid(),
         plantId: plant.id,
         stage: newStage,
         enteredAt: now,
@@ -48,7 +48,7 @@
       const target = toLocationId ?? null;
       if (current === target) return { plant, locationChange: null };
       const locationChange = {
-        id: crypto.randomUUID(),
+        id: window.LeafGuru.uuid(),
         plantId: plant.id,
         fromLocationId: current,
         toLocationId: target,
@@ -64,7 +64,7 @@
     buildMeasurement({ plant, type, value, unit, note = "", at = null }) {
       const now = at ?? new Date().toISOString();
       return {
-        id: crypto.randomUUID(),
+        id: window.LeafGuru.uuid(),
         plantId: plant.id,
         type, value, unit, note,
         measuredAt: now,

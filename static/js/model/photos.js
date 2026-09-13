@@ -45,7 +45,7 @@
       }
       const now = at ?? new Date().toISOString();
       return {
-        id: crypto.randomUUID(),
+        id: window.LeafGuru.uuid(),
         plantId: plant.id,
         blob: file,
         mimeType: file.type,
