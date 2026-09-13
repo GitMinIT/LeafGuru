@@ -4,18 +4,25 @@ Plan and track your grow: locations, equipment, strain templates, plants
 with stage timelines, tasks, measurements and photos — local-first in your
 browser, with JSON import/export and a path to a hosted multi-user version.
 
-**Status:** phase-1 core complete — all entity CRUD, plant lifecycle
-(stage timeline, location moves), measurements, photos, export/import.
+**Status:** phase-1.5 complete — all entity CRUD with cross-entity wiring
+(grows, task links, equipment assignments, location back-references),
+plant lifecycle (edit, cascade delete, stage timeline, location moves),
+measurements with growth chart, photos, export/import.
 See [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
 
-## Features (phase 1)
+## Features
 
-- Locations (indoor/outdoor, size) · Equipment (categories, assignment
-  history) · Strain templates (expected durations/height)
+- Grows group locations (multi-select), plants, equipment and tasks
+- Locations (indoor/outdoor, size) with detail: equipment here, plants
+  here, grows using this location · Equipment (categories, assignment
+  history, cost) · Strain templates (per-stage durations, genotype)
 - Plants: strain picker, stage timeline, location moves with history,
-  measurements (height etc.), photo gallery (IndexedDB blobs)
-- Task planning with due dates — dashboard shows due/overdue work
-- Full JSON export/import (schema-validated, versioned; photos included)
+  measurements (add/edit/remove + SVG growth chart), photo gallery
+  (IndexedDB blobs), edit dialog, delete with cascade
+- Task planning with due dates, plant/location/grow links, stage hints —
+  dashboard shows due/overdue work and stats overview
+- Search on all list pages; full JSON export/import (schema-validated,
+  versioned; photos included)
 - English UI, all strings externalized (`static/js/i18n/en.json`)
 
 ## Development
@@ -35,14 +42,16 @@ python manage.py migrate && python manage.py runserver
 ## Tests
 
 ```bash
-docker run --rm -v "$PWD":/w -w /w node:22-alpine node --test tests/
+docker run --rm -v "$PWD":/w -w /w node:22-alpine node --test tests/*.test.js
 ```
 
-46 tests: schema validator, LocalAdapter (incl. atomic failed import),
-data IO, i18n, plant domain (stage/location transitions), photos
-(serialize round-trip). The browser-environment stub
-(`tests/helpers/browser-stub.js`) mirrors the IndexedDB contract the
-adapter relies on.
+87 tests: schema validator, LocalAdapter (incl. atomic failed import),
+data IO, i18n, plant domain (stage/location transitions, cascade),
+location domain (back-references), task domain, chart (SVG builder),
+grow domain, lifecycle smoke + page-level smoke tests (DOM stub, incl.
+renderList recursion regression). The browser-environment stubs
+(`tests/helpers/browser-stub.js`, `tests/page-smoke.test.js`) mirror the
+IndexedDB/DOM contracts the adapter and pages rely on.
 
 ## Repo layout
 

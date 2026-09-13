@@ -1,8 +1,8 @@
 # LeafGuru — Roadmap
 
-## Phase 1 — MVP (local-first) ✅ (storage core; entity pages partially done)
+## Phase 1 — MVP (local-first) ✅
 - [x] Django shell project (standalone Docker: nginx + gunicorn)
-- [x] Data model JSON schemas (`schemas/`), Ajv validation client-side
+- [x] Data model JSON schemas (`schemas/`), draft-07 subset validator client-side (zero deps)
 - [x] StorageAdapter interface + LocalAdapter (IndexedDB + localStorage)
 - [x] JSON import/export (full state, versioned, schema-validated)
 - [x] Dashboard: plants by stage, due tasks (minimal)
@@ -12,37 +12,43 @@
 - [x] Photos per plant (IndexedDB blobs, gallery view)
 - [x] i18n loader, `en.json` only
 
-## Phase 1.5 — Entity pages: make them actually work (NOW)
-Plants is the model; the other pages are bare scaffolds. Goal: each page
-gets the cross-entity wiring and actions its data model implies.
-
-- [ ] **Tasks**: plant + location selectors in form (schema has plantId/
-      locationId — currently unsettable), stage hint, inline mark
-      done/skipped, overdue highlighting on the list, edit of open tasks
-- [ ] **Equipment**: location-assignment editor (assign/unassign with
+## Phase 1.5 — Entity pages: make them actually work ✅
+- [x] **Tasks**: plant + location + grow selectors, stage hint, inline mark
+      done/skipped/reopen, overdue highlighting, status filter, edit of
+      open tasks
+- [x] **Equipment**: location-assignment editor (assign/unassign with
       from–to history per schema `locationAssignments[]`), cost +
-      currency fields, fix mislabeled cost field
-- [ ] **Strains**: stageDurations as proper per-stage fields (seedling,
-      vegetative, flowering — labeled correctly), used by plant stage
-      countdown later
-- [ ] **Locations**: equipment currently here, plants currently here
-      (cross-entity back-references on detail)
-- [ ] **Data page**: verify export/import round-trip with all entities
-      (photos incl.), show record counts per entity
-- [ ] **Dashboard**: remove scaffold note, fix plants-by-stage section
-      bug, show overdue/due today counts + active locations properly
-- [ ] Lists: sort by column, filter/search box, consistent action buttons
-- [ ] Measurements: add/edit/remove from plant detail (currently read-only
-      list? verify), simple growth chart (SVG, no deps)
-- [ ] End-to-end pass in browser: create location → equipment → strain →
-      plant → move → measure → task → complete task → export/import
+      currency fields
+- [x] **Strains**: stageDurations as proper per-stage fields (seedling,
+      vegetative, flowering — labeled correctly)
+- [x] **Locations**: detail dialog with cross-entity back-references
+      (equipment currently here incl. availableEverywhere, plants here,
+      grows using this location)
+- [x] **Data page**: per-entity record counts, export/import round-trip
+      with all entities (photos incl.)
+- [x] **Dashboard**: stats overview (active grows/locations, growing
+      plants, open/overdue/due-today counts), grows overview,
+      plants-by-stage fixed to growing plants only
+- [x] **Plants**: edit dialog, delete with cascade (stage logs,
+      measurements, location changes, photos — with confirm), search,
+      measurement edit/remove, SVG growth chart (height history)
+- [x] **Grows**: top-level entity grouping locations (locationIds[]),
+      plants, equipment, tasks; detail dialog with linked entities
+- [x] Lists: search box on plants/equipment/tasks/grows/locations,
+      consistent action buttons
+- [x] Measurements: add/edit/remove from plant detail + simple growth
+      chart (SVG, no deps — `static/js/model/chart.js`)
+- [x] Page-level smoke tests (DOM stub): renderList recursion
+      regression, row/action rendering per page
 
 ## Phase 2 — Insights
-- [ ] Growth charts per plant (measurement history)
-- [ ] Stage countdowns / day counters (auto from StageLog)
+- [ ] Stage countdowns / day counters vs. strain template durations
+      (auto from StageLog + stageDurations)
 - [ ] Harvest statistics (yield, duration per stage, costs)
 - [ ] Cost tracking per grow (equipment amortization)
 - [ ] Timeline/calendar visualization
+- [ ] Growth charts: multi-series (all plants of a grow), expected-height
+      overlay from strain template
 
 ## Phase 3 — Sensors
 - [ ] Sensor entity (already a category in Equipment)

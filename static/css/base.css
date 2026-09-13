@@ -140,3 +140,23 @@ ul { padding-left: 1.2rem; }
 .photo-card img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 0.5rem; border: 1px solid var(--line); }
 .photo-card figcaption { font-size: 0.78rem; }
 .photo-card button { font-size: 0.75rem; padding: 0.15rem 0.5rem; justify-self: start; }
+
+/* dashboard stats */
+.stats { list-style: none; padding: 0; display: flex; gap: 1.6rem; flex-wrap: wrap; margin: 0; }
+.stats li { display: grid; gap: 0.1rem; }
+.stats strong { font-size: 1.5rem; line-height: 1.1; }
+.stats .muted { font-size: 0.8rem; }
+
+/* data page record counts */
+.record-counts { columns: 2; column-gap: 2rem; font-size: 0.9rem; margin: 0; padding-left: 1.2rem; }
+@media (max-width: 720px) { .record-counts { columns: 1; } }
+
+/* growth chart */
+[data-growth-chart] { margin: 0.6rem 0 1rem; }
+[data-growth-chart] h4 { margin: 0.8rem 0 0.3rem; font-size: 0.95rem; }
+.chart { width: 100%; max-width: 40rem; height: auto; display: block; background: var(--surface-2); border: 1px solid var(--line); border-radius: 0.5rem; }
+.chart-grid { stroke: var(--line); stroke-width: 1; }
+.chart-line { fill: none; stroke: var(--accent); stroke-width: 2; }
+.chart-dot { fill: var(--accent); }
+.chart-label { fill: var(--muted); font-size: 10px; }
+.chart-empty { fill: var(--muted); font-size: 12px; }

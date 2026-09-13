@@ -40,7 +40,8 @@
     "unknown": "Unknown",
     "date": "Date",
     "today": "Today",
-    "never": "Never"
+    "never": "Never",
+    "noSearchResults": "No matching records."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -48,6 +49,12 @@
     "dueTasks": "Due tasks",
     "overdue": "Overdue",
     "activeLocations": "Active locations",
+    "activeGrows": "Active grows",
+    "growingPlants": "Growing plants",
+    "openTasks": "Open tasks",
+    "overdueTasks": "Overdue tasks",
+    "dueTodayTasks": "Due today",
+    "totalPlants": "Total plants",
     "noData": "Nothing here yet — start by creating a location and your first plant.",
     "noTasks": "No open tasks."
   },
@@ -69,7 +76,11 @@
     "width": "Width (cm)",
     "depth": "Depth (cm)",
     "height": "Height (cm)",
-    "area": "Area (m²)"
+    "area": "Area (m²)",
+    "detail": "Detail",
+    "equipmentHere": "Equipment here",
+    "plantsHere": "Plants here",
+    "growsUsing": "Grows using this location"
   },
   "equipment": {
     "title": "Equipment",
@@ -163,7 +174,10 @@
     "deletePhoto": "Delete photo",
     "photoAdded": "Photo added.",
     "photoTooBig": "File too large (max 10 MB per photo).",
-    "photoUnsupported": "Unsupported file type (JPEG/PNG/WebP only)."
+    "photoUnsupported": "Unsupported file type (JPEG/PNG/WebP only).",
+    "growthChart": "Growth chart",
+    "editMeasurement": "Edit measurement (type|value|unit|note)",
+    "confirmCascade": "This plant has {count} linked records (stage logs, measurements, location changes, photos). Delete them all?"
   },
   "task": {
     "title": "Tasks",
@@ -171,6 +185,7 @@
     "done": "Done",
     "skipped": "Skipped",
     "dueDate": "Due",
+    "due": "Due",
     "priority": {
       "low": "Low",
       "medium": "Medium",
@@ -203,6 +218,7 @@
     "importFailed": "Import failed: {reason}",
     "confirmDelete": "Really delete “{name}”? This cannot be undone.",
     "validationFailed": "Validation failed",
+    "noRecords": "No records yet.",
     "noTasks": "No open tasks.",
     "locationChanged": "Location updated.",
     "stageChanged": "Stage updated."

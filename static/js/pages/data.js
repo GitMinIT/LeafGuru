@@ -20,6 +20,25 @@
     }
     await showUsage();
 
+    // record counts per entity
+    async function showCounts() {
+      const ul = $("[data-record-counts]");
+      ul.replaceChildren();
+      const ENTITY_LABELS = {
+        grows: "nav.grows", locations: "nav.locations", equipment: "nav.equipment",
+        strainTemplates: "nav.strains", plants: "nav.plants", stageLogs: "plant.stageHistory",
+        measurements: "plant.measurements", locationChanges: "plant.locationHistory",
+        tasks: "nav.tasks", photos: "plant.photos"
+      };
+      for (const [entity, key] of Object.entries(ENTITY_LABELS)) {
+        const records = await window.LeafGuru.storage.list(entity);
+        const li = document.createElement("li");
+        li.textContent = `${t(key)}: ${records.length}`;
+        ul.append(li);
+      }
+    }
+    await showCounts();
+
     $("[data-action='export']").addEventListener("click", async () => {
       const status = $("[data-export-status]");
       try {
@@ -45,7 +64,7 @@
       try {
         const result = await window.LeafGuru.dataIO.importFromFile(file);
         status.textContent = result.imported ? t("messages.imported") : t("common.cancel");
-        if (result.imported) await showUsage();
+        if (result.imported) { await showUsage(); await showCounts(); }
       } catch (e) {
         status.textContent = t("messages.importFailed", { reason: e.message });
       }
@@ -57,6 +76,7 @@
       await window.LeafGuru.storage.wipe();
       status.textContent = t("messages.deleted");
       await showUsage();
+      await showCounts();
     });
   });
 })();

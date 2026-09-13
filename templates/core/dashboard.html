@@ -10,21 +10,26 @@
 {% block content %}
 <h1>Dashboard</h1>
 
-<section class="card" data-page-section="plants-by-stage">
-    <h2>Plants by stage</h2>
-    <p class="muted" data-empty>No plants yet — <a href="/plants/">create your first plant</a>.</p>
-    <ul data-stage-list hidden></ul>
-</section>
-
-<section class="card" data-page-section="due-tasks">
-    <h2>Due tasks</h2>
-    <p class="muted" data-empty>No open tasks.</p>
-    <ul data-task-list hidden></ul>
+<section class="card" data-page-section="stats">
+    <ul class="stats" data-stats-list></ul>
 </section>
 
 <section class="card" data-page-section="grows-overview">
     <h2>Grows</h2>
     <p class="muted" data-grow-empty>No grows yet — <a href="/grows/">create a grow</a> to group your setup.</p>
     <ul data-grow-list hidden></ul>
+</section>
+
+<section class="card" data-page-section="plants-by-stage">
+    <h2>Plants by stage</h2>
+    <p class="muted" data-empty>No plants yet — <a href="/plants/">create your first plant</a>.</p>
+    <ul data-stage-list hidden></ul>
+    <p class="muted" data-stage-summary hidden></p>
+</section>
+
+<section class="card" data-page-section="due-tasks">
+    <h2>Due tasks</h2>
+    <p class="muted" data-empty>No open tasks.</p>
+    <ul data-task-list hidden></ul>
 </section>
 {% endblock %}
