@@ -1,0 +1,84 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "task.schema.json",
+  "title": "LeafGuru Task",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "plantId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "locationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "stageHint": {
+      "enum": [
+        null,
+        "germinating",
+        "seedling",
+        "vegetative",
+        "flowering",
+        "harvest",
+        "drying",
+        "cured"
+      ]
+    },
+    "dueDate": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date"
+    },
+    "priority": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "status": {
+      "enum": [
+        "open",
+        "done",
+        "skipped"
+      ]
+    },
+    "completedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

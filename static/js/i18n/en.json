@@ -1,0 +1,165 @@
+{
+  "_meta": {
+    "language": "en",
+    "version": 1
+  },
+  "app": {
+    "name": "LeafGuru",
+    "tagline": "Plan and track your grow."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "locations": "Locations",
+    "equipment": "Equipment",
+    "strains": "Strain Templates",
+    "plants": "Plants",
+    "tasks": "Tasks",
+    "settings": "Settings"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "add": "Add",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "actions": "Actions",
+    "none": "None",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "name": "Name",
+    "notes": "Notes",
+    "search": "Search",
+    "yes": "Yes",
+    "no": "No",
+    "unknown": "Unknown",
+    "date": "Date",
+    "today": "Today",
+    "never": "Never"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "plantsByStage": "Plants by stage",
+    "dueTasks": "Due tasks",
+    "overdue": "Overdue",
+    "activeLocations": "Active locations",
+    "noData": "Nothing here yet — start by creating a location and your first plant."
+  },
+  "stages": {
+    "planned": "Planned",
+    "germinating": "Germinating",
+    "seedling": "Seedling",
+    "vegetative": "Vegetative",
+    "flowering": "Flowering",
+    "harvest": "Harvest",
+    "drying": "Drying",
+    "cured": "Cured"
+  },
+  "location": {
+    "title": "Locations",
+    "indoor": "Indoor",
+    "outdoor": "Outdoor",
+    "size": "Size",
+    "width": "Width (cm)",
+    "depth": "Depth (cm)",
+    "height": "Height (cm)",
+    "area": "Area (m²)"
+  },
+  "equipment": {
+    "title": "Equipment",
+    "categories": {
+      "light": "Light",
+      "pot": "Pot",
+      "soil": "Soil",
+      "fan": "Fan",
+      "filter": "Filter",
+      "nutrient": "Nutrient",
+      "sensor": "Sensor",
+      "other": "Other"
+    },
+    "status": {
+      "in-use": "In use",
+      "stored": "Stored",
+      "broken": "Broken",
+      "sold": "Sold"
+    },
+    "assignments": "Location assignments",
+    "assignedTo": "Assigned to"
+  },
+  "strain": {
+    "title": "Strain Templates",
+    "breeder": "Breeder",
+    "genotype": "Genotype",
+    "genotypes": {
+      "indica": "Indica",
+      "sativa": "Sativa",
+      "hybrid": "Hybrid",
+      "unknown": "Unknown"
+    },
+    "expectedHeight": "Expected height (cm)",
+    "stageDurations": "Expected stage durations (days)",
+    "characteristics": "Characteristics"
+  },
+  "plant": {
+    "title": "Plants",
+    "sex": "Sex",
+    "sexes": {
+      "unknown": "Unknown",
+      "regular": "Regular",
+      "female": "Female",
+      "male": "Male"
+    },
+    "status": {
+      "growing": "Growing",
+      "harvested": "Harvested",
+      "dried": "Dried",
+      "cured": "Cured",
+      "died": "Died"
+    },
+    "germinationDate": "Germination date",
+    "strain": "Strain",
+    "currentLocation": "Current location",
+    "timeline": "Timeline",
+    "stageChangedTo": "Moved to {stage}",
+    "measure": "Add measurement",
+    "moveTo": "Move to location",
+    "photos": "Photos",
+    "addPhoto": "Add photo"
+  },
+  "task": {
+    "title": "Tasks",
+    "open": "Open",
+    "done": "Done",
+    "skipped": "Skipped",
+    "dueDate": "Due",
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "stageHint": "Stage hint",
+    "completed": "Completed"
+  },
+  "data": {
+    "export": "Export data",
+    "import": "Import data",
+    "exportHint": "Download your full state as JSON file.",
+    "importHint": "Restore from a previously exported JSON file. Current data will be replaced.",
+    "confirmImport": "Replace all current data with the imported file?",
+    "storageUsage": "Storage used",
+    "dangerZone": "Danger zone",
+    "wipeAll": "Delete ALL local data"
+  },
+  "messages": {
+    "saved": "Saved.",
+    "deleted": "Deleted.",
+    "imported": "Data imported.",
+    "exported": "Export downloaded.",
+    "importFailed": "Import failed: {reason}",
+    "confirmDelete": "Really delete “{name}”? This cannot be undone."
+  }
+}

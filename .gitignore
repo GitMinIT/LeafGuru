@@ -219,3 +219,8 @@ __marimo__/
 
 # Secrets (tokens, credentials) — never commit
 secrets/
+
+# Django
+db.sqlite3
+staticfiles/
+*.log

@@ -1,0 +1,20 @@
+{% extends "core/base.html" %}
+
+{% block title %}Dashboard — LeafGuru{% endblock %}
+
+{% block content %}
+<h1>Dashboard</h1>
+<p class="muted">Scaffold — entities, dashboard logic and views land next.</p>
+
+<section class="card" data-page-section="plants-by-stage">
+    <h2>Plants by stage</h2>
+    <p class="muted" data-empty>No data yet — create your first plant.</p>
+    <ul data-stage-list hidden></ul>
+</section>
+
+<section class="card" data-page-section="due-tasks">
+    <h2>Due tasks</h2>
+    <p class="muted" data-empty>No open tasks.</p>
+    <ul data-task-list hidden></ul>
+</section>
+{% endblock %}

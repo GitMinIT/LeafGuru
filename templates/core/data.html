@@ -1,0 +1,34 @@
+{% extends "core/base.html" %}
+
+{% block title %}Data — LeafGuru{% endblock %}
+
+{% block content %}
+<h1>Data</h1>
+
+<section class="card">
+    <h2>Export</h2>
+    <p class="muted">Download your full state as a JSON file (all entities, incl. photos as base64).</p>
+    <button type="button" data-action="export">Export data</button>
+    <p data-export-status class="muted" aria-live="polite"></p>
+</section>
+
+<section class="card">
+    <h2>Import</h2>
+    <p class="muted">Restore from a previously exported JSON file. <strong>Current data will be replaced.</strong></p>
+    <input type="file" accept="application/json,.json" data-import-input hidden>
+    <button type="button" data-action="import">Import data</button>
+    <p data-import-status class="muted" aria-live="polite"></p>
+</section>
+
+<section class="card">
+    <h2>Storage</h2>
+    <p class="muted">Browser usage: <span data-storage-usage>…</span></p>
+</section>
+
+<section class="card card--danger">
+    <h2>Danger zone</h2>
+    <p class="muted">Delete <strong>all</strong> local LeafGuru data in this browser (IndexedDB).</p>
+    <button type="button" data-action="wipe">Delete all data</button>
+    <p data-wipe-status class="muted" aria-live="polite"></p>
+</section>
+{% endblock %}
