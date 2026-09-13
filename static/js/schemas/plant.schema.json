@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "plant.schema.json",
+  "title": "LeafGuru Plant",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "stage",
+    "status"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "strainTemplateId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "customStrain": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 120
+    },
+    "sex": {
+      "enum": [
+        "unknown",
+        "regular",
+        "female",
+        "male"
+      ],
+      "default": "unknown"
+    },
+    "germinationDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "stage": {
+      "enum": [
+        "planned",
+        "germinating",
+        "seedling",
+        "vegetative",
+        "flowering",
+        "harvest",
+        "drying",
+        "cured"
+      ]
+    },
+    "locationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "status": {
+      "enum": [
+        "growing",
+        "harvested",
+        "dried",
+        "cured",
+        "died"
+      ]
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

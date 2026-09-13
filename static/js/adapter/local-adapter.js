@@ -88,6 +88,8 @@
         if (!record.createdAt) record.createdAt = new Date().toISOString();
       }
       record.updatedAt = new Date().toISOString();
+      const check = window.LeafGuru.validator.validate(record, window.LeafGuru.schemas[ENTITIES_META[entity]]);
+      if (!check.valid) throw new window.LeafGuru.LeafGuruValidationError(check.errors);
       await this._tx(entity, "readwrite", (s) => s.put(record));
       return record;
     }
@@ -105,7 +107,8 @@
     }
 
     async importBundle(bundle) {
-      // validation happens in model/validator.js before this is called
+      const check = window.LeafGuru.validator.validateBundle(bundle, window.LeafGuru.schemas);
+      if (!check.valid) throw new window.LeafGuru.LeafGuruValidationError(check.errors);
       await this.wipe();
       const db = await this._open();
       for (const name of ENTITIES) {
@@ -141,6 +144,13 @@
   }
 
   window.LeafGuru.LocalAdapter = LocalAdapter;
+  window.LeafGuru.LeafGuruValidationError = class LeafGuruValidationError extends Error {
+    constructor(errors) {
+      super(`validation failed (${errors.length} error${errors.length === 1 ? "" : "s"})`);
+      this.name = "LeafGuruValidationError";
+      this.errors = errors;
+    }
+  };
   window.LeafGuru.ENTITIES = ENTITIES;
   window.LeafGuru.ENTITIES_META = ENTITIES_META;
 })();

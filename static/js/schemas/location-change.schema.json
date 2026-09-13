@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "location-change.schema.json",
+  "title": "LeafGuru LocationChange",
+  "type": "object",
+  "required": [
+    "id",
+    "plantId",
+    "changedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "plantId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "fromLocationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "toLocationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid"
+    },
+    "changedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reason": {
+      "type": "string",
+      "maxLength": 500
+    }
+  }
+}

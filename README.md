@@ -28,7 +28,9 @@ core/           Django app (shell, views, export/import stubs)
 schemas/        JSON schemas — single source of truth for the data model
 static/js/
   adapter/      StorageAdapter interface + LocalAdapter (IndexedDB)
+  model/        validator (draft-07 subset, zero deps)
   i18n/         loader + en.json (all UI strings)
+  schemas/      copies of schemas/*.schema.json (served to the browser)
 templates/      Django templates
 secrets/        git-ignored (github.token, later app secrets)
 ```

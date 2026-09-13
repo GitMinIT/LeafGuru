@@ -47,7 +47,8 @@
     "dueTasks": "Due tasks",
     "overdue": "Overdue",
     "activeLocations": "Active locations",
-    "noData": "Nothing here yet — start by creating a location and your first plant."
+    "noData": "Nothing here yet — start by creating a location and your first plant.",
+    "noTasks": "No open tasks."
   },
   "stages": {
     "planned": "Planned",
@@ -160,6 +161,13 @@
     "imported": "Data imported.",
     "exported": "Export downloaded.",
     "importFailed": "Import failed: {reason}",
-    "confirmDelete": "Really delete “{name}”? This cannot be undone."
+    "confirmDelete": "Really delete “{name}”? This cannot be undone.",
+    "validationFailed": "Validation failed",
+    "noTasks": "No open tasks."
+  },
+  "crud": {
+    "create": "Create",
+    "cancel": "Cancel",
+    "validationFailed": "Validation failed"
   }
 }

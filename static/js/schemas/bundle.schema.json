@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "bundle.schema.json",
+  "title": "LeafGuru state bundle",
+  "type": "object",
+  "required": [
+    "meta",
+    "locations",
+    "equipment",
+    "strainTemplates",
+    "plants"
+  ],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "exportedAt",
+        "app"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "exportedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "app": {
+          "const": "LeafGuru"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "locations": {
+      "type": "array",
+      "items": {
+        "$ref": "location.schema.json"
+      }
+    },
+    "equipment": {
+      "type": "array",
+      "items": {
+        "$ref": "equipment.schema.json"
+      }
+    },
+    "strainTemplates": {
+      "type": "array",
+      "items": {
+        "$ref": "strain-template.schema.json"
+      }
+    },
+    "plants": {
+      "type": "array",
+      "items": {
+        "$ref": "plant.schema.json"
+      }
+    },
+    "stageLogs": {
+      "type": "array",
+      "items": {
+        "$ref": "stage-log.schema.json"
+      }
+    },
+    "measurements": {
+      "type": "array",
+      "items": {
+        "$ref": "measurement.schema.json"
+      }
+    },
+    "locationChanges": {
+      "type": "array",
+      "items": {
+        "$ref": "location-change.schema.json"
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": {
+        "$ref": "task.schema.json"
+      }
+    },
+    "photos": {
+      "type": "array",
+      "items": {
+        "$ref": "photo.schema.json"
+      }
+    }
+  }
+}

@@ -4,5 +4,24 @@
 
 {% block content %}
 <h1>Locations</h1>
-<p class="muted">Scaffold — CRUD views land next.</p>
+<div class="crud-toolbar">
+    <button type="button" data-crud-new>Create</button>
+    <p class="muted" data-crud-flash hidden aria-live="polite"></p>
+</div>
+<p class="muted" data-crud-empty>No records yet.</p>
+<ul class="crud-list" data-crud-list hidden></ul>
+<dialog data-crud-dialog class="crud-dialog">
+    <form method="dialog">
+        <h2 data-crud-form-title></h2>
+        <div class="crud-fields"></div>
+        <div class="crud-dialog-actions">
+            <button type="button" data-crud-cancel>Cancel</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/model/crud.js"></script>
+<script src="/static/js/pages/locations.js"></script>
 {% endblock %}
