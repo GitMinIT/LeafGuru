@@ -101,7 +101,10 @@
       form.dataset.editingId = record?.id ?? "";
       dialog.querySelector("[data-crud-form-title]").textContent =
         record ? `${t("common.edit")}: ${record.name ?? record.title ?? record.id.slice(0, 8)}` : `${t("common.create")} ${t(this.cfg.entityTitleKey)}`;
-      for (const field of this.cfg.fields) this._fillField(form, field, record);
+      for (const field of this.cfg.fields) {
+        if (field.dynamic) { this._fillDynamic(field, record); continue; }
+        this._fillField(form, field, record);
+      }
       dialog.showModal();
     }
 
@@ -113,12 +116,29 @@
       else input.value = value ?? field.default ?? "";
     }
 
+    /**
+     * fields may declare `dynamic: "growId"` — the page fills that <select>
+     * itself (options depend on other entities); submit() passes its value
+     * through as string|null and openForm pre-selects the record's value.
+     */
+    _fillDynamic(field, record) {
+      const sel = document.querySelector(`[data-dynamic="${field.dynamic}"]`);
+      if (!sel) return;
+      const value = record ? this._cellValue(record, field.path) : null;
+      sel.value = value ?? "";
+    }
+
     async submit(event) {
       event.preventDefault();
       const form = event.target;
       const editingId = form.dataset.editingId || null;
       const record = editingId ? await this.storage.get(this.cfg.entity, editingId) : {};
       for (const field of this.cfg.fields) {
+        if (field.dynamic) {
+          const sel = document.querySelector(`[data-dynamic="${field.dynamic}"]`);
+          record[field.path] = sel && sel.value !== "" ? sel.value : null;
+          continue;
+        }
         const input = form.elements[field.path.replace(/\./g, "__")];
         if (!input) continue;
         let value;
@@ -171,6 +191,7 @@
       const dialog = document.querySelector("[data-crud-dialog]");
       const form = dialog.querySelector("form");
       for (const field of this.cfg.fields) {
+        if (field.dynamic) continue; // page supplies its own [data-dynamic] select
         const label = document.createElement("label");
         label.textContent = t(field.label);
         const input = document.createElement("input");

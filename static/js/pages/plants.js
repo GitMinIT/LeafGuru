@@ -21,9 +21,10 @@
     const urlPool = [];
 
     async function refresh() {
-      const [plants, locations, strainTemplates, stageLogs] = await Promise.all([
+      const [plants, locations, strainTemplates, stageLogs, grows] = await Promise.all([
         storage.list("plants"), storage.list("locations"),
-        storage.list("strainTemplates"), storage.list("stageLogs")
+        storage.list("strainTemplates"), storage.list("stageLogs"),
+        storage.list("grows")
       ]);
 
       // --- list ---
@@ -33,6 +34,7 @@
       emptyEl.hidden = plants.length > 0;
       listEl.hidden = plants.length === 0;
       const locName = (id) => locations.find((l) => l.id === id)?.name ?? t("plant.noLocation");
+      const growName = (id) => grows.find((g) => g.id === id)?.name ?? "–";
       for (const plant of plants.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""))) {
         const row = document.createElement("li");
         row.className = "crud-row";
@@ -45,6 +47,9 @@
         const loc = document.createElement("span");
         loc.className = "crud-cell";
         loc.textContent = locName(plant.locationId);
+        const grow = document.createElement("span");
+        grow.className = "crud-cell";
+        grow.textContent = plant.growId ? growName(plant.growId) : "–";
         const status = document.createElement("span");
         status.className = "crud-cell";
         status.textContent = t("plant.status." + plant.status);
@@ -55,9 +60,17 @@
         detailBtn.textContent = t("plant.detail");
         detailBtn.addEventListener("click", () => openDetail(plant.id));
         actions.append(detailBtn);
-        row.append(name, stage, loc, status, actions);
+        row.append(name, stage, loc, grow, status, actions);
         listEl.append(row);
       }
+
+      // grow select options (create form)
+      const growSel = $("#plant-grow");
+      const growCur = growSel.value;
+      growSel.replaceChildren(new Option(t("common.none"), ""));
+      for (const g of grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
+        growSel.append(new Option(g.name, g.id));
+      growSel.value = growCur;
 
       // --- create form: strain template select options ---
       const tplSelect = $("#plant-template");
@@ -97,6 +110,7 @@
         germinationDate: f.elements["germinationDate"].value || null,
         stage,
         locationId: f.elements["locationId"].value || null,
+        growId: f.elements["growId"].value || null,
         status: "growing"
       };
       try {

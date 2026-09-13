@@ -1,7 +1,7 @@
 /**
  * LeafGuru — Locations page controller.
  * Schema-driven CRUD; list columns and form fields mirror
- * schemas/location.schema.json.
+ * schemas/location.schema.json. Grow link via CrudPage dynamic field.
  */
 (function () {
   "use strict";
@@ -12,6 +12,7 @@
     window.LeafGuru.storage = new window.LeafGuru.LocalAdapter();
 
     const t = (k) => window.LeafGuru.i18n.t(k);
+    let grows = [];
 
     const page = new window.LeafGuru.CrudPage({
       entity: "locations",
@@ -27,6 +28,7 @@
             if (v.areaM2) parts.push(`${v.areaM2} m²`);
             return parts.join(" · ") || "–";
           } },
+        { path: "growId", format: (v) => (v ? grows.find((g) => g.id === v)?.name ?? "–" : "–") },
         { path: "active", format: (v) => (v ? t("common.active") : t("common.inactive")) },
         { path: "notes" }
       ],
@@ -37,10 +39,18 @@
         { path: "size.depthCm", label: "location.depth", type: "number" },
         { path: "size.heightCm", label: "location.height", type: "number" },
         { path: "size.areaM2", label: "location.area", type: "number" },
+        { path: "growId", label: "nav.grows", type: "string", dynamic: "growId" },
         { path: "notes", label: "common.notes", type: "string" },
         { path: "active", label: "common.active", type: "boolean", default: true }
       ]
     });
+
+    // patch: track grows for the list column + dynamic select
+    const origRefresh = page.refresh.bind(page);
+    page.refresh = async function () {
+      grows = await window.LeafGuru.storage.list("grows");
+      await origRefresh();
+    };
 
     // type field is an enum — replace the auto text input with a select
     const dialog = document.querySelector("[data-crud-dialog]");
@@ -59,6 +69,24 @@
     // CrudPage._fillField/submit use form.elements — select is there too;
     // but openForm default for type must be "indoor"
     form.elements.type.closest("label").querySelector("select").value = "indoor";
+
+    // grow selector (dynamic field): label + select live in the dialog,
+    // options refreshed on every openForm
+    const growLabel = document.createElement("label");
+    growLabel.textContent = t("nav.grows");
+    const growSelect = document.createElement("select");
+    growSelect.dataset.dynamic = "growId";
+    growLabel.append(growSelect);
+    form.querySelector(".crud-fields").append(growLabel);
+    const origOpenForm = page.openForm.bind(page);
+    page.openForm = async (record = null) => {
+      grows = await window.LeafGuru.storage.list("grows");
+      origOpenForm(record);
+      growSelect.replaceChildren(new Option(t("common.none"), ""));
+      for (const g of grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
+        growSelect.append(new Option(g.name, g.id));
+      growSelect.value = record?.growId ?? "";
+    };
 
     await page.mount();
   });

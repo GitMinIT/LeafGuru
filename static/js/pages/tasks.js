@@ -39,10 +39,11 @@
     const nameOf = (list, id) => list.find((x) => x.id === id)?.name ?? null;
 
     async function refresh() {
-      const [tasks, plants, locations] = await Promise.all([
-        storage.list("tasks"), storage.list("plants"), storage.list("locations")
+      const [tasks, plants, locations, grows] = await Promise.all([
+        storage.list("tasks"), storage.list("plants"), storage.list("locations"),
+        storage.list("grows")
       ]);
-      cache = { tasks, plants, locations };
+      cache = { tasks, plants, locations, grows };
       renderList();
       fillSelectors();
     }
@@ -50,14 +51,18 @@
     function fillSelectors() {
       const plantSel = $("#task-plant");
       const locSel = $("#task-location");
-      const plantCur = plantSel.value, locCur = locSel.value;
+      const growSel = $("#task-grow");
+      const plantCur = plantSel.value, locCur = locSel.value, growCur = growSel.value;
       plantSel.replaceChildren(new Option(t("common.none"), ""));
       for (const p of cache.plants.slice().sort((a, b) => a.name.localeCompare(b.name)))
         plantSel.append(new Option(p.name, p.id));
       locSel.replaceChildren(new Option(t("common.none"), ""));
       for (const l of cache.locations.filter((l) => l.active).sort((a, b) => a.name.localeCompare(b.name)))
         locSel.append(new Option(l.name, l.id));
-      plantSel.value = plantCur; locSel.value = locCur;
+      growSel.replaceChildren(new Option(t("common.none"), ""));
+      for (const g of cache.grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
+        growSel.append(new Option(g.name, g.id));
+      plantSel.value = plantCur; locSel.value = locCur; growSel.value = growCur;
     }
 
     function renderList() {
@@ -110,7 +115,8 @@
         link.className = "crud-cell";
         const plantName = nameOf(cache.plants, task.plantId);
         const locName = nameOf(cache.locations, task.locationId);
-        link.textContent = [plantName, locName].filter(Boolean).join(" · ") || "–";
+        const growName = nameOf(cache.grows, task.growId);
+        link.textContent = [plantName, locName, growName].filter(Boolean).join(" · ") || "–";
 
         const prio = document.createElement("span");
         prio.className = "crud-cell";
@@ -179,6 +185,7 @@
       }
       $("#task-plant").value = record?.plantId ?? "";
       $("#task-location").value = record?.locationId ?? "";
+      $("#task-grow").value = record?.growId ?? "";
       $("#task-stage-hint").value = record?.stageHint ?? "";
       form.elements["title"].value = record?.title ?? "";
       form.elements["description"].value = record?.description ?? "";
@@ -198,6 +205,7 @@
       record.priority = $("#task-priority").value;
       record.plantId = $("#task-plant").value || null;
       record.locationId = $("#task-location").value || null;
+      record.growId = $("#task-grow").value || null;
       record.stageHint = $("#task-stage-hint").value || null;
       if (!editingId) record.status = "open";
       try {

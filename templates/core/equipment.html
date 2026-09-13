@@ -6,22 +6,59 @@
 <h1>Equipment</h1>
 <div class="crud-toolbar">
     <button type="button" data-crud-new>Create</button>
+    <label class="task-filter">
+        <span class="muted">Assign</span>
+        <select id="equip-assign-location"></select>
+    </label>
+    <button type="button" data-assign-action>Assign</button>
+    <span class="muted">to</span>
+    <select id="equip-assign-equipment" data-assign-equipment></select>
     <p class="muted" data-crud-flash hidden aria-live="polite"></p>
 </div>
-<p class="muted" data-crud-empty>No records yet.</p>
+<p class="muted" data-crud-empty>No equipment yet.</p>
 <ul class="crud-list" data-crud-list hidden></ul>
+
 <dialog data-crud-dialog class="crud-dialog">
-    <form method="dialog">
+    <form>
         <h2 data-crud-form-title></h2>
-        <div class="crud-fields"></div>
+        <div class="crud-fields">
+            <label>Name <input name="name" required maxlength="120"></label>
+            <label>Category
+                <select id="equip-category">
+                    <option value="light">Light</option>
+                    <option value="pot">Pot</option>
+                    <option value="soil">Soil</option>
+                    <option value="fan">Fan</option>
+                    <option value="filter">Filter</option>
+                    <option value="nutrient">Nutrient</option>
+                    <option value="sensor">Sensor</option>
+                    <option value="other">Other</option>
+                </select>
+            </label>
+            <label>Status
+                <select id="equip-status">
+                    <option value="in-use">In use</option>
+                    <option value="stored">Stored</option>
+                    <option value="broken">Broken</option>
+                    <option value="sold">Sold</option>
+                </select>
+            </label>
+            <label>Specs <input name="specs" maxlength="500"></label>
+            <label>Purchase date <input type="date" name="purchaseDate"></label>
+            <label>Cost <input type="number" name="cost" min="0" step="0.01"></label>
+            <label>Currency <input id="equip-currency" maxlength="8" placeholder="EUR"></label>
+            <label>Grow <select id="equip-grow"></select></label>
+            <label>Available everywhere <input type="checkbox" id="equip-everywhere"></label>
+            <label>Notes <textarea name="notes" maxlength="5000" rows="2"></textarea></label>
+        </div>
         <div class="crud-dialog-actions">
             <button type="button" data-crud-cancel>Cancel</button>
+            <button type="submit">Save</button>
         </div>
     </form>
 </dialog>
 {% endblock %}
 
 {% block extra_scripts %}
-<script src="/static/js/model/crud.js"></script>
 <script src="/static/js/pages/equipment.js"></script>
 {% endblock %}

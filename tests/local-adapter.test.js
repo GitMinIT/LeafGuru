@@ -88,7 +88,7 @@ test("importBundle replaces previous data (not merges)", async () => {
   const bundle = {
     meta: { app: "LeafGuru", schemaVersion: 1, exportedAt: new Date().toISOString() },
     locations: [{ id: UUID, name: "New", type: "outdoor", active: true }],
-    equipment: [], strainTemplates: [], plants: []
+    grows: [], equipment: [], strainTemplates: [], plants: []
   };
   await a.importBundle(bundle);
   const locs = await a.list("locations");
@@ -139,7 +139,7 @@ test("importBundle accepts bundles with appVersion", async () => {
   const storage = new window.LeafGuru.LocalAdapter();
   const bundle = {
     meta: { app: "LeafGuru", appVersion: "0.9.9", schemaVersion: 1, exportedAt: "2026-09-13T12:00:00Z" },
-    locations: [], equipment: [], strainTemplates: [], plants: []
+    grows: [], locations: [], grows: [], equipment: [], strainTemplates: [], plants: []
   };
   await storage.importBundle(bundle); // must not throw
 });

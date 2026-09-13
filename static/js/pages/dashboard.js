@@ -1,5 +1,5 @@
 /**
- * LeafGuru — Dashboard: plants by stage + due tasks, read from the adapter.
+ * LeafGuru — Dashboard: grows overview, plants by stage, due tasks.
  */
 (function () {
   "use strict";
@@ -10,17 +10,34 @@
     window.LeafGuru.storage = new window.LeafGuru.LocalAdapter();
 
     const t = (k, p) => window.LeafGuru.i18n.t(k, p);
-    const stageList = document.querySelector("[data-stage-list]");
-    const taskList = document.querySelector("[data-task-list]");
+    const td = window.LeafGuru.taskDomain;
     const STAGE_ORDER = ["planned", "germinating", "seedling", "vegetative", "flowering", "harvest", "drying", "cured"];
 
-    const [plants, tasks, locations] = await Promise.all([
+    const [grows, plants, tasks, locations] = await Promise.all([
+      window.LeafGuru.storage.list("grows"),
       window.LeafGuru.storage.list("plants"),
       window.LeafGuru.storage.list("tasks"),
       window.LeafGuru.storage.list("locations")
     ]);
 
-    // plants by stage
+    // --- grows overview ---
+    const growEl = document.querySelector("[data-page-section='grows-overview']");
+    const activeGrows = grows.filter((g) => g.status === "active" || g.status === "planned");
+    growEl.querySelector("[data-grow-empty]").hidden = grows.length > 0;
+    const ulGrow = growEl.querySelector("[data-grow-list]");
+    ulGrow.hidden = grows.length === 0;
+    for (const grow of activeGrows) {
+      const li = document.createElement("li");
+      const nPlants = plants.filter((p) => p.growId === grow.id && p.status === "growing").length;
+      const nLocs = locations.filter((l) => l.growId === grow.id).length;
+      const nTasks = tasks.filter((k) => k.growId === grow.id && td.isOverdue(k)).length;
+      li.textContent = `${grow.name} (${t("grow.status." + grow.status)}) — ` +
+        `${nPlants} ${t("nav.plants")} · ${nLocs} ${t("nav.locations")}` +
+        (nTasks ? ` · ${nTasks} ⚠` : "");
+      ulGrow.append(li);
+    }
+
+    // --- plants by stage ---
     const byStage = {};
     for (const plant of plants.filter((p) => p.status === "growing" || p.stage === "planned")) {
       (byStage[plant.stage] ??= []).push(plant);
@@ -35,31 +52,24 @@
         ` (${byStage[stage].map((p) => p.name).join(", ")})`;
       ulStage.append(li);
     }
+    const summary = document.createElement("p");
+    summary.className = "muted";
+    summary.textContent = `${t("dashboard.activeLocations")}: ${locations.filter((l) => l.active).length}`;
+    stageEl.append(summary);
 
-    // due tasks (open, sorted by dueDate, overdue flagged)
-    const today = new Date().toISOString().slice(0, 10);
-    const due = tasks.filter((task) => task.status === "open" && task.dueDate)
-      .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+    // --- due tasks (overdue first, via task domain) ---
+    const due = td.dueList(tasks);
     const taskEl = document.querySelector("[data-page-section='due-tasks']");
     taskEl.querySelector("[data-empty]").hidden = due.length > 0;
-    taskEl.querySelector("[data-empty]").textContent = t("messages.noTasks");
     const ulTasks = taskEl.querySelector("[data-task-list]");
     ulTasks.hidden = due.length === 0;
-    for (const task of due) {
+    for (const task of due.slice(0, 10)) {
       const li = document.createElement("li");
-      const overdue = task.dueDate < today;
-      li.textContent = `${task.title} — ${t("task.due")}: ${task.dueDate}${overdue ? " ⚠ " + t("dashboard.overdue") : ""}`;
+      const overdue = td.isOverdue(task);
+      li.textContent = `${task.title} — ${t("task.due")}: ${task.dueDate ?? "–"}` +
+        (overdue ? " ⚠ " + t("dashboard.overdue") : "");
       if (overdue) li.style.color = "var(--danger)";
       ulTasks.append(li);
     }
-    if (!due.length) taskEl.querySelector("[data-empty]").textContent = t("dashboard.noTasks");
-
-    // active locations
-    const locEl = document.querySelector("[data-page-section='plants-by-stage']");
-    const count = locations.filter((l) => l.active).length;
-    const summary = document.createElement("p");
-    summary.className = "muted";
-    summary.textContent = `${t("dashboard.activeLocations")}: ${count}`;
-    locEl.append(summary);
   });
 })();

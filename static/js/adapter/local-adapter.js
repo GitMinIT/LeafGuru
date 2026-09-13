@@ -9,13 +9,14 @@
   "use strict";
 
   const DB_NAME = "leafguru";
-  const DB_VERSION = 1;
+  const DB_VERSION = 2;
   const ENTITIES = [
-    "locations", "equipment", "strainTemplates", "plants",
+    "grows", "locations", "equipment", "strainTemplates", "plants",
     "stageLogs", "measurements", "locationChanges", "tasks", "photos"
   ];
 
   const ENTITIES_META = {
+    grows: "grow.schema.json",
     locations: "location.schema.json",
     equipment: "equipment.schema.json",
     strainTemplates: "strain-template.schema.json",

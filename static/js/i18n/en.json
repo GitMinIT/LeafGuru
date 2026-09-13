@@ -14,7 +14,8 @@
     "strains": "Strain Templates",
     "plants": "Plants",
     "tasks": "Tasks",
-    "settings": "Settings"
+    "settings": "Settings",
+    "grows": "Grows"
   },
   "common": {
     "save": "Save",
@@ -91,7 +92,12 @@
     "assignments": "Location assignments",
     "assignedTo": "Assigned to",
     "cost": "Cost",
-    "purchaseDate": "Purchase date"
+    "purchaseDate": "Purchase date",
+    "availableEverywhere": "Available everywhere",
+    "createTitle": "Create equipment",
+    "assign": "Assign",
+    "unassign": "Unassign",
+    "noLocationPicked": "Pick a location first."
   },
   "strain": {
     "title": "Strain Templates",
@@ -205,5 +211,17 @@
     "create": "Create",
     "cancel": "Cancel",
     "validationFailed": "Validation failed"
+  },
+  "grow": {
+    "title": "Grows",
+    "createTitle": "Create grow",
+    "detail": "Detail",
+    "day": "Day",
+    "status": {
+      "planned": "Planned",
+      "active": "Active",
+      "harvested": "Harvested",
+      "closed": "Closed"
+    }
   }
 }

@@ -3,12 +3,12 @@
 {% block title %}Dashboard — LeafGuru{% endblock %}
 
 {% block extra_scripts %}
+<script src="/static/js/model/task-domain.js"></script>
 <script src="/static/js/pages/dashboard.js"></script>
 {% endblock %}
 
 {% block content %}
 <h1>Dashboard</h1>
-<p class="muted">Scaffold — entities, dashboard logic and views land next.</p>
 
 <section class="card" data-page-section="plants-by-stage">
     <h2>Plants by stage</h2>
@@ -20,5 +20,11 @@
     <h2>Due tasks</h2>
     <p class="muted" data-empty>No open tasks.</p>
     <ul data-task-list hidden></ul>
+</section>
+
+<section class="card" data-page-section="grows-overview">
+    <h2>Grows</h2>
+    <p class="muted" data-grow-empty>No grows yet — <a href="/grows/">create a grow</a> to group your setup.</p>
+    <ul data-grow-list hidden></ul>
 </section>
 {% endblock %}

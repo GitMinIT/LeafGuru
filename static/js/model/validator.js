@@ -105,7 +105,7 @@
     validateBundle(bundle, entitySchemas) {
       const errors = [];
       if (!bundle || typeof bundle !== "object") return { valid: false, errors: [{ path: "$", message: "bundle must be an object" }] };
-      const requiredTop = ["meta", "locations", "equipment", "strainTemplates", "plants"];
+      const requiredTop = ["meta", "grows", "locations", "equipment", "strainTemplates", "plants"];
       for (const key of requiredTop) {
         if (bundle[key] === undefined) errors.push({ path: `$.${key}`, message: "required" });
       }
@@ -115,6 +115,7 @@
         errors.push({ path: "$.meta.appVersion", message: "must be a string" });
       if (meta.schemaVersion !== 1) errors.push({ path: "$.meta.schemaVersion", message: "unsupported schemaVersion (want 1)" });
       const ENTITY_FILES = {
+        grows: "grow.schema.json",
         locations: "location.schema.json",
         equipment: "equipment.schema.json",
         strainTemplates: "strain-template.schema.json",

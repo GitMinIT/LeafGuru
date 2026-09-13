@@ -86,14 +86,14 @@ test("validateBundle: complete empty bundle passes", async () => {
   const { window } = await setup();
   const res = window.LeafGuru.validator.validateBundle({
     meta: { app: "LeafGuru", schemaVersion: 1, exportedAt: "2026-09-13T12:00:00Z" },
-    locations: [], equipment: [], strainTemplates: [], plants: []
+    grows: [], locations: [], grows: [], equipment: [], strainTemplates: [], plants: []
   }, window.LeafGuru.schemas);
   assert.equal(res.valid, true, JSON.stringify(res.errors));
 });
 
 test("validateBundle: wrong app or version rejected", async () => {
   const { window } = await setup();
-  const base = { locations: [], equipment: [], strainTemplates: [], plants: [] };
+  const base = { grows: [], locations: [], grows: [], equipment: [], strainTemplates: [], plants: [] };
   for (const meta of [{ app: "Other", schemaVersion: 1 }, { app: "LeafGuru", schemaVersion: 99 }]) {
     const res = window.LeafGuru.validator.validateBundle({ meta, ...base }, window.LeafGuru.schemas);
     assert.equal(res.valid, false, JSON.stringify(meta));
@@ -104,7 +104,7 @@ test("validateBundle: entity mapped by name, record validated", async () => {
   const { window } = await setup();
   const bundle = {
     meta: { app: "LeafGuru", schemaVersion: 1, exportedAt: "2026-09-13T12:00:00Z" },
-    locations: [], equipment: [], strainTemplates: [],
+    grows: [], locations: [], equipment: [], strainTemplates: [],
     plants: [{ id: "9a1d6b34-1c2d-4e5f-9a8b-3c2b1a0f9e8d", name: "p", stage: "dancing", status: "growing" }]
   };
   const res = window.LeafGuru.validator.validateBundle(bundle, window.LeafGuru.schemas);

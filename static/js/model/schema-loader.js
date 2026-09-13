@@ -7,7 +7,7 @@
   "use strict";
 
   const FILES = [
-    "location.schema.json", "equipment.schema.json", "strain-template.schema.json",
+    "grow.schema.json", "location.schema.json", "equipment.schema.json", "strain-template.schema.json",
     "plant.schema.json", "stage-log.schema.json", "measurement.schema.json",
     "location-change.schema.json", "task.schema.json", "photo.schema.json",
     "bundle.schema.json"

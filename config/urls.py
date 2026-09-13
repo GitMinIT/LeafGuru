@@ -10,6 +10,7 @@ from core import views
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", views.dashboard, name="dashboard"),
+    path("grows/", views.grows, name="grows"),
     path("plants/", views.plants, name="plants"),
     path("locations/", views.locations, name="locations"),
     path("equipment/", views.equipment, name="equipment"),

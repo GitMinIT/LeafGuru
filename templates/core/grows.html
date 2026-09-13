@@ -1,0 +1,59 @@
+{% extends "core/base.html" %}
+
+{% block title %}Grows — LeafGuru{% endblock %}
+
+{% block content %}
+<h1>Grows</h1>
+<div class="crud-toolbar">
+    <button type="button" data-crud-new>Create</button>
+    <p class="muted" data-crud-flash hidden aria-live="polite"></p>
+</div>
+<p class="muted" data-crud-empty>No grows yet — create your first grow to group locations, plants, equipment and tasks.</p>
+<ul class="crud-list" data-crud-list hidden></ul>
+
+<dialog data-crud-dialog class="crud-dialog">
+    <form>
+        <h2 data-crud-form-title></h2>
+        <div class="crud-fields">
+            <label>Name <input name="name" required maxlength="120"></label>
+            <label>Status
+                <select id="grow-status">
+                    <option value="planned">Planned</option>
+                    <option value="active">Active</option>
+                    <option value="harvested">Harvested</option>
+                    <option value="closed">Closed</option>
+                </select>
+            </label>
+            <label>Start date <input type="date" id="grow-start"></label>
+            <label>End date <input type="date" id="grow-end"></label>
+            <label>Notes <textarea id="grow-notes" maxlength="5000" rows="3"></textarea></label>
+        </div>
+        <div class="crud-dialog-actions">
+            <button type="button" data-crud-cancel>Cancel</button>
+            <button type="submit">Save</button>
+        </div>
+    </form>
+</dialog>
+
+<dialog data-grow-detail class="crud-dialog">
+    <form method="dialog">
+        <h2 data-detail-title></h2>
+        <p class="muted" data-detail-meta></p>
+        <h3>Locations</h3>
+        <ul data-detail-locations class="crud-list"></ul>
+        <h3>Plants</h3>
+        <ul data-detail-plants class="crud-list"></ul>
+        <h3>Equipment</h3>
+        <ul data-detail-equipment class="crud-list"></ul>
+        <h3>Open tasks</h3>
+        <ul data-detail-tasks class="crud-list"></ul>
+        <div class="crud-dialog-actions">
+            <button type="button" data-detail-close>Close</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/pages/grows.js"></script>
+{% endblock %}

@@ -38,7 +38,7 @@ test("importFromFile: schema violation surfaces first errors", async () => {
   const bundle = {
     meta: { app: "LeafGuru", schemaVersion: 1, exportedAt: "2026-09-13T12:00:00Z" },
     locations: [{ id: "9a1d6b34-1c2d-4e5f-9a8b-3c2b1a0f9e8d", name: "", type: "indoor", active: true }],
-    equipment: [], strainTemplates: [], plants: []
+    grows: [], equipment: [], strainTemplates: [], plants: []
   };
   const file = { text: async () => JSON.stringify(bundle) };
   await assert.rejects(
@@ -55,7 +55,7 @@ test("importFromFile: declined confirmation does not touch data", async () => {
   const other = {
     meta: { app: "LeafGuru", schemaVersion: 1, exportedAt: "2026-09-13T12:00:00Z" },
     locations: [{ id: "9a1d6b34-1c2d-4e5f-9a8b-3c2b1a0f9e8d", name: "Incoming", type: "outdoor", active: true }],
-    equipment: [], strainTemplates: [], plants: []
+    grows: [], equipment: [], strainTemplates: [], plants: []
   };
   const file = { text: async () => JSON.stringify(other) };
   const res = await window.LeafGuru.dataIO.importFromFile(file, { confirmFn: async () => false });
