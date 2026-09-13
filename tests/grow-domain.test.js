@@ -43,6 +43,18 @@ test("locations/plants/equipment/tasks accept optional growId", async () => {
   assert.equal(tasks[0].growId, grow.id);
 });
 
+test("equipment locationAssignments allow open assignment (to: null)", async () => {
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  const loc = await storage.put("locations", { name: "L", type: "indoor", active: true });
+  const eq = await storage.put("equipment", {
+    name: "LED", category: "light", status: "in-use",
+    locationAssignments: [{ locationId: loc.id, from: new Date().toISOString(), to: null }]
+  });
+  assert.equal(eq.locationAssignments.length, 1);
+  assert.equal(eq.locationAssignments[0].to, null);
+});
+
 test("bundle includes grows and survives export/import round-trip", async () => {
   const { window } = await setup();
   const storage = new window.LeafGuru.LocalAdapter();
