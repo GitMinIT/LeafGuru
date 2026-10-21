@@ -18,7 +18,12 @@ const vm = require("node:vm");
 const ROOT = path.join(__dirname, "..", "..");
 
 function createIndexedDbStub({ BlobClass } = {}) {
-  const store = {}; // entityName -> Map(id -> record)
+  // One store map PER DATABASE: profiles rely on separate databases being
+  // isolated from each other, so a single shared store would make the
+  // tests lie.
+  const databases = {}; // dbName -> { entityName -> Map(id -> record) }
+  databases.leafguru = {};        // the default database
+  const store = databases.leafguru; // live view (back-compat for setup().store)
   // blob-preserving clone: Blob instances are immutable — keep identity;
   // plain objects deep-copied (JSON path is fine for test data)
   const clone = (v) => {
@@ -43,32 +48,67 @@ function createIndexedDbStub({ BlobClass } = {}) {
   }
 
   class FakeTx {
+    constructor(dbStore) { this._store = dbStore; }
     objectStore(name) {
+      // `this` inside the returned object literal is the literal itself,
+      // so the map has to be captured here.
+      const s = this._store;
       return {
-        put(rec) { return new FakeRequest(() => { (store[name] ??= new Map()).set(rec.id, clone(rec)); return rec; }); },
-        delete(id) { return new FakeRequest(() => { store[name]?.delete(id); return undefined; }); },
-        clear() { return new FakeRequest(() => { store[name] = new Map(); return undefined; }); },
-        get(id) { return new FakeRequest(() => { const v = store[name]?.get(id) ?? null; return v ? clone(v) : v; }); },
-        getAll() { return new FakeRequest(() => [...(store[name]?.values() ?? [])].map(clone)); },
+        put(rec) { return new FakeRequest(() => { (s[name] ??= new Map()).set(rec.id, clone(rec)); return rec; }); },
+        delete(id) { return new FakeRequest(() => { s[name]?.delete(id); return undefined; }); },
+        clear() { return new FakeRequest(() => { s[name] = new Map(); return undefined; }); },
+        get(id) { return new FakeRequest(() => { const v = s[name]?.get(id) ?? null; return v ? clone(v) : v; }); },
+        getAll() { return new FakeRequest(() => [...(s[name]?.values() ?? [])].map(clone)); },
       };
     }
     set oncomplete(fn) { queueMicrotask(fn); }
     set onerror(fn) {}
   }
 
-  const fakeDB = { transaction: () => new FakeTx(), objectStoreNames: { contains: () => true } };
-  let instance = null;
+  /** create (or reuse) the object-store map of one database */
+  function dbStore(name) {
+    if (!databases[name]) databases[name] = {};
+    return databases[name];
+  }
+
+  function makeDb(name) {
+    const dbStoreFor = dbStore(name);
+    return {
+      name,
+      transaction: () => new FakeTx(dbStoreFor),
+      objectStoreNames: { contains: () => true },
+    };
+  }
+
   return {
     store,
+    databases,
     indexedDB: {
-      open: () => {
+      open: (dbName = "leafguru") => {
         const req = { result: undefined, error: undefined };
-        queueMicrotask(() => { instance ??= fakeDB; req.result = instance; });
+        let instance = null;
+        queueMicrotask(() => { instance = makeDb(dbName); req.result = instance; });
         return {
           set onupgradeneeded(fn) {},
           set onerror(fn) {},
           set onsuccess(fn) { queueMicrotask(() => fn({ target: req })); },
           get result() { return instance; },
+        };
+      },
+      deleteDatabase: (dbName) => {
+        const req = {};
+        queueMicrotask(() => {
+          if (dbName === "leafguru") {
+            for (const k of Object.keys(databases.leafguru)) delete databases.leafguru[k];
+          } else {
+            delete databases[dbName];
+          }
+          if (req.onsuccess) req.onsuccess();
+        });
+        return {
+          set onsuccess(fn) { req.onsuccess = fn; },
+          set onerror(fn) { req.onerror = fn; },
+          set onblocked(fn) { req.onblocked = fn; },
         };
       },
     },

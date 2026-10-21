@@ -343,5 +343,31 @@
     return bundle;
   }
 
-  window.LeafGuru.demoData = { buildDemoGrow, seedDemoGrow, PROFILES };
+  /**
+   * Load the demo into its OWN profile ("Demo"), never into the user's
+   * active data. The demo is meant for exploring — it must not be able to
+   * wipe a real grow. After loading, the app switches to the demo profile
+   * so the user lands in it.
+   *
+   * Returns { profile, bundle, switched }.
+   */
+  async function seedDemoProfile({ switchTo = true } = {}) {
+    const profiles = window.LeafGuru.profiles;
+    if (!profiles) throw new Error("profiles are not available");
+    const profile = profiles.ensure("Demo", { id: profiles.DEMO_ID });
+    // an adapter bound to the demo profile -> its own database
+    const storage = new window.LeafGuru.LocalAdapter({ profileId: profile.id });
+    const bundle = buildDemoGrow();
+    await storage.importBundle(bundle);
+    let switched = false;
+    if (switchTo && profiles.activeId() !== profile.id) {
+      profiles.setActive(profile.id);
+      switched = true;
+    }
+    return { profile, bundle, switched };
+  }
+
+  window.LeafGuru.demoData = {
+    buildDemoGrow, seedDemoGrow, seedDemoProfile, PROFILES
+  };
 })();

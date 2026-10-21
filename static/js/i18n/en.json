@@ -42,7 +42,8 @@
     "today": "Today",
     "never": "Never",
     "noSearchResults": "No matching records.",
-    "at": "at"
+    "at": "at",
+    "use": "Use"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -248,9 +249,9 @@
     "dangerZone": "Danger zone",
     "wipeAll": "Delete ALL local data",
     "demoGrow": "Load demo grow",
-    "demoGrowHint": "Replace the current data with a complete example grow — plants, equipment, tasks and a journal — so you can explore every page.",
-    "demoGrowConfirm": "Replace all current data with the demo grow?",
-    "demoGrowLoaded": "Demo grow loaded.",
+    "demoGrowHint": "Load a complete example grow into its OWN profile (\\\"Demo\\\") — plants, equipment, tasks and a journal. Your own data is never touched.",
+    "demoGrowConfirm": "Load the demo grow into the \\\"Demo\\\" profile and switch to it?",
+    "demoGrowLoaded": "Demo grow loaded",
     "catalog": "Strain catalog"
   },
   "messages": {
@@ -392,5 +393,23 @@
       "equipmentPurchase": "Equipment",
       "equipmentAssignment": "Assignment"
     }
+  },
+  "profile": {
+    "title": "Profiles",
+    "hint": "A profile is an independent set of data in this browser — its own plants, tasks and journal. Switch profiles to keep separate grow spaces apart.",
+    "new": "+ New profile…",
+    "newPrompt": "Name for the new profile:",
+    "active": "Active",
+    "rename": "Rename",
+    "renamePrompt": "New name for this profile:",
+    "delete": "Delete profile",
+    "deleteConfirm": "Delete the profile \"{name}\" and ALL of its data? This cannot be undone.",
+    "created": "Profile \"{name}\" created.",
+    "renamed": "Profile renamed.",
+    "deleted": "Profile deleted.",
+    "switched": "Switched to profile \"{name}\".",
+    "defaultName": "Default",
+    "demoName": "Demo",
+    "dataIn": "Data in this profile"
   }
 }

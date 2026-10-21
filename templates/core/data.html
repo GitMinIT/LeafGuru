@@ -5,10 +5,21 @@
 {% block extra_scripts %}
 <script src="/static/js/model/data-io.js"></script>
 <script src="/static/js/pages/data.js"></script>
+<script src="/static/js/pages/profiles.js"></script>
 {% endblock %}
 
 {% block content %}
 <h1>Data</h1>
+
+<section class="card">
+    <h2>Profiles</h2>
+    <p class="muted">A profile is an independent set of data in this browser — its own plants, tasks and journal. Switch profiles to keep separate grow spaces apart.</p>
+    <div class="crud-toolbar">
+        <button type="button" data-profile-new>New profile</button>
+    </div>
+    <ul class="profile-list" data-profile-list></ul>
+    <p data-profile-status class="muted" aria-live="polite"></p>
+</section>
 
 <section class="card">
     <h2>Demo grow</h2>

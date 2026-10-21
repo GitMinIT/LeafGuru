@@ -40,16 +40,24 @@
     await showCounts();
 
     // --- demo grow -----------------------------------------------------
+    // The demo lives in its OWN profile ("Demo"), so it can never overwrite
+    // real data. The app switches to the demo profile afterwards.
     $("[data-action='demo']").addEventListener("click", async () => {
       const status = $("[data-demo-status]");
       if (!window.confirm(t("data.demoGrowConfirm"))) return;
       try {
-        const bundle = await window.LeafGuru.demoData.seedDemoGrow(window.LeafGuru.storage);
+        const { bundle, profile, switched } =
+          await window.LeafGuru.demoData.seedDemoProfile({ switchTo: true });
         const total = Object.values(bundle).reduce(
           (n, v) => n + (Array.isArray(v) ? v.length : 0), 0);
-        status.textContent = t("data.demoGrowLoaded") + ` (${total} records)`;
+        status.textContent = t("data.demoGrowLoaded")
+          + ` (${total} records, profile "${profile.name}")`;
         await showUsage();
         await showCounts();
+        if (switched) {
+          // the demo lives in its own profile — jump into it
+          location.reload();
+        }
       } catch (e) {
         status.textContent = e.message;
       }

@@ -8,7 +8,9 @@
 (function () {
   "use strict";
 
-  const DB_NAME = "leafguru";
+  // Each profile gets its own IndexedDB database. The default profile
+  // keeps the legacy name so existing installs keep their data untouched
+  // (no migration, no risk); every other profile gets "leafguru-<id>".
   const DB_VERSION = 4;
   const ENTITIES = [
     "grows", "locations", "equipment", "strainTemplates", "plants",
@@ -51,8 +53,11 @@
   }
 
   class LocalAdapter extends window.LeafGuru.StorageAdapter {
-    constructor() {
+    constructor({ profileId } = {}) {
       super();
+      // profileId null/undefined -> the active profile
+      this.profileId = profileId ?? window.LeafGuru.profiles?.activeId?.() ?? "default";
+      this.dbName = window.LeafGuru.profiles?.dbNameFor?.(this.profileId) ?? "leafguru";
       this._db = null;
     }
 
@@ -60,7 +65,7 @@
     _open() {
       if (this._db) return Promise.resolve(this._db);
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        const req = indexedDB.open(this.dbName, DB_VERSION);
         req.onupgradeneeded = (event) => {
           const db = event.target.result;
           for (const name of ENTITIES) {

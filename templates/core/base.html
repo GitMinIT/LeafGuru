@@ -31,6 +31,10 @@
         <a href="/settings/" data-nav="settings">Settings</a>
         <a href="/data/" data-nav="data">Data</a>
     </nav>
+    <label class="profile-switch" title="Switch data profile">
+        <span class="profile-switch__label" aria-hidden="true">Profile</span>
+        <select data-profile-switch aria-label="Active data profile"></select>
+    </label>
     <button type="button" class="topbar__log" data-quick-log>+ Log</button>
 </header>
 <main class="page">
@@ -90,6 +94,7 @@
 <script src="/static/js/i18n/loader.js"></script>
 <script src="/static/js/model/schema-loader.js"></script>
 <script src="/static/js/model/validator.js"></script>
+<script src="/static/js/model/profile-store.js"></script>
 <script src="/static/js/adapter/storage-adapter.js"></script>
 <script src="/static/js/adapter/local-adapter.js"></script>
 <script src="/static/js/model/data-io.js"></script>
@@ -100,6 +105,7 @@
 <script src="/static/js/model/grow-domain.js"></script>
 <script src="/static/js/model/quick-log.js"></script>
 <script src="/static/js/model/ui.js"></script>
+<script src="/static/js/pages/profile-switcher.js"></script>
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         const btn = document.querySelector("[data-quick-log]");

@@ -166,8 +166,31 @@ body[data-page="data"]      .nav a[data-nav="data"] {
     font-weight: 650;
 }
 
-.topbar__log {
+.profile-switch {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     margin-left: auto;
+    flex: 0 0 auto;
+}
+.profile-switch__label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    font-weight: 700;
+}
+.profile-switch select {
+    width: auto;
+    min-width: 8rem;
+    max-width: 14rem;
+    padding: 0.3rem 1.9rem 0.3rem 0.6rem;
+    font-size: 0.82rem;
+    background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%;
+}
+
+.topbar__log {
+    margin-left: 0;
     flex: 0 0 auto;
 }
 
@@ -977,6 +1000,48 @@ legend { padding: 0; }
     margin: 0.8rem 0 0;
     font-size: 0.75rem;
     color: var(--muted);
+}
+
+/* ------------------------------------------------------------- profiles */
+
+.profile-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.4rem;
+}
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    transition: border-color var(--t-fast);
+}
+.profile-row:hover { border-color: var(--line); }
+.profile-row--active { border-color: var(--accent); background: var(--accent-soft); }
+
+.profile-row__main { display: grid; gap: 0.1rem; min-width: 0; flex: 1; }
+.profile-row__name { font-weight: 700; font-size: 0.92rem; }
+.profile-row__meta { font-size: 0.76rem; }
+.profile-row__actions { display: flex; gap: 0.35rem; flex: 0 0 auto; }
+.profile-row__actions button { padding: 0.24rem 0.65rem; font-size: 0.8rem; }
+
+.profile-badge {
+    display: inline-block;
+    padding: 0.05rem 0.45rem;
+    border-radius: var(--r-pill);
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    vertical-align: middle;
 }
 
 /* ------------------------------------------------------------ empty state */
