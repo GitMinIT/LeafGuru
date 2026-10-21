@@ -89,10 +89,12 @@
         }
         const editBtn = document.createElement("button");
         editBtn.type = "button";
+        editBtn.className = "btn--ghost";
         editBtn.textContent = t("common.edit");
         editBtn.addEventListener("click", () => this.openForm(rec));
         const delBtn = document.createElement("button");
         delBtn.type = "button";
+        delBtn.className = "btn--danger";
         delBtn.textContent = t("common.delete");
         delBtn.addEventListener("click", () => this._remove(rec));
         actions.append(editBtn, delBtn);

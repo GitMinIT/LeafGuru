@@ -16,9 +16,10 @@
     const ld = window.LeafGuru.locationDomain;
     const storage = window.LeafGuru.storage;
     const $ = (sel) => document.querySelector(sel);
-    const actionBtn = (label, fn) => {
+    const actionBtn = (label, fn, variant = "btn--ghost") => {
       const btn = document.createElement("button");
       btn.type = "button";
+      btn.className = variant;
       btn.textContent = label;
       btn.addEventListener("click", fn);
       return btn;

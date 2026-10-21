@@ -33,9 +33,10 @@
     }
     let flashTimer;
 
-    const actionBtn = (label, fn) => {
+    const actionBtn = (label, fn, variant = "btn--ghost") => {
       const btn = document.createElement("button");
       btn.type = "button";
+      btn.className = variant;
       btn.textContent = label;
       btn.addEventListener("click", fn);
       return btn;
@@ -126,7 +127,7 @@
         actions.append(
           actionBtn(t("plant.detail"), () => openDetail(plant.id)),
           actionBtn(t("common.edit"), () => openEdit(plant)),
-          actionBtn(t("common.delete"), () => removePlant(plant))
+          actionBtn(t("common.delete"), () => removePlant(plant), "btn--danger")
         );
         row.append(name, stage, loc, grow, status, actions);
         listEl.append(row);

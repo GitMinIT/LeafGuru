@@ -80,16 +80,17 @@
         actions.append(
           actionBtn(t("grow.detail"), () => openDetail(grow)),
           actionBtn(t("common.edit"), () => openForm(grow)),
-          actionBtn(t("common.delete"), () => removeGrow(grow))
+          actionBtn(t("common.delete"), () => removeGrow(grow), "btn--danger")
         );
         row.append(name, status, dates, counts, actions);
         listEl.append(row);
       }
     }
 
-    function actionBtn(label, fn) {
+    function actionBtn(label, fn, variant = "btn--ghost") {
       const btn = document.createElement("button");
       btn.type = "button";
+      btn.className = variant;
       btn.textContent = label;
       btn.addEventListener("click", fn);
       return btn;

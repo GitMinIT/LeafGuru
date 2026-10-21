@@ -150,7 +150,7 @@
         } else {
           actions.append(
             actionBtn(t("task.reopen"), async () => setStatus(task, "open")),
-            actionBtn(t("common.delete"), () => removeTask(task))
+            actionBtn(t("common.delete"), () => removeTask(task), "btn--danger")
           );
           if (task.completedAt) {
             const done = document.createElement("small");
@@ -224,9 +224,10 @@
         String(v ?? "").toLowerCase().includes(q));
     }
 
-    function actionBtn(label, fn) {
+    function actionBtn(label, fn, variant = "btn--ghost") {
       const btn = document.createElement("button");
       btn.type = "button";
+      btn.className = variant;
       btn.textContent = label;
       btn.addEventListener("click", fn);
       return btn;

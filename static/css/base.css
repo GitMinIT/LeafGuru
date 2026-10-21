@@ -246,29 +246,33 @@ button:hover, button:focus-visible {
 button:active { transform: translateY(1px); }
 button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
-/* secondary / quiet variant */
+/* secondary / quiet variant — explicit class, never by position */
 button.ghost,
-.crud-actions button:not(:first-child) {
+button.btn--ghost {
     background: transparent;
     border-color: var(--line);
     color: var(--text-dim);
 }
 button.ghost:hover,
-.crud-actions button:not(:first-child):hover {
+button.btn--ghost:hover,
+button.ghost:focus-visible,
+button.btn--ghost:focus-visible {
     background: var(--surface-2);
     border-color: var(--surface-3);
     color: var(--text);
 }
 
-/* danger variant */
+/* danger variant — explicit class, never by position */
 button.danger,
-.crud-actions button:last-child {
+button.btn--danger {
     background: transparent;
     border-color: color-mix(in srgb, var(--danger) 40%, transparent);
     color: var(--danger);
 }
 button.danger:hover,
-.crud-actions button:last-child:hover {
+button.btn--danger:hover,
+button.danger:focus-visible,
+button.btn--danger:focus-visible {
     background: var(--danger-soft);
     border-color: var(--danger);
     color: var(--danger);
@@ -359,7 +363,8 @@ legend { padding: 0; }
 .crud-cell--active { color: var(--accent); }
 .crud-cell--inactive { color: var(--muted); }
 
-.crud-actions {
+.crud-actions,
+.task-actions {
     display: flex;
     gap: 0.35rem;
     align-items: center;
@@ -438,7 +443,6 @@ legend { padding: 0; }
 .task-row--closed .crud-cell--name { color: var(--muted); text-decoration: line-through; }
 .task-status--open { color: var(--accent); }
 .task-status--done, .task-status--skipped { color: var(--muted); }
-.task-actions { display: flex; gap: 0.35rem; align-items: center; }
 
 /* ---------------------------------------------------------------- grows */
 
@@ -975,7 +979,7 @@ legend { padding: 0; }
     .crud-fields { grid-template-columns: 1fr; }
     .crud-row { gap: 0.5rem 0.7rem; }
     .crud-cell--name { min-width: 0; width: 100%; }
-    .crud-actions { margin-left: 0; width: 100%; }
+    .crud-actions, .task-actions { margin-left: 0; width: 100%; }
     .stats { grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr)); }
 }
 
