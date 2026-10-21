@@ -129,6 +129,13 @@ LOG_CATEGORY = [("watering", "Watering"), ("feeding", "Feeding"),
                 ("treatment", "Treatment"), ("observation", "Observation"),
                 ("fermentation", "Fermentation"), ("note", "Note"),
                 ("other", "Other")]
+SENSOR_METRIC = [("temperature", "Temperature"), ("humidity", "Humidity"),
+                  ("ph", "pH"), ("ec", "EC"), ("light", "Light"),
+                  ("soilMoisture", "Soil moisture"), ("co2", "CO2"),
+                  ("vpd", "VPD"), ("waterLevel", "Water level"),
+                  ("nutrientLevel", "Nutrient level"), ("other", "Other")]
+SENSOR_SOURCE = [("manual", "Manual"), ("device", "Device"),
+                 ("import", "Import"), ("derived", "Derived")]
 MIME_TYPE = [("image/jpeg", "image/jpeg"), ("image/png", "image/png"),
               ("image/webp", "image/webp")]
 
@@ -349,6 +356,40 @@ class LogEntry(BaseRecord):
         return self.text[:40]
 
 
+class SensorReading(BaseRecord):
+    """
+    One measurement from a sensor (or typed in by hand).
+
+    This is the landing place for the optional hardware: a device posts
+    readings here, and the care-hints engine reads them. A reading is
+    deliberately NOT tied to a plant — it belongs to a place (a tent, a
+    room) and optionally to a grow, a plant and a device. So a single
+    temperature probe in a room can feed every plant in that room.
+    """
+
+    grow = models.ForeignKey(Grow, null=True, blank=True, on_delete=models.CASCADE,
+                             related_name="sensor_readings")
+    location = models.ForeignKey(Location, null=True, blank=True,
+                                  on_delete=models.CASCADE,
+                                  related_name="sensor_readings")
+    plant = models.ForeignKey(Plant, null=True, blank=True, on_delete=models.CASCADE,
+                              related_name="sensor_readings")
+    device_id = models.CharField(max_length=120, null=True, blank=True)
+    metric = models.CharField(max_length=20, choices=SENSOR_METRIC)
+    value = models.FloatField()
+    unit = models.CharField(max_length=20, null=True, blank=True)
+    recorded_at = models.DateTimeField()
+    source = models.CharField(max_length=10, choices=SENSOR_SOURCE, default="manual")
+    note = models.TextField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-recorded_at"]
+        verbose_name_plural = "sensor readings"
+
+    def __str__(self):
+        return f"{self.metric} {self.value}{self.unit or ''}"
+
+
 class Photo(BaseRecord):
     """A photo. The bytes live in MEDIA_ROOT; the API serves them."""
 
@@ -491,6 +532,7 @@ ENTITIES = {
     "locationChanges": (LocationChange, "location-change.schema.json"),
     "tasks": (Task, "task.schema.json"),
     "logEntries": (LogEntry, "log-entry.schema.json"),
+    "sensorReadings": (SensorReading, "sensor-reading.schema.json"),
     "photos": (Photo, "photo.schema.json"),
     "entityEdits": (EntityEdit, "entity-edit.schema.json"),
 }

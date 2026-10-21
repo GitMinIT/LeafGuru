@@ -211,10 +211,19 @@ test("REGRESSION: version bump upgrades a stale DB (creates missing stores)", as
   assert.deepEqual(deleted, [], "known stores are not dropped");
   assert.notEqual(deleted.includes("locations"), true);
 
-  // DB_VERSION must exceed the last store change (3: journal, 4: change log)
+  // DB_VERSION must exceed the last store-adding change:
+  //   3: journal (logEntries), 4: change log (entityEdits), 5: sensor readings
+  // Assert the number, not a literal: a hardcoded "= 4" would fire on
+  // every correctly-done bump, which trains people to ignore it.
   const source = require("node:fs")
     .readFileSync("static/js/adapter/local-adapter.js", "utf8");
-  assert.match(source, /DB_VERSION = 4/, "DB_VERSION bumped for the change-log store");
+  const version = Number(/DB_VERSION = (\d+)/.exec(source)?.[1]);
+  assert.ok(Number.isFinite(version), "DB_VERSION is a number");
+  assert.ok(version >= 5, `DB_VERSION must be at least 5 (sensor readings), got ${version}`);
+  // and every entity really is in the store list
+  for (const entity of w.LeafGuru.ENTITIES) {
+    assert.match(source, new RegExp(`"${entity}"`), `store list contains ${entity}`);
+  }
 });
 
 test("usage returns bytes estimate shape", async () => {

@@ -95,6 +95,12 @@
         "$ref": "log-entry.schema.json"
       }
     },
+    "sensorReadings": {
+      "type": "array",
+      "items": {
+        "$ref": "sensor-reading.schema.json"
+      }
+    },
     "photos": {
       "type": "array",
       "items": {

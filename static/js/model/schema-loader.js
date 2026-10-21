@@ -9,7 +9,8 @@
   const FILES = [
     "grow.schema.json", "location.schema.json", "equipment.schema.json", "strain-template.schema.json",
     "plant.schema.json", "stage-log.schema.json", "measurement.schema.json",
-    "location-change.schema.json", "task.schema.json", "log-entry.schema.json", "photo.schema.json",
+    "location-change.schema.json", "task.schema.json", "log-entry.schema.json", "sensor-reading.schema.json",
+    "photo.schema.json",
     "entity-edit.schema.json", "bundle.schema.json"
   ];
 

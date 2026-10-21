@@ -41,7 +41,8 @@
         grows: "nav.grows", locations: "nav.locations", equipment: "nav.equipment",
         strainTemplates: "nav.strains", plants: "nav.plants", stageLogs: "plant.stageHistory",
         measurements: "plant.measurements", locationChanges: "plant.locationHistory",
-        tasks: "nav.tasks", logEntries: "log.title", photos: "plant.photos"
+        tasks: "nav.tasks", logEntries: "log.title",
+        sensorReadings: "sensor.title", photos: "plant.photos"
       };
       for (const [entity, key] of Object.entries(ENTITY_LABELS)) {
         const records = await window.LeafGuru.storage.list(entity);

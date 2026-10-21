@@ -11,11 +11,11 @@
   // Each profile gets its own IndexedDB database. The default profile
   // keeps the legacy name so existing installs keep their data untouched
   // (no migration, no risk); every other profile gets "leafguru-<id>".
-  const DB_VERSION = 4;
+  const DB_VERSION = 5;
   const ENTITIES = [
     "grows", "locations", "equipment", "strainTemplates", "plants",
-    "stageLogs", "measurements", "locationChanges", "tasks", "logEntries", "photos",
-    "entityEdits"
+    "stageLogs", "measurements", "locationChanges", "tasks", "logEntries",
+    "sensorReadings", "photos", "entityEdits"
   ];
 
   const ENTITIES_META = {
@@ -29,6 +29,7 @@
     locationChanges: "location-change.schema.json",
     tasks: "task.schema.json",
     logEntries: "log-entry.schema.json",
+    sensorReadings: "sensor-reading.schema.json",
     photos: "photo.schema.json",
     entityEdits: "entity-edit.schema.json"
   };

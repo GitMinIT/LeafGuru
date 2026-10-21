@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "sensor-reading.schema.json",
+  "title": "LeafGuru SensorReading",
+  "type": "object",
+  "required": [
+    "id",
+    "metric",
+    "value",
+    "recordedAt"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "growId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "optional grow this reading belongs to"
+    },
+    "locationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "optional location the sensor sits in"
+    },
+    "plantId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "optional plant this reading is about"
+    },
+    "deviceId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 120,
+      "description": "the sensor/hardware device that produced this reading (null = typed in by hand)"
+    },
+    "metric": {
+      "enum": [
+        "temperature",
+        "humidity",
+        "ph",
+        "ec",
+        "light",
+        "soilMoisture",
+        "co2",
+        "vpd",
+        "waterLevel",
+        "nutrientLevel",
+        "other"
+      ],
+      "description": "what was measured"
+    },
+    "value": {
+      "type": "number",
+      "description": "the measured value, in `unit`"
+    },
+    "unit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 20,
+      "description": "the unit of `value` (e.g. '°C', '%', 'mS/cm', 'PPM')"
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "when the reading was taken"
+    },
+    "source": {
+      "enum": [
+        "manual",
+        "device",
+        "import",
+        "derived"
+      ],
+      "default": "manual",
+      "description": "where the reading came from"
+    },
+    "note": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 500
+    },
+    "createdAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

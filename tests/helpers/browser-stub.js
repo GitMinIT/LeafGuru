@@ -230,6 +230,8 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/model/history-domain.js");
   load("static/js/model/history-view.js");
   load("static/js/model/log-domain.js");
+  load("static/js/model/sensor-domain.js");
+  load("static/js/model/hints-domain.js");
   load("static/js/model/ui.js");
   await sandbox.window.LeafGuru.loadSchemas();
   await sandbox.window.LeafGuru.i18n.init(locale);
