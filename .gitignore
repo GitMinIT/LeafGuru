@@ -227,3 +227,8 @@ staticfiles/
 
 # working-session context (not part of the app)
 SESSION_CONTEXT.md
+
+
+# Node tooling artifacts (not part of app)
+node_modules/
+package-lock.json

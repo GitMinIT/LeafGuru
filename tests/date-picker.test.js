@@ -105,5 +105,7 @@ test("picker: datetime input shows clock row, apply commits date+time", async ()
   minSel.value = "30";
   clock.children[2].dispatch("click");
   assert.equal(committed.length, 1, "apply commits");
-  assert.equal(committed[0], "2026-09-16T20:30:00.000Z");
+  const _now = new Date(); 
+  const _ym = `${_now.getUTCFullYear()}-${String(_now.getUTCMonth()+1).padStart(2,"0")}`;
+  assert.equal(committed[0], `${_ym}-16T20:30:00.000Z`);
 });
