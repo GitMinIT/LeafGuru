@@ -82,7 +82,7 @@ python manage.py migrate && python manage.py runserver
 docker run --rm -v "$PWD":/w -w /w node:22-alpine node --test tests/*.test.js
 ```
 
-153 tests: schema validator, LocalAdapter (incl. atomic failed import),
+156 tests: schema validator, LocalAdapter (incl. atomic failed import),
 change tracking (per-entity edit trail),
 data IO, i18n, plant domain (stage/location transitions, cascade, stage
 progress), location domain (back-references), task domain, chart (SVG
@@ -96,7 +96,37 @@ minimal-create regression tests per entity (empty optional fields must
 be nullable), cancel-button wiring per dialog and strain day-duration
 labels. The browser-environment stubs (`tests/helpers/browser-stub.js`,
 `tests/helpers/dom-stub.js`) mirror the IndexedDB/DOM contracts the
-adapter and pages rely on.
+adapter and pages rely on — including real `form.reset()` semantics
+(it resets *every* descendant control, not just named ones) and DOM
+re-parenting (`parentNode`), which is what the date-picker regression
+depends on.
+
+### Real-browser tests
+
+Unit tests run against DOM stubs, which cannot see browser-level
+behaviour (top-layer dialogs, `hidden` vs. `display`, native form
+validation). A real Chromium run is therefore part of the workflow:
+
+```bash
+# 1. serve the app
+docker compose -f /home/daniel/Projects/LeafGuru/docker-compose.yml up -d --build
+
+# 2. drive it in a real browser (Playwright container, browsers preinstalled)
+docker run --rm --network host \
+  -v /home/daniel/Projects/LeafGuru:/w \
+  -v <scripts-dir>:/probe -w /w \
+  mcr.microsoft.com/playwright:v1.48.0-jammy \
+  node /probe/sweep.js
+```
+
+The sweep exercises every page's primary flow (create → list → edit →
+delete, Kanban toggle, stage change, journal entry, timeline popup,
+history popup, settings round-trip, data export view) and asserts
+*visible* state, not just the absence of console errors. Bugs it caught
+that the unit tests could not: the date picker rendering behind modal
+dialogs, the quick-log grow selection being wiped by `form.reset()`, the
+`[hidden]` attribute being overridden by `display:` rules, and the
+equipment category filter never being populated.
 
 ## Repo layout
 
