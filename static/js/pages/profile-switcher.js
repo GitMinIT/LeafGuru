@@ -15,6 +15,12 @@
     const sel = document.querySelector("[data-profile-switch]");
     if (!sel || !window.LeafGuru.profileApi) return;
 
+    // The mode decides which store the profiles live in. Without this
+    // the switcher binds to the local store before the server has
+    // been probed -- so in server mode it listed the wrong profiles.
+    await window.LeafGuru.ensureServerStatus?.();
+    await window.LeafGuru.i18n?.init?.();
+
     const api = window.LeafGuru.profileApi();
     const t = (k, p) => window.LeafGuru.i18n?.t?.(k, p) ?? k;
 

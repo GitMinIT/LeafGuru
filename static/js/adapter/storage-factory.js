@@ -30,6 +30,41 @@
   /** status of the server, if there is one */
   window.LeafGuru.serverStatus = null;
 
+  /** the in-flight probe, so it only ever runs once */
+  let statusPromise = null;
+
+  /**
+   * Probe the server once and remember the answer.
+   *
+   * The profile UI has to know the mode BEFORE it can decide whether a
+   * "profile" is an IndexedDB database or a server workspace. It
+   * cannot wait for createStorage() (a page may never call it), so it
+   * awaits this instead. Without it the profile UI binds to the local
+   * store even when the app runs against a server.
+   */
+  async function ensureServerStatus() {
+    if (window.LeafGuru.serverStatus) return window.LeafGuru.serverStatus;
+    if (!statusPromise) {
+      statusPromise = (async () => {
+        try {
+          const res = await fetch("/api/v1/auth/status/", {
+            credentials: "same-origin",
+            headers: { "Accept": "application/json" },
+          });
+          if (res.ok) {
+            const payload = await res.json();
+            if (payload?.server) window.LeafGuru.serverStatus = payload;
+          }
+        } catch {
+          // no server (opened as a static file, or the API is down)
+        }
+        return window.LeafGuru.serverStatus;
+      })();
+    }
+    return statusPromise;
+  }
+  window.LeafGuru.ensureServerStatus = ensureServerStatus;
+
   /** how the user chose to store their data: "local" | "server" | null */
   window.LeafGuru.storageMode = null;
 
@@ -73,19 +108,7 @@
     }
 
     // 2. is there a server?
-    let status = null;
-    try {
-      const res = await fetch(`${base}/auth/status/`, {
-        credentials: "same-origin",
-        headers: { "Accept": "application/json" },
-      });
-      if (res.ok) {
-        const payload = await res.json();
-        if (payload?.server) status = payload;
-      }
-    } catch {
-      // no server (opened as a static file, or the API is down)
-    }
+    const status = await ensureServerStatus();
 
     if (!status) {
       window.LeafGuru.storageMode = "local";

@@ -21,6 +21,18 @@
 
   const KEY_ACTIVE_WORKSPACE = "leafguru.activeWorkspace";
 
+  /**
+   * Tell the UI that the profile list changed.
+   *
+   * The local profile store dispatches this itself. In server mode the
+   * workspaces are the profiles, so the same event has to be raised
+   * here -- otherwise the topbar switcher keeps showing the old list
+   * until the page is reloaded.
+   */
+  function notifyChanged() {
+    window.dispatchEvent(new CustomEvent("leafguru:profiles-changed"));
+  }
+
   const isServer = () => !!window.LeafGuru.serverStatus?.server;
 
   /** the active profile/workspace id, per mode */
@@ -42,9 +54,17 @@
       const list = await res.json();
       // make sure the active one is in the list (the default workspace
       // may not have been created explicitly yet)
-      const current = activeId();
+      let current = activeId();
       if (current && !list.some((w) => w.id === current)) {
         list.unshift({ id: current, name: "Default" });
+      }
+      // Nothing chosen yet: the server's default workspace is the
+      // active one. Store it, so the switcher can mark it and the
+      // adapter sends it in the header.
+      if (!current && list.length) {
+        const fallback = list.find((w) => w.name === "Default") ?? list[0];
+        current = fallback.id;
+        localStorage.setItem(KEY_ACTIVE_WORKSPACE, current);
       }
       return list;
     }
@@ -77,9 +97,27 @@
         body: JSON.stringify({ name }),
       });
       if (!res.ok) throw new Error(`could not create the workspace (${res.status})`);
-      return res.json();
+      const created = await res.json();
+      notifyChanged();
+      return created;
     }
     return window.LeafGuru.profiles.create(name);
+  }
+
+  /**
+   * The workspace with this name, or a new one.
+   *
+   * Mirrors the local profile store's ensure(): loading the demo twice
+   * must reuse the same workspace instead of piling up a new "Demo"
+   * every time.
+   */
+  async function ensure(name) {
+    const clean = String(name ?? "").trim();
+    if (!clean) throw new Error("a workspace name is required");
+    const all = await list();
+    const found = all.find((w) => w.name === clean);
+    if (found) return found;
+    return create(clean);
   }
 
   async function remove(id) {
@@ -91,6 +129,7 @@
       });
       if (!res.ok) throw new Error(`could not delete the workspace (${res.status})`);
       if (activeId() === id) localStorage.removeItem(KEY_ACTIVE_WORKSPACE);
+      notifyChanged();
       return true;
     }
     await window.LeafGuru.profiles.removeWithData(id);
@@ -102,6 +141,7 @@
       // renaming a workspace is not part of the API yet — the client
       // keeps the name locally so the switcher stays readable
       localStorage.setItem(`leafguru.workspaceName.${id}`, name);
+      notifyChanged();
       return { id, name };
     }
     return window.LeafGuru.profiles.rename(id, name);
@@ -140,6 +180,7 @@
     activeId,
     setActive,
     create,
+    ensure,
     remove,
     rename,
     duplicate,

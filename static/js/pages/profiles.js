@@ -23,14 +23,20 @@
     const statusEl = $("[data-profile-status]");
     if (!listEl || !window.LeafGuru.profileApi) return;
 
+    // the mode decides which store the profiles live in (local
+    // IndexedDB vs server workspaces) - know it before binding
+    await window.LeafGuru.ensureServerStatus?.();
+
     const api = window.LeafGuru.profileApi();
     const isServer = window.LeafGuru.isServerMode?.() ?? false;
 
     /** how many records does a profile hold? */
     async function countRecords(profileId) {
       try {
+        // the adapter must be bound to THIS row's profile -- otherwise
+        // every row would show the counts of the active one
         const storage = isServer
-          ? new window.LeafGuru.ServerAdapter()
+          ? new window.LeafGuru.ServerAdapter({ workspace: profileId })
           : new window.LeafGuru.LocalAdapter({ profileId });
         const [plants, grows, logs] = await Promise.all([
           storage.list("plants"), storage.list("grows"), storage.list("logEntries"),

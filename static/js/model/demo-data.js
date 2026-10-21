@@ -357,11 +357,14 @@
     // --- server mode: the demo is its own workspace -------------------
     if (window.LeafGuru.isServerMode?.()) {
       const workspaces = window.LeafGuru.workspaces;
-      const profile = await workspaces.create("Demo");
+      // ensure(), not create(): loading the demo twice must reuse the
+      // same workspace instead of creating a new "Demo" every click.
+      const profile = await workspaces.ensure("Demo");
+      const switched = workspaces.activeId() !== profile.id;
       workspaces.setActive(profile.id);
       const storage = new window.LeafGuru.ServerAdapter();
       await storage.importBundle(bundle);
-      return { profile, bundle, switched: true };
+      return { profile, bundle, switched };
     }
 
     // --- local mode: the demo is its own IndexedDB profile ------------

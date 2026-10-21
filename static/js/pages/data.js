@@ -12,6 +12,19 @@
     const $ = (sel) => document.querySelector(sel);
     const t = (k, p) => window.LeafGuru.i18n.t(k, p);
 
+    // A demo load may reload the page (the demo lives in its own
+    // profile). The confirmation is parked here so it survives the
+    // reload instead of vanishing with the old page.
+    const DEMO_STATUS_KEY = "leafguru.demoStatus";
+    try {
+      const parked = sessionStorage.getItem(DEMO_STATUS_KEY);
+      if (parked) {
+        sessionStorage.removeItem(DEMO_STATUS_KEY);
+        const el = $("[data-demo-status]");
+        if (el) el.textContent = parked;
+      }
+    } catch { /* no session storage */ }
+
     const fmtBytes = window.LeafGuru.dataIO.formatBytes;
     const usageEl = $("[data-storage-usage]");
     async function showUsage() {
@@ -55,7 +68,9 @@
         await showUsage();
         await showCounts();
         if (switched) {
-          // the demo lives in its own profile — jump into it
+          // the demo lives in its own profile — jump into it. Park the
+          // confirmation first so it is still there after the reload.
+          try { sessionStorage.setItem(DEMO_STATUS_KEY, status.textContent); } catch { /* no session storage */ }
           location.reload();
         }
       } catch (e) {

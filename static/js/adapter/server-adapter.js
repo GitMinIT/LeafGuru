@@ -37,10 +37,15 @@
   }
 
   class ServerAdapter extends window.LeafGuru.StorageAdapter {
-    constructor({ base = API } = {}) {
+    constructor({ base = API, workspace = null } = {}) {
       super();
       this.base = base;
       this.status = null;
+      // an explicit workspace overrides the active one for every request
+      // this adapter makes. Without it the adapter always talks to
+      // whichever workspace is active -- which is wrong when you want
+      // to read a DIFFERENT one (e.g. the counts in the profile panel).
+      this.workspace = workspace;
     }
 
     /** @private */
@@ -55,7 +60,7 @@
       };
       // the active workspace (= the server-side profile) travels with
       // every request; without it the server uses the default workspace
-      const workspace = window.LeafGuru.workspaces?.activeId?.();
+      const workspace = this.workspace ?? window.LeafGuru.workspaces?.activeId?.();
       if (workspace) init.headers["X-LeafGuru-Workspace"] = workspace;
       if (body !== undefined) {
         if (body instanceof FormData) {
