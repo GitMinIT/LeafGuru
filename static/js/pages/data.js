@@ -96,7 +96,9 @@
 
     $("[data-action='wipe']").addEventListener("click", async () => {
       const status = $("[data-wipe-status]");
-      if (!window.confirm(t("data.wipeAll") + "? " + t("messages.confirmDelete", { name: "ALL" }))) return;
+      const profile = window.LeafGuru.profiles?.active?.();
+      const label = profile ? `${t("data.wipeAll")} ("${profile.name}")` : t("data.wipeAll");
+      if (!window.confirm(label + "? " + t("messages.confirmDelete", { name: profile?.name ?? "ALL" }))) return;
       await window.LeafGuru.storage.wipe();
       status.textContent = t("messages.deleted");
       await showUsage();

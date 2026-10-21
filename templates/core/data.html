@@ -23,7 +23,7 @@
 
 <section class="card">
     <h2>Demo grow</h2>
-    <p class="muted">Replace the current data with a complete example grow — plants in every stage, equipment, tasks, measurements and a journal — so you can explore every page.</p>
+    <p class="muted">Load a complete example grow — plants in every stage, equipment, tasks, measurements and a journal — into its own <strong>Demo</strong> profile and switch to it. Your own data is never touched.</p>
     <button type="button" data-action="demo">Load demo grow</button>
     <p data-demo-status class="muted" aria-live="polite"></p>
 </section>
@@ -37,7 +37,7 @@
 
 <section class="card">
     <h2>Import</h2>
-    <p class="muted">Restore from a previously exported JSON file. <strong>Current data will be replaced.</strong></p>
+    <p class="muted">Restore from a previously exported JSON file. <strong>The data of the active profile will be replaced.</strong></p>
     <input type="file" accept="application/json,.json" data-import-input hidden>
     <button type="button" data-action="import">Import data</button>
     <p data-import-status class="muted" aria-live="polite"></p>
@@ -45,7 +45,7 @@
 
 <section class="card">
     <h2>Records</h2>
-    <p class="muted">Current record counts per entity in this browser.</p>
+    <p class="muted">Record counts per entity in the <strong>active profile</strong>.</p>
     <ul class="record-counts" data-record-counts></ul>
 </section>
 
@@ -56,8 +56,8 @@
 
 <section class="card card--danger">
     <h2>Danger zone</h2>
-    <p class="muted">Delete <strong>all</strong> local LeafGuru data in this browser (IndexedDB).</p>
-    <button type="button" data-action="wipe">Delete all data</button>
+    <p class="muted">Delete <strong>all data of the active profile</strong> (IndexedDB). Other profiles are not touched.</p>
+    <button type="button" data-action="wipe">Delete this profile data</button>
     <p data-wipe-status class="muted" aria-live="polite"></p>
 </section>
 {% endblock %}
