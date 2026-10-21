@@ -112,11 +112,109 @@ test("importBundle rejects corrupt records atomically (no partial write)", async
 test("wipe empties all stores", async () => {
   const { window } = await setup();
   const storage = new window.LeafGuru.LocalAdapter();
-  await storage.put("locations", { name: "A", type: "indoor", active: true });
-  await storage.put("tasks", { title: "T", status: "open" });
+  await storage.put("locations", { name: "Box", type: "indoor", active: true });
+  await storage.put("plants", { name: "P", stage: "seedling", status: "growing" });
+  await storage.put("logEntries", {
+    growId: UUID, at: new Date().toISOString(), categories: ["note"], text: "x"
+  });
   await storage.wipe();
-  assert.equal((await storage.list("locations")).length, 0);
-  assert.equal((await storage.list("tasks")).length, 0);
+  for (const entity of ["locations", "plants", "logEntries"]) {
+    assert.equal((await storage.list(entity)).length, 0);
+  }
+});
+
+test("change tracking: every put records an edit with a diff", async () => {
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  // create → "created" entry
+  const plant = await storage.put("plants", {
+    name: "Alpha", stage: "seedling", status: "growing", sex: "unknown"
+  });
+  // update sex when the stage reveals it
+  const fresh = await storage.get("plants", plant.id);
+  fresh.sex = "female";
+  fresh.stage = "flowering";
+  await storage.put("plants", fresh);
+
+  const edits = await storage.editsOf("plants", plant.id);
+  assert.equal(edits.length, 2);
+  assert.ok(edits[0].at, "edits are timestamped");
+  assert.equal(edits[0].changes.length, 1);
+  assert.equal(edits[0].changes[0].key, "created");
+  const change = edits[1].changes.find((c) => c.key === "sex");
+  assert.equal(change.from, "unknown");
+  assert.equal(change.to, "female");
+  assert.ok(edits[1].changes.some((c) => c.key === "stage"), "stage change tracked");
+  // volatile fields are not tracked
+  assert.ok(!edits[1].changes.some((c) => c.key === "updatedAt"), "updatedAt skipped");
+
+  // editsOf filters by entity + id
+  const other = await storage.put("grows", { name: "G", status: "active" });
+  await storage.put("grows", { ...other, status: "closed" });
+  assert.equal((await storage.editsOf("grows", other.id)).length, 2);
+  assert.equal((await storage.editsOf("plants", other.id)).length, 0);
+});
+
+test("change tracking: no-op puts do not create entries", async () => {
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  const grow = await storage.put("grows", { name: "G", status: "active" });
+  const same = await storage.get("grows", grow.id);
+  const countBefore = (await storage.list("entityEdits")).length;
+  await storage.put("grows", { ...same });
+  const edits = await storage.editsOf("grows", grow.id);
+  assert.ok(edits.every((e) => e.changes.length >= 1 || e.changes[0]?.key === "created"),
+    "no empty change lists");
+  const after = await storage.list("entityEdits");
+  assert.equal(after.length, countBefore, "no-op put adds nothing");
+});
+
+test("REGRESSION: version bump upgrades a stale DB (creates missing stores)", async () => {
+  // Regression for the "Delete all data does nothing" bug: logEntries was
+  // added without a DB_VERSION bump, so real browsers never ran
+  // onupgradeneeded → the store was missing → every transaction (incl.
+  // wipe) threw NotFoundError. DB_VERSION must be 3 and the upgrade
+  // handler must create missing stores + drop unknown ones.
+  const { setup } = require("./helpers/browser-stub");
+  const setupResult = await setup();
+  const w = setupResult.window;
+
+  const created = [];
+  const deleted = [];
+  const dbFacade = {
+    objectStoreNames: {
+      contains: (n) => n === "locations", // stale DB: locations only
+      [Symbol.iterator]: function* () { yield "locations"; },
+    },
+    createObjectStore: (name) => { created.push(name); return { name }; },
+    deleteObjectStore: (name) => deleted.push(name),
+  };
+
+  // capture the adapter's upgrade handler: run it against the stale facade
+  let upgradeHandler = null;
+  const req = {
+    set onupgradeneeded(fn) { upgradeHandler = fn; },
+    set onsuccess(fn) { fn({ target: req }); },
+    set onerror(fn) {},
+    result: { /* unused facade */ },
+  };
+  setupResult.window.indexedDB.open = () => req;
+  const adapter = new w.LeafGuru.LocalAdapter();
+  await adapter._open();
+  assert.ok(upgradeHandler, "upgrade handler registered");
+  upgradeHandler({ target: { result: dbFacade } });
+
+  for (const entity of w.LeafGuru.ENTITIES) {
+    if (entity === "locations") continue;
+    assert.ok(created.includes(entity), `upgrade creates missing store: ${entity}`);
+  }
+  assert.deepEqual(deleted, [], "known stores are not dropped");
+  assert.notEqual(deleted.includes("locations"), true);
+
+  // DB_VERSION must exceed the last store change (3: journal, 4: change log)
+  const source = require("node:fs")
+    .readFileSync("static/js/adapter/local-adapter.js", "utf8");
+  assert.match(source, /DB_VERSION = 4/, "DB_VERSION bumped for the change-log store");
 });
 
 test("usage returns bytes estimate shape", async () => {

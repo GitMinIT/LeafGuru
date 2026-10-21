@@ -23,8 +23,10 @@
 
   window.LeafGuru = window.LeafGuru || {};
   window.LeafGuru.i18n = {
-    async init(localeCode = "en") {
-      locale = localeCode;
+    async init(localeCode = null) {
+      locale = localeCode
+        ?? window.LeafGuru.settings?.get?.("language")
+        ?? "en";
       const res = await fetch(`/static/js/i18n/${locale}.json`);
       strings = await res.json();
     },

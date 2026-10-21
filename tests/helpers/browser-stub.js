@@ -48,8 +48,8 @@ function createIndexedDbStub({ BlobClass } = {}) {
         put(rec) { return new FakeRequest(() => { (store[name] ??= new Map()).set(rec.id, clone(rec)); return rec; }); },
         delete(id) { return new FakeRequest(() => { store[name]?.delete(id); return undefined; }); },
         clear() { return new FakeRequest(() => { store[name] = new Map(); return undefined; }); },
-        get(id) { return new FakeRequest(() => store[name]?.get(id) ?? null); },
-        getAll() { return new FakeRequest(() => [...(store[name]?.values() ?? [])]); },
+        get(id) { return new FakeRequest(() => { const v = store[name]?.get(id) ?? null; return v ? clone(v) : v; }); },
+        getAll() { return new FakeRequest(() => [...(store[name]?.values() ?? [])].map(clone)); },
       };
     }
     set oncomplete(fn) { queueMicrotask(fn); }
@@ -88,6 +88,13 @@ class BlobStub {
 async function setup({ locale = "en" } = {}) {
   const idb = createIndexedDbStub({ BlobClass: BlobStub });
   const fetched = [];
+  const localStorageData = new Map();
+  const localStorage = {
+    getItem: (k) => (localStorageData.has(k) ? localStorageData.get(k) : null),
+    setItem: (k, v) => localStorageData.set(k, String(v)),
+    removeItem: (k) => localStorageData.delete(k),
+    _map: localStorageData,
+  };
 
   const sandbox = {
     console, Promise, Map, Set, Date, JSON, Error, TypeError,
@@ -105,6 +112,7 @@ async function setup({ locale = "en" } = {}) {
     },
     crypto: require("node:crypto").webcrypto,
     navigator: {},
+    localStorage,
     indexedDB: idb.indexedDB,
     fetch: async (url) => {
       fetched.push(url);
@@ -156,6 +164,9 @@ async function setup({ locale = "en" } = {}) {
   const load = (rel) => vm.runInContext(fs.readFileSync(path.join(ROOT, rel), "utf8"), sandbox, { filename: rel });
   load("static/js/version.js");
   load("static/js/model/uuid.js");
+  load("static/js/model/settings-store.js");
+  load("static/js/model/format.js");
+  load("static/js/model/date-input.js");
   load("static/js/i18n/loader.js");
   load("static/js/model/schema-loader.js");
   load("static/js/model/validator.js");
@@ -169,6 +180,10 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/model/location-domain.js");
   load("static/js/model/grow-domain.js");
   load("static/js/model/chart.js");
+  load("static/js/model/timeline-domain.js");
+  load("static/js/model/history-domain.js");
+  load("static/js/model/history-view.js");
+  load("static/js/model/log-domain.js");
   load("static/js/model/ui.js");
   await sandbox.window.LeafGuru.loadSchemas();
   await sandbox.window.LeafGuru.i18n.init(locale);

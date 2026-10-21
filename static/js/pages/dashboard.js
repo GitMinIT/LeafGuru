@@ -12,7 +12,7 @@
 
     const t = (k, p) => window.LeafGuru.i18n.t(k, p);
     const td = window.LeafGuru.taskDomain;
-    const STAGE_ORDER = ["planned", "germinating", "seedling", "vegetative", "flowering", "harvest", "drying", "cured"];
+    const STAGE_ORDER = ["planned", "germinating", "seedling", "vegetative", "flowering", "harvest", "drying", "fermented", "cured"];
 
     const [grows, plants, tasks, locations] = await Promise.all([
       window.LeafGuru.storage.list("grows"),
@@ -97,7 +97,7 @@
     for (const task of due.slice(0, 10)) {
       const li = document.createElement("li");
       const overdueFlag = td.isOverdue(task, today);
-      li.textContent = `${task.title} — ${t("task.due")}: ${task.dueDate ?? "–"}` +
+      li.textContent = `${task.title} — ${t("task.due")}: ${window.LeafGuru.format.date(task.dueDate ?? null)}` +
         (overdueFlag ? " ⚠ " + t("dashboard.overdue") : "");
       if (overdueFlag) li.style.color = "var(--danger)";
       ulTasks.append(li);

@@ -6,7 +6,7 @@
 <h1>Tasks</h1>
 <div class="crud-toolbar">
     <button type="button" data-crud-new>Create</button>
-    <label class="task-filter">
+    <label class="task-filter" data-task-show-filter>
         <span class="muted">Show</span>
         <select id="task-status-filter">
             <option value="open">Open</option>
@@ -19,6 +19,7 @@
         <span class="muted">Search</span>
         <input type="search" data-crud-search placeholder="Title, description…">
     </label>
+    <button type="button" data-task-view-toggle title="Toggle list / board view">▦ Board</button>
     <span class="muted task-counts">
         <span data-count-open>0</span> open · <span data-count-overdue>0</span> overdue
     </span>
@@ -26,6 +27,20 @@
 </div>
 <p class="muted" data-crud-empty>No open tasks.</p>
 <ul class="crud-list" data-crud-list hidden></ul>
+<section class="task-board" data-task-board hidden>
+    <div class="task-board__column" data-board-column="open">
+        <h3>Open</h3>
+        <ul data-board-list="open"></ul>
+    </div>
+    <div class="task-board__column" data-board-column="done">
+        <h3>Done</h3>
+        <ul data-board-list="done"></ul>
+    </div>
+    <div class="task-board__column" data-board-column="skipped">
+        <h3>Skipped</h3>
+        <ul data-board-list="skipped"></ul>
+    </div>
+</section>
 
 <dialog data-crud-dialog class="crud-dialog">
     <form>
@@ -33,7 +48,7 @@
         <div class="crud-fields">
             <label>Title <input name="title" required maxlength="200"></label>
             <label>Description <textarea name="description" maxlength="5000" rows="3"></textarea></label>
-            <label>Due date <input type="date" name="dueDate"></label>
+            <label>Due date <input type="text" data-date-input name="dueDate"></label>
             <label>Priority
                 <select id="task-priority">
                     <option value="low">Low</option>
@@ -53,6 +68,7 @@
                     <option value="flowering">Flowering</option>
                     <option value="harvest">Harvest</option>
                     <option value="drying">Drying</option>
+                    <option value="fermented">Fermented</option>
                     <option value="cured">Cured</option>
                 </select>
             </label>
@@ -60,7 +76,6 @@
         <input type="hidden" id="task-status-hidden" value="open">
         <p class="muted crud-error" data-crud-error hidden aria-live="polite"></p>
         <div class="crud-dialog-actions">
-            <button type="button" data-crud-cancel>Cancel</button>
             <button type="submit">Save</button>
         </div>
     </form>

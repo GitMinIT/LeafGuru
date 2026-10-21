@@ -62,7 +62,7 @@ function makeElement(tag = "div") {
       }
     },
     reset() { el.dataset.editingId = ""; el._inputs = {}; },
-    click() {}, close() {}, showModal() {}, scrollIntoView() {},
+    click() {}, close() { el._closed = true; }, showModal() { el._shown = true; }, scrollIntoView() {},
   };
   el.closest = () => el;
   if (tag === "form") {
@@ -79,7 +79,19 @@ function makeElement(tag = "div") {
     el.appendChild = (n) => { origAppendChild(n); register(n); return n; };
     const origReplaceChildren = el.replaceChildren;
     el.replaceChildren = (...nodes) => { origReplaceChildren(...nodes); el._inputs = {}; nodes.forEach(register); };
-    el.elements = new Proxy({}, { get: (_, name) => el._inputs[name] });
+    el.elements = new Proxy({}, {
+      get: (_, name) => {
+        if (typeof name !== "string") return el._inputs[name];
+        // real forms expose every descendant control — auto-create stub
+        // inputs so dialog opens don't crash in tests
+        if (!(name in el._inputs)) {
+          const input = makeElement("input");
+          input.name = name;
+          el._inputs[name] = input;
+        }
+        return el._inputs[name];
+      }
+    });
   }
   return el;
 }
@@ -148,7 +160,7 @@ async function bootPage(setupResult, pageFile, { withCrud = false } = {}) {
   return doc;
 }
 
-test("equipment page: renderList does not recurse (regression)", async () => {
+test("equipment page: grid renders + tile / add tile / hover gear", async () => {
   const { setup } = require("./helpers/browser-stub");
   const setupResult = await setup();
   const storage = new setupResult.window.LeafGuru.LocalAdapter();
@@ -156,15 +168,28 @@ test("equipment page: renderList does not recurse (regression)", async () => {
 
   const loc = await storage.put("locations", { name: "Box", type: "indoor", active: true });
   await storage.put("equipment", {
-    name: "LED", category: "light", status: "in-use",
+    name: "LED", category: "light", status: "in-use", icon: "💡",
     locationAssignments: [{ locationId: loc.id, from: new Date().toISOString(), to: null }]
   });
   await storage.put("equipment", { name: "Fan", category: "fan", status: "stored" });
 
   const doc = await bootPage(setupResult, "static/js/pages/equipment.js");
-  const listEl = doc._bySelector.get("[data-crud-list]");
-  assert.ok(listEl, "list element exists");
-  assert.equal(listEl.children.length, 2, "two equipment rows rendered");
+  const grid = doc._bySelector.get("[data-equip-grid]");
+  assert.ok(grid, "grid element exists");
+  // + tile + one tile per item
+  assert.equal(grid.children.length, 3, "add tile + two equipment tiles");
+  const addTile = grid.children[0];
+  assert.equal(addTile.children[0].textContent, "+", "first tile is the + tile");
+  const led = grid.children.find((t) => t.children[1]?.textContent === "LED");
+  assert.ok(led, "LED tile rendered");
+  assert.ok(led.children[0].textContent.includes("💡"), "icon centred");
+  // hover gear in the upper-left corner of the tile
+  const gear = led.children[3];
+  assert.equal(gear.textContent, "⚙️", "gear button present");
+  assert.ok(gear._listeners?.click?.length >= 1, "gear opens the edit dialog");
+  gear.dispatch("click");
+  const dialog = doc._bySelector.get("[data-crud-dialog]");
+  assert.equal(dialog._shown, true, "gear click opens the dialog");
 });
 
 test("plants page: list renders with detail/edit/delete actions", async () => {
@@ -259,6 +284,50 @@ test("grows page: rows render with counts", async () => {
   // name, status, dates, counts, actions
   assert.equal(row.children.length, 5);
   assert.match(row.children[3].textContent, /1 Plants/);
+});
+
+test("tasks page: kanban board view renders cards per column", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const setupResult = await setup();
+  const storage = new setupResult.window.LeafGuru.LocalAdapter();
+  setupResult.window.LeafGuru.storage = storage;
+
+  await storage.put("tasks", { title: "Water Alpha", status: "open", priority: "high", dueDate: "2026-09-10" });
+  await storage.put("tasks", { title: "Feed Beta", status: "done", priority: "low" });
+  await storage.put("tasks", { title: "Skip me", status: "skipped", priority: "low" });
+
+  const doc = await bootPage(setupResult, "static/js/pages/tasks.js");
+  const boardEl = doc._bySelector.get("[data-task-board]");
+  assert.equal(boardEl.hidden, true, "list view by default");
+
+  doc._bySelector.get("[data-task-view-toggle]").dispatch("click");
+  await new Promise((r) => setImmediate(r));
+  assert.equal(boardEl.hidden, false, "board visible after toggle");
+  assert.equal(String(doc._bySelector.get("[data-task-view-toggle]").textContent), "☰ List");
+
+  const boardSel = (status) => `[data-board-list="${status}"]`;
+  const openCards = boardEl.querySelector(boardSel("open")).children;
+  assert.equal(openCards.length, 1);
+  assert.match(openCards[0].children[0].textContent, /Water Alpha/);
+  assert.equal(boardEl.querySelector(boardSel("done")).children.length, 1);
+  assert.equal(boardEl.querySelector(boardSel("skipped")).children.length, 1);
+  // cards are draggable (drag-and-drop between columns)
+  assert.equal(openCards[0].draggable, true, "card is draggable");
+  const openList = boardEl.querySelector(boardSel("open"));
+  const doneList = boardEl.querySelector(boardSel("done"));
+  // simulate a drag: dragstart writes the card id into the transfer,
+  // the done column receives the drop
+  const dragCard = openCards[0];
+  let transferredId = null;
+  const dataTransfer = {
+    setData: (_type, id) => { transferredId = id; },
+    getData: () => transferredId,
+  };
+  dragCard.dispatch("dragstart", { dataTransfer });
+  doneList.dispatch("drop", { preventDefault() {}, dataTransfer });
+  await new Promise((r) => setImmediate(r));
+  await new Promise((r) => setImmediate(r));
+  assert.equal(doneList.children.length, 2, "card moved to the done column");
 });
 
 test("strains page: CrudPage renders stage-duration rows", async () => {

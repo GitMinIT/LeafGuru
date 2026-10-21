@@ -124,7 +124,9 @@
         measurements: "measurement.schema.json",
         locationChanges: "location-change.schema.json",
         tasks: "task.schema.json",
-        photos: "photo.schema.json"
+        logEntries: "log-entry.schema.json",
+        photos: "photo.schema.json",
+        entityEdits: "entity-edit.schema.json"
       };
       for (const [entity, file] of Object.entries(ENTITY_FILES)) {
         const schema = entitySchemas[file];

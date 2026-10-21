@@ -29,13 +29,13 @@
                 </select>
             </label>
             <label>Locations <select id="grow-locations" multiple size="5"></select></label>
-            <label>Start date <input type="date" id="grow-start"></label>
-            <label>End date <input type="date" id="grow-end"></label>
+            <label>Start date <input type="text" data-date-input id="grow-start"></label>
+            <label>End date <input type="text" data-date-input id="grow-end"></label>
             <label>Notes <textarea id="grow-notes" maxlength="5000" rows="3"></textarea></label>
+            <label class="grow-default-toggle">Default grow <input type="checkbox" id="grow-default"></label>
         </div>
         <p class="muted crud-error" data-crud-error hidden aria-live="polite"></p>
         <div class="crud-dialog-actions">
-            <button type="button" data-crud-cancel>Cancel</button>
             <button type="submit">Save</button>
         </div>
     </form>
@@ -55,8 +55,13 @@
         <ul data-detail-tasks class="crud-list"></ul>
         <h3 data-detail-costs-title hidden>Equipment costs</h3>
         <ul data-detail-costs class="record-counts"></ul>
+        <h3 data-detail-harvest-title hidden>Harvest</h3>
+        <ul data-detail-harvest class="record-counts"></ul>
+        <h3 data-detail-durations-title hidden>Stage durations</h3>
+        <ul data-detail-stage-durations class="record-counts"></ul>
+        <h3 data-detail-chart-title hidden>Growth comparison</h3>
+        <div data-detail-chart></div>
         <div class="crud-dialog-actions">
-            <button type="button" data-detail-close>Close</button>
         </div>
     </form>
 </dialog>
@@ -64,5 +69,6 @@
 
 {% block extra_scripts %}
 <script src="/static/js/model/grow-domain.js"></script>
+<script src="/static/js/model/chart.js"></script>
 <script src="/static/js/pages/grows.js"></script>
 {% endblock %}

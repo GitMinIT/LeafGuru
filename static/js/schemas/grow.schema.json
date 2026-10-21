@@ -26,6 +26,11 @@
         "closed"
       ]
     },
+    "isDefault": {
+      "type": "boolean",
+      "default": false,
+      "description": "the default grow — pre-selected in forms"
+    },
     "locationIds": {
       "type": "array",
       "items": {

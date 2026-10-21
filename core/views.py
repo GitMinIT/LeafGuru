@@ -22,6 +22,21 @@ def data(request):
     return render(request, "core/data.html")
 
 
+def timeline(request):
+    """Timeline/calendar visualization: per-day events across entities."""
+    return render(request, "core/timeline.html")
+
+
+def history(request):
+    """Per-grow event log: full history of one grow as a scrollable list."""
+    return render(request, "core/history.html")
+
+
+def settings(request):
+    """Settings page: language, date format, timezone (browser-local)."""
+    return render(request, "core/settings.html")
+
+
 def _entity_page(request, key):
     ctx = {"entity_title": PAGES[key], "entity_key": key}
     return render(request, f"core/{key}.html", ctx)

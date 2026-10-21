@@ -1,0 +1,58 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "entity-edit.schema.json",
+  "title": "LeafGuru EntityEdit",
+  "type": "object",
+  "required": [
+    "id",
+    "entity",
+    "entityId",
+    "at"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "entity": {
+      "type": "string",
+      "maxLength": 40
+    },
+    "entityId": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "to"],
+        "properties": {
+          "key": { "type": "string", "maxLength": 80 },
+          "from": {},
+          "to": {}
+        }
+      },
+      "default": []
+    },
+    "createdAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

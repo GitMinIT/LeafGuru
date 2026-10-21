@@ -9,10 +9,11 @@
   "use strict";
 
   const DB_NAME = "leafguru";
-  const DB_VERSION = 2;
+  const DB_VERSION = 4;
   const ENTITIES = [
     "grows", "locations", "equipment", "strainTemplates", "plants",
-    "stageLogs", "measurements", "locationChanges", "tasks", "photos"
+    "stageLogs", "measurements", "locationChanges", "tasks", "logEntries", "photos",
+    "entityEdits"
   ];
 
   const ENTITIES_META = {
@@ -25,8 +26,29 @@
     measurements: "measurement.schema.json",
     locationChanges: "location-change.schema.json",
     tasks: "task.schema.json",
-    photos: "photo.schema.json"
+    logEntries: "log-entry.schema.json",
+    photos: "photo.schema.json",
+    entityEdits: "entity-edit.schema.json"
   };
+
+  /** keys that never count as user edits */
+  const VOLATILE_KEYS = new Set(["id", "updatedAt", "createdAt"]);
+
+  /** shallow diff of two records (null vs undefined counts as equal) */
+  function diffChanges(before, after) {
+    const keys = new Set([...Object.keys(before ?? {}), ...Object.keys(after ?? {})]);
+    const changes = [];
+    for (const key of keys) {
+      if (VOLATILE_KEYS.has(key)) continue;
+      const from = before?.[key] ?? null;
+      const to = after?.[key] ?? null;
+      const same = typeof from === "object" && from !== null && typeof to === "object" && to !== null
+        ? JSON.stringify(from) === JSON.stringify(to)
+        : from === to;
+      if (!same) changes.push({ key, from, to });
+    }
+    return changes;
+  }
 
   class LocalAdapter extends window.LeafGuru.StorageAdapter {
     constructor() {
@@ -45,6 +67,12 @@
             if (!db.objectStoreNames.contains(name)) {
               db.createObjectStore(name, { keyPath: "id" });
             }
+          }
+          // remove object stores that no longer belong to the data model
+          const existing = typeof db.objectStoreNames?.[Symbol.iterator] === "function"
+            ? [...db.objectStoreNames] : [];
+          for (const name of existing) {
+            if (!ENTITIES.includes(name)) db.deleteObjectStore(name);
           }
         };
         req.onsuccess = () => { this._db = req.result; resolve(this._db); };
@@ -84,15 +112,48 @@
 
     async put(entity, record) {
       if (!ENTITIES_META[entity]) throw new Error(`unknown entity: ${entity}`);
-      if (!record.id) {
+      const isNew = !record.id;
+      if (isNew) {
         record.id = window.LeafGuru.uuid();
         if (!record.createdAt) record.createdAt = new Date().toISOString();
+      }
+      // change tracking: diff against the stored record (skips entityEdits).
+      // structuredClone guards against callers mutating the fetched object.
+      let before = null;
+      if (!isNew && entity !== "entityEdits") {
+        before = await this.get(entity, record.id);
+        before = before ? structuredClone(before) : null;
       }
       record.updatedAt = new Date().toISOString();
       const check = window.LeafGuru.validator.validate(record, window.LeafGuru.schemas[ENTITIES_META[entity]]);
       if (!check.valid) throw new window.LeafGuru.LeafGuruValidationError(check.errors);
       await this._tx(entity, "readwrite", (s) => s.put(record));
+      // record the edit AFTER the write (audit trail, never blocks)
+      if (entity !== "entityEdits") {
+        try {
+          const changes = before ? diffChanges(before, record) : [{ key: "created", from: null, to: "record created" }];
+          if (changes.length) {
+            await this._tx("entityEdits", "readwrite", (s) => s.put({
+              id: window.LeafGuru.uuid(),
+              entity,
+              entityId: record.id,
+              at: record.updatedAt,
+              changes,
+              createdAt: record.updatedAt,
+              updatedAt: record.updatedAt
+            }));
+          }
+        } catch { /* audit failure must not break the actual write */ }
+      }
       return record;
+    }
+
+    /** change log of one entity record, oldest first */
+    async editsOf(entity, entityId) {
+      const all = await this.list("entityEdits");
+      return all
+        .filter((e) => e.entity === entity && e.entityId === entityId)
+        .sort((a, b) => a.at.localeCompare(b.at));
     }
 
     async delete(entity, id) {

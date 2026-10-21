@@ -66,6 +66,7 @@
         "flowering",
         "harvest",
         "drying",
+        "fermented",
         "cured"
       ]
     },
@@ -81,9 +82,66 @@
         "growing",
         "harvested",
         "dried",
+        "fermented",
         "cured",
         "died"
       ]
+    },
+    "harvestYieldG": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "dried bud yield in grams (recorded at harvest)"
+    },
+    "budG": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "grams of buds harvested"
+    },
+    "leafG": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "grams of leaves harvested (trim, fan leaves)"
+    },
+    "sugarLeafG": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "grams of sugar leaves harvested"
+    },
+    "stemG": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "grams of stems harvested"
+    },
+    "smellTerpenes": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 200,
+      "description": "smell / terpene profile (e.g. 'citrus, diesel')"
+    },
+    "harvestedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date",
+      "description": "day the plant was harvested"
     },
     "notes": {
       "type": [

@@ -39,6 +39,22 @@
         "other"
       ]
     },
+    "icon": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 16,
+      "description": "emoji shown as tile icon (mutually exclusive with image)"
+    },
+    "image": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 2000000,
+      "description": "tile image as base64 data URL (mutually exclusive with icon)"
+    },
     "specs": {
       "type": [
         "string",

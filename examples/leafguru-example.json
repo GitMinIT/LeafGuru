@@ -1,0 +1,685 @@
+{
+  "meta": {
+    "app": "LeafGuru",
+    "schemaVersion": 1,
+    "exportedAt": "2026-09-14T10:00:00.000Z",
+    "appVersion": "0.1.0",
+    "note": "Example dataset - one finished grow with harvest stats, one active grow with live plants, tasks, measurements, stage logs and location history. Import on the Data page."
+  },
+  "grows": [
+    {
+      "id": "47501ca1-f8cb-5334-b1b0-84afd0312033",
+      "name": "Summer Autoflower 2026",
+      "status": "closed",
+      "locationIds": [
+        "e3ac8463-f65b-519c-a8ff-1e378b8f4203"
+      ],
+      "startDate": "2026-05-04",
+      "endDate": "2026-07-28",
+      "notes": "First autoflower run in the box - went smoothly.",
+      "createdAt": "2026-05-04T08:00:00.000Z",
+      "updatedAt": "2026-07-28T18:00:00.000Z",
+      "isDefault": false
+    },
+    {
+      "id": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "name": "Autumn Photoperiod 2026",
+      "status": "active",
+      "locationIds": [
+        "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+        "b9812a21-5364-5cc9-b907-67a8dc83cc23"
+      ],
+      "startDate": "2026-08-25",
+      "endDate": null,
+      "notes": "Photoperiod girls, flipped on 2026-09-10.",
+      "createdAt": "2026-08-25T08:00:00.000Z",
+      "updatedAt": "2026-09-10T20:00:00.000Z",
+      "isDefault": true
+    }
+  ],
+  "locations": [
+    {
+      "id": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "name": "Growbox",
+      "type": "indoor",
+      "size": {
+        "widthCm": 120,
+        "depthCm": 60,
+        "heightCm": 180,
+        "areaM2": 0.72
+      },
+      "notes": "Main indoor tent.",
+      "active": true,
+      "createdAt": "2026-05-01T08:00:00.000Z",
+      "updatedAt": "2026-05-01T08:00:00.000Z"
+    },
+    {
+      "id": "b9812a21-5364-5cc9-b907-67a8dc83cc23",
+      "name": "Sunny Balcony",
+      "type": "outdoor",
+      "size": {
+        "widthCm": null,
+        "depthCm": null,
+        "heightCm": null,
+        "areaM2": 2.5
+      },
+      "notes": "Hardening-off spot.",
+      "active": true,
+      "createdAt": "2026-05-01T08:05:00.000Z",
+      "updatedAt": "2026-05-01T08:05:00.000Z"
+    }
+  ],
+  "equipment": [
+    {
+      "id": "8b99ee1f-b758-55f2-b549-1b7552a95fdc",
+      "growId": "47501ca1-f8cb-5334-b1b0-84afd0312033",
+      "name": "LED Panel 240W",
+      "category": "light",
+      "specs": "240W quantum board, 3500K",
+      "purchaseDate": "2026-04-20",
+      "cost": 189.9,
+      "currency": "EUR",
+      "status": "in-use",
+      "notes": null,
+      "locationAssignments": [
+        {
+          "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+          "from": "2026-05-04T08:00:00.000Z",
+          "to": null
+        }
+      ],
+      "createdAt": "2026-04-20T10:00:00.000Z",
+      "updatedAt": "2026-05-04T08:00:00.000Z"
+    },
+    {
+      "id": "326a632a-ef7a-52fa-bfb8-626319495ec9",
+      "growId": "47501ca1-f8cb-5334-b1b0-84afd0312033",
+      "name": "Pot set 11L",
+      "category": "pot",
+      "specs": "4 fabric pots",
+      "purchaseDate": "2026-04-25",
+      "cost": 24.5,
+      "currency": "EUR",
+      "status": "stored",
+      "notes": null,
+      "locationAssignments": [],
+      "createdAt": "2026-04-25T10:00:00.000Z",
+      "updatedAt": "2026-07-28T18:00:00.000Z"
+    },
+    {
+      "id": "850a4e63-a09d-5904-bfbd-411d02ed58e8",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "name": "Clip fan 15cm",
+      "category": "fan",
+      "specs": null,
+      "purchaseDate": null,
+      "cost": 15,
+      "currency": "EUR",
+      "status": "in-use",
+      "notes": null,
+      "locationAssignments": [
+        {
+          "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+          "from": "2026-08-25T09:00:00.000Z",
+          "to": null
+        }
+      ],
+      "createdAt": "2026-08-25T09:00:00.000Z",
+      "updatedAt": "2026-08-25T09:00:00.000Z"
+    },
+    {
+      "id": "fa1b04ee-cc98-5ddd-bbc5-211d8dbb0e18",
+      "growId": null,
+      "name": "pH meter",
+      "category": "sensor",
+      "specs": "pH + EC combo",
+      "purchaseDate": "2026-04-15",
+      "cost": 32,
+      "currency": "EUR",
+      "status": "in-use",
+      "notes": "Shared across grows.",
+      "locationAssignments": [],
+      "availableEverywhere": true,
+      "createdAt": "2026-04-15T10:00:00.000Z",
+      "updatedAt": "2026-04-15T10:00:00.000Z"
+    }
+  ],
+  "strainTemplates": [
+    {
+      "id": "360640f3-9f3e-581c-98e8-c5cde795b62a",
+      "name": "Fast Berry Auto",
+      "breeder": "Hypothetical Seeds",
+      "genotype": "hybrid",
+      "stageDurations": {
+        "seedling": 10,
+        "vegetative": 28,
+        "flowering": 49
+      },
+      "expectedHeightCm": 90,
+      "characteristics": "Berry scent, forgiving, good for small tents.",
+      "notes": null,
+      "createdAt": "2026-05-01T09:00:00.000Z",
+      "updatedAt": "2026-05-01T09:00:00.000Z"
+    },
+    {
+      "id": "35f0469c-63f7-519d-9aea-b9e81d31138f",
+      "name": "Purple Sunset",
+      "breeder": "Valley Genetics",
+      "genotype": "indica",
+      "stageDurations": {
+        "seedling": 14,
+        "vegetative": 35,
+        "flowering": 60
+      },
+      "expectedHeightCm": 110,
+      "characteristics": "Dark colors in late flowering, dense buds.",
+      "notes": null,
+      "createdAt": "2026-08-20T09:00:00.000Z",
+      "updatedAt": "2026-08-20T09:00:00.000Z"
+    }
+  ],
+  "plants": [
+    {
+      "id": "44c193d2-2912-5a30-b620-403ade8e6e16",
+      "growId": "47501ca1-f8cb-5334-b1b0-84afd0312033",
+      "name": "Berry #1",
+      "strainTemplateId": "360640f3-9f3e-581c-98e8-c5cde795b62a",
+      "customStrain": null,
+      "sex": "female",
+      "germinationDate": "2026-05-04",
+      "stage": "cured",
+      "locationId": null,
+      "status": "cured",
+      "notes": "Best of the run.",
+      "harvestYieldG": 42.5,
+      "harvestedAt": "2026-07-16",
+      "createdAt": "2026-05-04T08:10:00.000Z",
+      "updatedAt": "2026-08-10T10:00:00.000Z",
+      "budG": 38.5,
+      "leafG": 6.2,
+      "sugarLeafG": 4.1,
+      "stemG": 9.4,
+      "smellTerpenes": "berry, sweet, slight diesel"
+    },
+    {
+      "id": "43e74492-9a1c-5347-8edd-93eb407a4194",
+      "growId": "47501ca1-f8cb-5334-b1b0-84afd0312033",
+      "name": "Berry #2",
+      "strainTemplateId": "360640f3-9f3e-581c-98e8-c5cde795b62a",
+      "customStrain": null,
+      "sex": "female",
+      "germinationDate": "2026-05-06",
+      "stage": "cured",
+      "locationId": null,
+      "status": "cured",
+      "notes": "A bit stretchy.",
+      "harvestYieldG": 31,
+      "harvestedAt": "2026-07-18",
+      "createdAt": "2026-05-06T08:10:00.000Z",
+      "updatedAt": "2026-08-10T10:00:00.000Z",
+      "budG": 27.0,
+      "leafG": 5.0,
+      "sugarLeafG": 3.2,
+      "stemG": 7.8,
+      "smellTerpenes": "berry, earthy"
+    },
+    {
+      "id": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "name": "Sunset Alpha",
+      "strainTemplateId": "35f0469c-63f7-519d-9aea-b9e81d31138f",
+      "customStrain": null,
+      "sex": "female",
+      "germinationDate": "2026-08-25",
+      "stage": "flowering",
+      "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "status": "growing",
+      "notes": "Topped after 5 nodes.",
+      "harvestYieldG": null,
+      "harvestedAt": null,
+      "createdAt": "2026-08-25T08:10:00.000Z",
+      "updatedAt": "2026-09-10T20:00:00.000Z"
+    },
+    {
+      "id": "72323bd1-f017-5fb7-add7-694eddded834",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "name": "Sunset Beta",
+      "strainTemplateId": "35f0469c-63f7-519d-9aea-b9e81d31138f",
+      "customStrain": null,
+      "sex": "female",
+      "germinationDate": "2026-08-27",
+      "stage": "flowering",
+      "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "status": "growing",
+      "notes": "Hardened off on the balcony first.",
+      "harvestYieldG": null,
+      "harvestedAt": null,
+      "createdAt": "2026-08-27T08:10:00.000Z",
+      "updatedAt": "2026-09-10T20:00:00.000Z"
+    }
+  ],
+  "stageLogs": [
+    {
+      "id": "db7fb1bc-1421-5c8d-ad8e-678ce03e606c",
+      "plantId": "44c193d2-2912-5a30-b620-403ade8e6e16",
+      "stage": "germinating",
+      "enteredAt": "2026-05-04T08:10:00.000Z",
+      "leftAt": "2026-05-06T08:00:00.000Z",
+      "createdAt": "2026-05-04T08:10:00.000Z",
+      "updatedAt": "2026-05-06T08:00:00.000Z"
+    },
+    {
+      "id": "11d40670-7e8a-5ca5-b3eb-5e3884dabcab",
+      "plantId": "44c193d2-2912-5a30-b620-403ade8e6e16",
+      "stage": "seedling",
+      "enteredAt": "2026-05-06T08:00:00.000Z",
+      "leftAt": "2026-05-16T08:00:00.000Z",
+      "createdAt": "2026-05-06T08:00:00.000Z",
+      "updatedAt": "2026-05-16T08:00:00.000Z"
+    },
+    {
+      "id": "f5b6e5df-8e71-545a-875f-d31c44463bc8",
+      "plantId": "44c193d2-2912-5a30-b620-403ade8e6e16",
+      "stage": "vegetative",
+      "enteredAt": "2026-05-16T08:00:00.000Z",
+      "leftAt": "2026-06-13T08:00:00.000Z",
+      "createdAt": "2026-05-16T08:00:00.000Z",
+      "updatedAt": "2026-06-13T08:00:00.000Z"
+    },
+    {
+      "id": "1211d7eb-5a79-5e0a-9d1c-7c00d9e5aea5",
+      "plantId": "44c193d2-2912-5a30-b620-403ade8e6e16",
+      "stage": "flowering",
+      "enteredAt": "2026-06-13T08:00:00.000Z",
+      "leftAt": "2026-07-16T08:00:00.000Z",
+      "createdAt": "2026-06-13T08:00:00.000Z",
+      "updatedAt": "2026-07-16T08:00:00.000Z"
+    },
+    {
+      "id": "c0fb4306-a066-5add-8688-2a7ee599321d",
+      "plantId": "44c193d2-2912-5a30-b620-403ade8e6e16",
+      "stage": "drying",
+      "enteredAt": "2026-07-16T08:00:00.000Z",
+      "leftAt": "2026-07-22T08:00:00.000Z",
+      "createdAt": "2026-07-16T08:00:00.000Z",
+      "updatedAt": "2026-07-22T08:00:00.000Z"
+    },
+    {
+      "id": "d7a42064-400c-59d9-9254-048613d5b87f",
+      "plantId": "44c193d2-2912-5a30-b620-403ade8e6e16",
+      "stage": "cured",
+      "enteredAt": "2026-07-22T08:00:00.000Z",
+      "leftAt": "2026-08-10T08:00:00.000Z",
+      "createdAt": "2026-07-22T08:00:00.000Z",
+      "updatedAt": "2026-08-10T08:00:00.000Z"
+    },
+    {
+      "id": "2748175c-2af3-580e-8a14-2ab19cb3c133",
+      "plantId": "43e74492-9a1c-5347-8edd-93eb407a4194",
+      "stage": "germinating",
+      "enteredAt": "2026-05-06T08:10:00.000Z",
+      "leftAt": "2026-05-08T08:00:00.000Z",
+      "createdAt": "2026-05-06T08:10:00.000Z",
+      "updatedAt": "2026-05-08T08:00:00.000Z"
+    },
+    {
+      "id": "ad3f8dc8-15e7-5c70-94e2-d8a7c34181d9",
+      "plantId": "43e74492-9a1c-5347-8edd-93eb407a4194",
+      "stage": "seedling",
+      "enteredAt": "2026-05-08T08:00:00.000Z",
+      "leftAt": "2026-05-18T08:00:00.000Z",
+      "createdAt": "2026-05-08T08:00:00.000Z",
+      "updatedAt": "2026-05-18T08:00:00.000Z"
+    },
+    {
+      "id": "d61948d3-b0ba-5e13-a585-2056e73c1c80",
+      "plantId": "43e74492-9a1c-5347-8edd-93eb407a4194",
+      "stage": "vegetative",
+      "enteredAt": "2026-05-18T08:00:00.000Z",
+      "leftAt": "2026-06-15T08:00:00.000Z",
+      "createdAt": "2026-05-18T08:00:00.000Z",
+      "updatedAt": "2026-06-15T08:00:00.000Z"
+    },
+    {
+      "id": "31cd3427-78f5-5bd7-888f-81eae62ee755",
+      "plantId": "43e74492-9a1c-5347-8edd-93eb407a4194",
+      "stage": "flowering",
+      "enteredAt": "2026-06-15T08:00:00.000Z",
+      "leftAt": "2026-07-18T08:00:00.000Z",
+      "createdAt": "2026-06-15T08:00:00.000Z",
+      "updatedAt": "2026-07-18T08:00:00.000Z"
+    },
+    {
+      "id": "08e844fd-2f96-5e93-9e52-9a57a44d7a4a",
+      "plantId": "43e74492-9a1c-5347-8edd-93eb407a4194",
+      "stage": "drying",
+      "enteredAt": "2026-07-18T08:00:00.000Z",
+      "leftAt": "2026-07-24T08:00:00.000Z",
+      "createdAt": "2026-07-18T08:00:00.000Z",
+      "updatedAt": "2026-07-24T08:00:00.000Z"
+    },
+    {
+      "id": "57f82346-5d91-5b05-9865-b3d16bb53f96",
+      "plantId": "43e74492-9a1c-5347-8edd-93eb407a4194",
+      "stage": "cured",
+      "enteredAt": "2026-07-24T08:00:00.000Z",
+      "leftAt": "2026-08-10T08:00:00.000Z",
+      "createdAt": "2026-07-24T08:00:00.000Z",
+      "updatedAt": "2026-08-10T08:00:00.000Z"
+    },
+    {
+      "id": "b6d738ae-6c3c-5ac9-a86d-4b45215d10a7",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "stage": "germinating",
+      "enteredAt": "2026-08-25T08:10:00.000Z",
+      "leftAt": "2026-08-27T08:00:00.000Z",
+      "createdAt": "2026-08-25T08:10:00.000Z",
+      "updatedAt": "2026-08-27T08:00:00.000Z"
+    },
+    {
+      "id": "7cb15c36-2fd9-5e39-b9e0-1f106c089e85",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "stage": "seedling",
+      "enteredAt": "2026-08-27T08:00:00.000Z",
+      "leftAt": "2026-09-04T08:00:00.000Z",
+      "createdAt": "2026-08-27T08:00:00.000Z",
+      "updatedAt": "2026-09-04T08:00:00.000Z"
+    },
+    {
+      "id": "2e1fb21e-6965-5eb6-aacf-cc5ae990ae3f",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "stage": "vegetative",
+      "enteredAt": "2026-09-04T08:00:00.000Z",
+      "leftAt": "2026-09-10T08:00:00.000Z",
+      "createdAt": "2026-09-04T08:00:00.000Z",
+      "updatedAt": "2026-09-10T08:00:00.000Z"
+    },
+    {
+      "id": "96495206-835f-5c7f-806c-5dd7196480ca",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "stage": "flowering",
+      "enteredAt": "2026-09-10T08:00:00.000Z",
+      "leftAt": null,
+      "createdAt": "2026-09-10T08:00:00.000Z",
+      "updatedAt": "2026-09-10T08:00:00.000Z"
+    },
+    {
+      "id": "2735d144-60cb-565c-ad81-79714469392b",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "stage": "germinating",
+      "enteredAt": "2026-08-27T08:10:00.000Z",
+      "leftAt": "2026-08-29T08:00:00.000Z",
+      "createdAt": "2026-08-27T08:10:00.000Z",
+      "updatedAt": "2026-08-29T08:00:00.000Z"
+    },
+    {
+      "id": "9c062655-500a-59fc-a292-ddb0d421d798",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "stage": "seedling",
+      "enteredAt": "2026-08-29T08:00:00.000Z",
+      "leftAt": "2026-09-06T08:00:00.000Z",
+      "createdAt": "2026-08-29T08:00:00.000Z",
+      "updatedAt": "2026-09-06T08:00:00.000Z"
+    },
+    {
+      "id": "f069753b-3650-575f-b961-247c522227a7",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "stage": "vegetative",
+      "enteredAt": "2026-09-06T08:00:00.000Z",
+      "leftAt": "2026-09-10T08:00:00.000Z",
+      "createdAt": "2026-09-06T08:00:00.000Z",
+      "updatedAt": "2026-09-10T08:00:00.000Z"
+    },
+    {
+      "id": "bb6b49ba-412c-559e-b5e6-1a70040c3cfe",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "stage": "flowering",
+      "enteredAt": "2026-09-10T08:00:00.000Z",
+      "leftAt": null,
+      "createdAt": "2026-09-10T08:00:00.000Z",
+      "updatedAt": "2026-09-10T08:00:00.000Z"
+    }
+  ],
+  "measurements": [
+    {
+      "id": "afa638fe-5869-5311-98d7-b178c21af121",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "type": "height",
+      "value": 5,
+      "unit": "cm",
+      "measuredAt": "2026-08-31T09:00:00.000Z",
+      "note": "",
+      "createdAt": "2026-08-31T09:00:00.000Z",
+      "updatedAt": "2026-08-31T09:00:00.000Z"
+    },
+    {
+      "id": "b2c7363d-9622-5080-9102-5f7ff749425c",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "type": "height",
+      "value": 12,
+      "unit": "cm",
+      "measuredAt": "2026-09-04T09:00:00.000Z",
+      "note": "",
+      "createdAt": "2026-09-04T09:00:00.000Z",
+      "updatedAt": "2026-09-04T09:00:00.000Z"
+    },
+    {
+      "id": "96825985-2f95-5c4f-97b6-d52bd3224677",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "type": "height",
+      "value": 24,
+      "unit": "cm",
+      "measuredAt": "2026-09-08T09:00:00.000Z",
+      "note": "",
+      "createdAt": "2026-09-08T09:00:00.000Z",
+      "updatedAt": "2026-09-08T09:00:00.000Z"
+    },
+    {
+      "id": "a97cdb46-2839-5367-a547-4995e0454f56",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "type": "height",
+      "value": 31,
+      "unit": "cm",
+      "measuredAt": "2026-09-13T09:00:00.000Z",
+      "note": "stretch begins",
+      "createdAt": "2026-09-13T09:00:00.000Z",
+      "updatedAt": "2026-09-13T09:00:00.000Z"
+    },
+    {
+      "id": "dd5ecc39-1aef-53c4-b3af-291091fff2b8",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "type": "height",
+      "value": 4,
+      "unit": "cm",
+      "measuredAt": "2026-09-01T09:00:00.000Z",
+      "note": "",
+      "createdAt": "2026-09-01T09:00:00.000Z",
+      "updatedAt": "2026-09-01T09:00:00.000Z"
+    },
+    {
+      "id": "5f7a7102-fc8f-5e38-8fb0-60cda1ae442d",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "type": "height",
+      "value": 10,
+      "unit": "cm",
+      "measuredAt": "2026-09-05T09:00:00.000Z",
+      "note": "",
+      "createdAt": "2026-09-05T09:00:00.000Z",
+      "updatedAt": "2026-09-05T09:00:00.000Z"
+    },
+    {
+      "id": "025cfaf0-b3f3-5fac-b25c-aa8005aa4726",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "type": "height",
+      "value": 19,
+      "unit": "cm",
+      "measuredAt": "2026-09-09T09:00:00.000Z",
+      "note": "",
+      "createdAt": "2026-09-09T09:00:00.000Z",
+      "updatedAt": "2026-09-09T09:00:00.000Z"
+    }
+  ],
+  "locationChanges": [
+    {
+      "id": "413426c0-de88-5738-b6d3-e4f3f03a54df",
+      "plantId": "72323bd1-f017-5fb7-add7-694eddded834",
+      "fromLocationId": "b9812a21-5364-5cc9-b907-67a8dc83cc23",
+      "toLocationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "changedAt": "2026-08-29T09:00:00.000Z",
+      "reason": "hardening off done",
+      "createdAt": "2026-08-29T09:00:00.000Z",
+      "updatedAt": "2026-08-29T09:00:00.000Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "6c9bd8ab-5370-5a55-9550-e5d012963489",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "title": "Water Alpha",
+      "description": "2L plain water, pH 6.3",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "locationId": null,
+      "stageHint": "flowering",
+      "dueDate": "2026-09-15",
+      "priority": "high",
+      "status": "open",
+      "completedAt": null,
+      "createdAt": "2026-09-12T09:00:00.000Z",
+      "updatedAt": "2026-09-12T09:00:00.000Z"
+    },
+    {
+      "id": "a9696dec-83e8-5777-9995-d6ce7e397188",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "title": "Defoliate lower fans",
+      "description": "Only big leaves near the soil",
+      "plantId": null,
+      "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "stageHint": "flowering",
+      "dueDate": "2026-09-16",
+      "priority": "medium",
+      "status": "open",
+      "completedAt": null,
+      "createdAt": "2026-09-12T09:00:00.000Z",
+      "updatedAt": "2026-09-12T09:00:00.000Z"
+    },
+    {
+      "id": "bc57b94b-39f0-5cc6-aed3-e98e23b7e052",
+      "growId": null,
+      "title": "Calibrate pH meter",
+      "description": "",
+      "plantId": null,
+      "locationId": null,
+      "stageHint": null,
+      "dueDate": "2026-09-14",
+      "priority": "low",
+      "status": "open",
+      "completedAt": null,
+      "createdAt": "2026-09-10T09:00:00.000Z",
+      "updatedAt": "2026-09-10T09:00:00.000Z"
+    },
+    {
+      "id": "66422c87-c9e6-5978-aa3e-583e9743ae9f",
+      "growId": "47501ca1-f8cb-5334-b1b0-84afd0312033",
+      "title": "Clean tent after harvest",
+      "description": "",
+      "plantId": null,
+      "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "stageHint": null,
+      "dueDate": "2026-07-30",
+      "priority": "medium",
+      "status": "done",
+      "completedAt": "2026-08-01T10:00:00.000Z",
+      "createdAt": "2026-07-28T10:00:00.000Z",
+      "updatedAt": "2026-08-01T10:00:00.000Z"
+    }
+  ],
+  "photos": [
+    {
+      "id": "c1b09637-c310-52e6-a25f-b55998d151f5",
+      "plantId": "dd8b53e6-698b-573c-8c9d-972596d0e724",
+      "logEntryId": "f0525497-db96-5dfb-bb2f-12047ed7d9bb",
+      "blob": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "mimeType": "image/png",
+      "takenAt": "2026-09-14T09:15:00.000Z",
+      "note": "first pistils",
+      "phaseTag": "flowering",
+      "createdAt": "2026-09-14T09:15:00.000Z",
+      "updatedAt": "2026-09-14T09:15:00.000Z"
+    }
+  ],
+  "logEntries": [
+    {
+      "id": "b6ca937c-ac77-540d-848d-9ce2da216397",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "at": "2026-09-12T18:30:00.000Z",
+      "text": "Watered both girls with plain water",
+      "amountL": 2.0,
+      "ph": 6.3,
+      "ec": null,
+      "tempC": 22.5,
+      "plantIds": [
+        "dd8b53e6-698b-573c-8c9d-972596d0e724",
+        "72323bd1-f017-5fb7-add7-694eddded834"
+      ],
+      "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "createdAt": "2026-09-12T18:30:00.000Z",
+      "updatedAt": "2026-09-12T18:30:00.000Z",
+      "categories": [
+        "watering"
+      ]
+    },
+    {
+      "id": "9b254cec-fb25-566f-a109-2249e09352fd",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "at": "2026-09-13T18:00:00.000Z",
+      "text": "First bloom feed, half strength",
+      "amountL": 1.5,
+      "ph": 6.1,
+      "ec": 1.2,
+      "tempC": null,
+      "plantIds": [
+        "dd8b53e6-698b-573c-8c9d-972596d0e724"
+      ],
+      "locationId": "e3ac8463-f65b-519c-a8ff-1e378b8f4203",
+      "createdAt": "2026-09-13T18:00:00.000Z",
+      "updatedAt": "2026-09-13T18:00:00.000Z",
+      "categories": [
+        "feeding"
+      ]
+    },
+    {
+      "id": "f0525497-db96-5dfb-bb2f-12047ed7d9bb",
+      "growId": "87d00d45-913f-5423-a665-fb44b88a8934",
+      "at": "2026-09-14T09:15:00.000Z",
+      "text": "Stretch starting, Alpha showed first pistils",
+      "amountL": null,
+      "ph": null,
+      "ec": null,
+      "tempC": null,
+      "plantIds": [],
+      "locationId": null,
+      "createdAt": "2026-09-14T09:15:00.000Z",
+      "updatedAt": "2026-09-14T09:15:00.000Z",
+      "categories": [
+        "observation"
+      ]
+    },
+    {
+      "id": "45d54523-6925-5a1e-b675-4a113cee7f24",
+      "growId": "47501ca1-f8cb-5334-b1b0-84afd0312033",
+      "at": "2026-07-10T18:00:00.000Z",
+      "text": "Final watering, plain pH'd water only (pre-harvest flush)",
+      "amountL": 3.0,
+      "ph": 6.2,
+      "ec": null,
+      "tempC": null,
+      "plantIds": [],
+      "locationId": null,
+      "createdAt": "2026-07-10T18:00:00.000Z",
+      "updatedAt": "2026-07-10T18:00:00.000Z",
+      "categories": [
+        "feeding"
+      ]
+    }
+  ]
+}

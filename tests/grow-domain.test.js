@@ -191,3 +191,201 @@ test("stageProgress end-to-end: plant detail data shape via adapter", async () =
   assert.equal(progress.remaining, 9);
   assert.equal(progress.overdue, false);
 });
+
+test("harvestSummary: null when no harvested plants in the grow", async () => {
+  const { window } = await setup();
+  const gd = window.LeafGuru.growDomain;
+  const plants = [
+    { growId: "G1", status: "growing", stage: "vegetative" },
+    { growId: "G2", status: "cured", stage: "cured" }
+  ];
+  assert.equal(gd.harvestSummary({ plants, equipmentList: [], growId: "G1" }), null);
+});
+
+test("harvestSummary: counts, yield totals and cost-per-gram", async () => {
+  const { window } = await setup();
+  const gd = window.LeafGuru.growDomain;
+  const plants = [
+    { growId: "G1", status: "cured", stage: "cured", harvestYieldG: 42.5 },
+    { growId: "G1", status: "harvested", stage: "drying", harvestYieldG: 31 },
+    { growId: "G1", status: "growing", stage: "flowering", harvestYieldG: null }, // still growing
+    { growId: "G1", status: "died", stage: "seedling" },                          // died early
+    { growId: "G1", status: "harvested", stage: "drying", harvestYieldG: null }   // no yield yet
+  ];
+  const equipment = [
+    { growId: "G1", cost: 189.9, currency: "EUR" },
+    { growId: "G1", cost: 24.5, currency: "EUR" },
+    { growId: "G1", cost: 10, currency: "USD" }
+  ];
+  const summary = gd.harvestSummary({ plants, equipmentList: equipment, growId: "G1" });
+  assert.equal(summary.plantCount, 3, "cured + harvested×2 reached harvest");
+  assert.equal(summary.withYield, 2);
+  assert.equal(summary.totalYieldG, 73.5);
+  assert.equal(summary.avgYieldG, 36.75);
+  assert.equal(summary.costPerG.length, 2);
+  const eur = summary.costPerG.find((c) => c.currency === "EUR");
+  assert.equal(eur.total, 214.4);
+  assert.ok(Math.abs(eur.costPerG - 214.4 / 73.5) < 1e-9);
+  const usd = summary.costPerG.find((c) => c.currency === "USD");
+  assert.equal(usd.costPerG, 10 / 73.5);
+  // zero yield → no cost-per-gram entries
+  const noYield = gd.harvestSummary({
+    plants: [{ growId: "G1", status: "harvested", stage: "harvest", harvestYieldG: null }],
+    equipmentList: equipment, growId: "G1"
+  });
+  assert.equal(noYield.plantCount, 1);
+  assert.equal(noYield.totalYieldG, 0);
+  assert.equal(noYield.costPerG.length, 0);
+});
+
+test("harvestSummary with schema-valid adapter records (new plant fields)", async () => {
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  const gd = window.LeafGuru.growDomain;
+  const grow = await storage.put("grows", { name: "Finished", status: "closed" });
+  await storage.put("plants", {
+    name: "Berry", strainTemplateId: null, customStrain: null, sex: "female",
+    germinationDate: "2026-05-04", stage: "cured", status: "cured",
+    growId: grow.id, harvestYieldG: 42.5, harvestedAt: "2026-07-16"
+  });
+  await storage.put("equipment", {
+    name: "LED", category: "light", status: "stored", growId: grow.id, cost: 189.9, currency: "EUR"
+  });
+  const plants = await storage.list("plants");
+  const equipment = await storage.list("equipment");
+  const summary = gd.harvestSummary({ plants, equipmentList: equipment, growId: grow.id });
+  assert.equal(summary.plantCount, 1);
+  assert.equal(summary.totalYieldG, 42.5);
+  assert.equal(summary.costPerG[0].costPerG, 189.9 / 42.5);
+});
+
+test("isHarvested: status- or stage-based", async () => {
+  const { window } = await setup();
+  const gd = window.LeafGuru.growDomain;
+  assert.equal(gd.isHarvested({ status: "growing", stage: "flowering" }), false);
+  assert.equal(gd.isHarvested({ status: "died", stage: "seedling" }), false);
+  assert.equal(gd.isHarvested({ status: "harvested", stage: "flowering" }), true);
+  assert.equal(gd.isHarvested({ status: "growing", stage: "harvest" }), true);
+  assert.equal(gd.isHarvested({ status: "growing", stage: "drying" }), true);
+  assert.equal(gd.isHarvested({ status: "fermented", stage: "fermented" }), true);
+  assert.equal(gd.isHarvested({ status: "cured", stage: "cured" }), true);
+});
+
+test("harvestSummary includes trim parts (buds/leaves/sugar leaves/stems)", async () => {
+  const { window } = await setup();
+  const gd = window.LeafGuru.growDomain;
+  const plants = [
+    { growId: "G1", status: "cured", stage: "cured", harvestYieldG: 42.5,
+      budG: 38.5, leafG: 6.2, sugarLeafG: 4.1, stemG: 9.4 },
+    { growId: "G1", status: "cured", stage: "cured", harvestYieldG: 31,
+      budG: 27, leafG: 5, sugarLeafG: 3.2, stemG: 7.8 }
+  ];
+  const summary = gd.harvestSummary({ plants, equipmentList: [], growId: "G1" });
+  assert.equal(summary.totalBudG, 65.5);
+  assert.equal(summary.totalLeafG, 11.2);
+  assert.equal(summary.totalSugarLeafG, 7.3);
+  assert.equal(summary.totalStemG, 17.2);
+  // missing parts count as 0, not null
+  const sparse = gd.harvestSummary({
+    plants: [{ growId: "G1", status: "harvested", stage: "harvest", harvestYieldG: 10 }],
+    equipmentList: [], growId: "G1"
+  });
+  assert.equal(sparse.totalBudG, 0);
+  assert.equal(sparse.totalStemG, 0);
+});
+
+test("defaultGrowId: flagged grow wins, falls back to first active, else null", async () => {
+  const { window } = await setup();
+  const gd = window.LeafGuru.growDomain;
+  const grows = [
+    { id: "a", name: "Summer", status: "closed", isDefault: false },
+    { id: "b", name: "Autumn", status: "active", isDefault: false },
+    { id: "c", name: "Winter", status: "planned", isDefault: true }
+  ];
+  assert.equal(gd.defaultGrowId(grows), "c", "flag beats active");
+  assert.equal(gd.defaultGrowId(grows.map((g) => ({ ...g, isDefault: false }))), "b",
+    "first active as fallback");
+  assert.equal(gd.defaultGrowId([
+    { id: "x", name: "Old", status: "closed", isDefault: false }
+  ]), null, "no default, no active");
+  assert.equal(gd.defaultGrowId([]), null);
+  assert.equal(gd.defaultGrowId(null), null);
+});
+
+test("stageAverages: actual durations across a grow's plants", async () => {
+  const { window } = await setup();
+  const gd = window.LeafGuru.growDomain;
+  const plants = [{ id: "p1", growId: "G1" }, { id: "p2", growId: "G1" }, { id: "pX", growId: "G2" }];
+  const day = (n) => `2026-05-${String(n).padStart(2, "0")}T00:00:00.000Z`;
+  const stageLogs = [
+    { plantId: "p1", stage: "seedling", enteredAt: day(1), leftAt: day(11) },   // 10d
+    { plantId: "p2", stage: "seedling", enteredAt: day(3), leftAt: day(11) },  // 8d
+    { plantId: "pX", stage: "seedling", enteredAt: day(1), leftAt: day(30) },  // other grow → excluded
+    { plantId: "p1", stage: "vegetative", enteredAt: day(11), leftAt: null }, // open → excluded
+    { plantId: "p2", stage: "flowering", enteredAt: day(11), leftAt: day(20) } // 9d
+  ];
+  const averages = gd.stageAverages({ plants, stageLogs, growId: "G1" });
+  assert.deepEqual(Object.keys(averages), ["seedling", "flowering"], "lifecycle order, only stages with data");
+  assert.equal(averages.seedling.count, 2);
+  assert.equal(averages.seedling.avgDays, 9);
+  assert.equal(averages.seedling.minDays, 8);
+  assert.equal(averages.seedling.maxDays, 10);
+  assert.equal(averages.flowering.count, 1);
+  assert.equal(averages.flowering.avgDays, 9);
+  assert.equal(Object.keys(gd.stageAverages({ plants: [], stageLogs, growId: "G1" })).length, 0);
+});
+
+test("growth chart integration: multi-series + expected-height overlay via adapter records", async () => {
+  const { window } = await setup();
+  const storage = new window.LeafGuru.LocalAdapter();
+  const chart = window.LeafGuru.chart;
+  const tpl = await storage.put("strainTemplates", {
+    name: "Purple Sunset", genotype: "indica",
+    stageDurations: { seedling: 14, vegetative: 35, flowering: 60 },
+    expectedHeightCm: 110
+  });
+  const grow = await storage.put("grows", { name: "Autumn", status: "active" });
+  const alpha = await storage.put("plants", {
+    name: "Alpha", strainTemplateId: tpl.id, customStrain: null, sex: "female",
+    stage: "flowering", status: "growing", growId: grow.id
+  });
+  const beta = await storage.put("plants", {
+    name: "Beta", strainTemplateId: tpl.id, customStrain: null, sex: "female",
+    stage: "flowering", status: "growing", growId: grow.id
+  });
+  const unlinked = await storage.put("plants", {
+    name: "Other grow", strainTemplateId: null, customStrain: null, sex: "female",
+    stage: "seedling", status: "growing"
+  });
+  const mk = (plant, day, value) => ({
+    plantId: plant.id, type: "height", value, unit: "cm",
+    measuredAt: `2026-09-${String(day).padStart(2, "0")}T09:00:00Z`, note: ""
+  });
+  for (const m of [mk(alpha, 1, 5), mk(alpha, 8, 12), mk(alpha, 15, 24), mk(beta, 2, 4), mk(beta, 9, 10)])
+    await storage.put("measurements", m);
+  await storage.put("measurements", mk(unlinked, 1, 99)); // other plant → excluded
+
+  // the exact flow the Grows detail performs:
+  const [plants, measurements] = await Promise.all([
+    storage.list("plants"), storage.list("measurements")
+  ]);
+  const growPlants = plants.filter((p) => p.growId === grow.id);
+  const series = growPlants
+    .map((plant) => ({
+      name: plant.name,
+      points: chart.seriesFromMeasurements(
+        measurements.filter((m) => m.plantId === plant.id), "height")
+    }))
+    .filter((s) => s.points.length > 0);
+  assert.deepEqual(series.map((s) => s.name), ["Alpha", "Beta"]);
+  assert.equal(series[0].points.length, 3);
+
+  const { svg, legend } = chart.multiLineChart(series, {
+    yLabel: "cm",
+    hLines: [{ y: 110, label: "expected 110 cm" }]
+  });
+  assert.equal(svg.children.filter((c) => c.tag === "polyline").length, 2);
+  assert.equal(legend.children.length, 2);
+  assert.ok(svg.children.some((c) => c.tag === "line" && c.attrs.class === "chart-hline"),
+    "expected-height overlay drawn");
+});

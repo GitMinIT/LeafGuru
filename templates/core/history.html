@@ -1,0 +1,36 @@
+{% extends "core/base.html" %}
+
+{% block title %}History — LeafGuru{% endblock %}
+
+{% block content %}
+<h1>History</h1>
+<p class="muted">The full event log of one grow — stage changes, harvests, measurements, moves, tasks and equipment. Click a row for details.</p>
+
+<div class="crud-toolbar">
+    <label class="task-filter">
+        <span class="muted">Grow</span>
+        <select data-history-grow></select>
+    </label>
+    <button type="button" data-history-add-log>+ Log entry</button>
+</div>
+
+<p class="muted" data-history-empty-grow hidden>No grows yet — <a href="/grows/">create a grow</a> to see its history.</p>
+
+<section class="card" data-history-list-section hidden>
+    <ul class="history-list" data-history-list></ul>
+    <p class="muted" data-history-empty hidden>No events recorded for this grow yet.</p>
+</section>
+
+<dialog data-event-popup class="crud-dialog event-popup">
+    <h2 data-popup-title></h2>
+    <dl data-popup-body class="event-popup__body"></dl>
+    <div class="crud-dialog-actions">
+    </div>
+</dialog>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/model/history-domain.js"></script>
+<script src="/static/js/model/history-view.js"></script>
+<script src="/static/js/pages/history.js"></script>
+{% endblock %}

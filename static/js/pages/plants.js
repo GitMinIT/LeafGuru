@@ -56,8 +56,8 @@
       const growCur = growSel.value;
       growSel.replaceChildren(new Option(t("common.none"), ""));
       for (const g of cache.grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
-        growSel.append(new Option(g.name, g.id));
-      growSel.value = growCur;
+        growSel.append(new Option(g.name + (g.isDefault ? " ★" : ""), g.id));
+      growSel.value = growCur || window.LeafGuru.growDomain.defaultGrowId(cache.grows) || "";
 
       const tplSelect = $("#plant-template");
       tplSelect.replaceChildren(new Option(t("common.none"), ""));
@@ -144,7 +144,7 @@
         strainTemplateId: tplId,
         customStrain: f.elements["customStrain"].value || null,
         sex: f.elements["sex"].value || "unknown",
-        germinationDate: f.elements["germinationDate"].value || null,
+        germinationDate: window.LeafGuru.dateInput.parse(f.elements["germinationDate"]),
         stage,
         locationId: f.elements["locationId"].value || null,
         growId: f.elements["growId"].value || null,
@@ -173,10 +173,17 @@
       $("[data-edit-title]").textContent = `${t("common.edit")}: ${plant.name}`;
       form.elements["name"].value = plant.name ?? "";
       form.elements["customStrain"].value = plant.customStrain ?? "";
-      form.elements["germinationDate"].value = plant.germinationDate ?? "";
+      window.LeafGuru.dateInput.set(form.elements["germinationDate"], plant.germinationDate ?? null);
       form.elements["notes"].value = plant.notes ?? "";
       $("#edit-sex").value = plant.sex ?? "unknown";
       $("#edit-status").value = plant.status ?? "growing";
+      $("#edit-yield").value = plant.harvestYieldG ?? "";
+      window.LeafGuru.dateInput.set($("#edit-harvested"), plant.harvestedAt ?? null);
+      $("#edit-bud").value = plant.budG ?? "";
+      $("#edit-leaf").value = plant.leafG ?? "";
+      $("#edit-sugarleaf").value = plant.sugarLeafG ?? "";
+      $("#edit-stem").value = plant.stemG ?? "";
+      $("#edit-smell").value = plant.smellTerpenes ?? "";
       // template select
       const tplSel = $("#edit-template");
       tplSel.replaceChildren(new Option(t("common.none"), ""));
@@ -187,8 +194,8 @@
       const growSel = $("#edit-grow");
       growSel.replaceChildren(new Option(t("common.none"), ""));
       for (const g of cache.grows.slice().sort((a, b) => a.name.localeCompare(b.name)))
-        growSel.append(new Option(g.name, g.id));
-      growSel.value = plant.growId ?? "";
+        growSel.append(new Option(g.name + (g.isDefault ? " ★" : ""), g.id));
+      growSel.value = plant.growId || window.LeafGuru.growDomain.defaultGrowId(cache.grows) || "";
       // location select (filled in fillSelectors)
       $("#edit-location").value = plant.locationId ?? "";
       dialog.showModal();
@@ -203,8 +210,20 @@
       record.strainTemplateId = $("#edit-template").value || null;
       record.customStrain = form.elements["customStrain"].value.trim() || null;
       record.sex = $("#edit-sex").value;
-      record.germinationDate = form.elements["germinationDate"].value || null;
+      record.germinationDate = window.LeafGuru.dateInput.parse(form.elements["germinationDate"]);
       record.status = $("#edit-status").value;
+      const yieldRaw = $("#edit-yield").value.trim();
+      record.harvestYieldG = yieldRaw === "" ? null : Number(yieldRaw);
+      record.harvestedAt = window.LeafGuru.dateInput.parse($("#edit-harvested"));
+      const optNum = (sel) => {
+        const raw = $(sel).value.trim();
+        return raw === "" ? null : Number(raw);
+      };
+      record.budG = optNum("#edit-bud");
+      record.leafG = optNum("#edit-leaf");
+      record.sugarLeafG = optNum("#edit-sugarleaf");
+      record.stemG = optNum("#edit-stem");
+      record.smellTerpenes = $("#edit-smell").value.trim() || null;
       record.locationId = $("#edit-location").value || null;
       record.growId = $("#edit-grow").value || null;
       record.notes = form.elements["notes"].value.trim() || null;
@@ -217,7 +236,6 @@
         window.LeafGuru.ui.reportSubmitError(form, e);
       }
     });
-    $("[data-edit-cancel]").addEventListener("click", () => $("[data-plant-edit]").close());
 
     // --- delete with cascade ---
     async function removePlant(plant) {
@@ -256,6 +274,23 @@
           : plant.customStrain) ?? t("common.unknown");
       $("[data-detail-status]").textContent = t("plant.status." + plant.status);
 
+      // harvest yield (if recorded)
+      const yieldEl = $("[data-detail-yield]");
+      const parts = [
+        plant.harvestYieldG != null ? `${Math.round(plant.harvestYieldG)} g` : null,
+        plant.budG != null ? `${t("plant.budG")}: ${Math.round(plant.budG)} g` : null,
+        plant.leafG != null ? `${t("plant.leafG")}: ${Math.round(plant.leafG)} g` : null,
+        plant.sugarLeafG != null ? `${t("plant.sugarLeafG")}: ${Math.round(plant.sugarLeafG)} g` : null,
+        plant.stemG != null ? `${t("plant.stemG")}: ${Math.round(plant.stemG)} g` : null,
+        plant.smellTerpenes ? `${t("plant.smellTerpenes")}: ${plant.smellTerpenes}` : null
+      ].filter(Boolean);
+      if (parts.length) {
+        yieldEl.hidden = false;
+        yieldEl.textContent = ` · ${parts.join(" · ")}`;
+      } else {
+        yieldEl.hidden = true;
+      }
+
       const open = d.openStage(stageLogs, plant.id);
       const days = d.daysSince(open?.enteredAt ?? plant.germinationDate ?? plant.createdAt);
       let stageText = t("stages." + plant.stage) + (days != null ? ` · ${t("plant.daysInStage")}: ${days}` : "");
@@ -284,8 +319,8 @@
       for (const log of timeline) {
         const li = document.createElement("li");
         const dur = log.leftAt ? d.daysSince(log.enteredAt, log.leftAt) : null;
-        li.textContent = `${t("stages." + log.stage)} — ${log.enteredAt.slice(0, 10)}`
-          + (log.leftAt ? ` → ${log.leftAt.slice(0, 10)}` : ` (${t("common.active")})`)
+        li.textContent = `${t("stages." + log.stage)} — ${window.LeafGuru.format.date(log.enteredAt)}`
+          + (log.leftAt ? ` → ${window.LeafGuru.format.date(log.leftAt)}` : ` (${t("common.active")})`)
           + (dur != null ? ` · ${dur}d` : "");
         tl.append(li);
       }
@@ -300,7 +335,7 @@
         const li = document.createElement("li");
         const from = locations.find((l) => l.id === c.fromLocationId)?.name ?? t("plant.noLocation");
         const to = locations.find((l) => l.id === c.toLocationId)?.name ?? t("plant.noLocation");
-        li.textContent = `${c.changedAt.slice(0, 10)}: ${from} → ${to}${c.reason ? ` (${c.reason})` : ""}`;
+        li.textContent = `${window.LeafGuru.format.date(c.changedAt)}: ${from} → ${to}${c.reason ? ` (${c.reason})` : ""}`;
         lh.append(li);
       }
 
@@ -321,14 +356,14 @@
         img.loading = "lazy";
         const caption = document.createElement("figcaption");
         caption.className = "muted";
-        caption.textContent = `${photo.takenAt.slice(0, 10)}`
+        caption.textContent = `${window.LeafGuru.format.date(photo.takenAt)}`
           + (photo.phaseTag ? ` · ${t("stages." + photo.phaseTag)}` : "")
           + (photo.note ? ` · ${photo.note}` : "");
         const del = document.createElement("button");
         del.type = "button";
         del.textContent = t("common.delete");
         del.addEventListener("click", async () => {
-          if (!window.confirm(t("messages.confirmDelete", { name: "photo " + photo.takenAt.slice(0, 10) }))) return;
+          if (!window.confirm(t("messages.confirmDelete", { name: "photo " + window.LeafGuru.format.date(photo.takenAt) }))) return;
           await storage.delete("photos", photo.id);
           URL.revokeObjectURL(url);
           flash(t("messages.deleted"));
@@ -349,13 +384,13 @@
         li.className = "crud-row";
         const text = document.createElement("span");
         text.className = "crud-cell";
-        text.textContent = `${m.measuredAt.slice(0, 10)} — ${m.type}: ${m.value} ${m.unit}${m.note ? ` (${m.note})` : ""}`;
+        text.textContent = `${window.LeafGuru.format.date(m.measuredAt)} — ${m.type}: ${m.value} ${m.unit}${m.note ? ` (${m.note})` : ""}`;
         const actions = document.createElement("span");
         actions.className = "crud-cell task-actions";
         actions.append(
           actionBtn(t("common.edit"), () => editMeasurement(m)),
           actionBtn(t("common.delete"), async () => {
-            if (!window.confirm(t("messages.confirmDelete", { name: `${m.type} ${m.measuredAt.slice(0, 10)}` }))) return;
+            if (!window.confirm(t("messages.confirmDelete", { name: `${m.type} ${window.LeafGuru.format.date(m.measuredAt)}` }))) return;
             await storage.delete("measurements", m.id);
             flash(t("messages.deleted"));
             await openDetail(plantId);
@@ -484,5 +519,15 @@
     });
 
     await refresh();
+
+    // deep link: /plants/?plant=<id> (e.g. from the Timeline) opens the detail
+    try {
+      const linkedPlant = new URLSearchParams(window.location?.search ?? "").get("plant");
+      if (linkedPlant) {
+        const linked = cache.plants.find((p) => p.id === linkedPlant);
+        if (linked) await openDetail(linked.id);
+        window.history?.replaceState?.(null, "", "/plants/");
+      }
+    } catch { /* deep links are optional (tests, file URLs) */ }
   });
 })();

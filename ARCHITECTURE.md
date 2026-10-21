@@ -51,12 +51,13 @@ stable).
 | Location | id, name, type (indoor/outdoor), size (w/d/h or area m²), notes, active |
 | Equipment | id, name, category (light/pot/soil/fan/filter/nutrient/sensor/other), specs, purchase_date, cost, status, location_assignments[] (location_id, from, to) |
 | StrainTemplate | id, name, breeder, genotype (indica/sativa/hybrid/unknown), stage_durations{} (expected days per stage), expected_height_cm, characteristics, notes |
-| Plant | id, name, strain_template_id or custom_strain{}, sex (unknown/regular/female/male), germination_date, stage (current), location_id, status (growing/harvested/dried/cured/died), notes |
-| StageLog | id, plant_id, stage (germinated/seedling/vegetative/flowering/harvest/drying/cured), entered_at, left_at |
+| Plant | id, name, strain_template_id or custom_strain{}, sex (unknown/regular/female/male), germination_date, stage (current), location_id, status (growing/harvested/dried/fermented/cured/died), harvest_yield_g, bud_g?, leaf_g?, sugar_leaf_g?, stem_g?, smell_terpenes?, harvested_at, notes |
+| StageLog | id, plant_id, stage (germinated/seedling/vegetative/flowering/harvest/drying/fermented/cured), entered_at, left_at |
 | Measurement | id, plant_id, type (height/other), value, unit, measured_at, note |
 | LocationChange | id, plant_id, from_location_id, to_location_id, changed_at, reason |
 | Task | id, plant_id?, location_id?, title, description, due_date, stage_hint?, priority, status (open/done/skipped), completed_at |
-| Photo | id, plant_id, blob (IndexedDB), taken_at, note, phase_tag |
+| LogEntry | id, grow_id, at, categories[] (watering/feeding/training/defoliation/treatment/observation/note/other, min 1), text, amount_l?, ph?, ec?, temp_c?, plant_ids[], location_id? — the daily journal (phase 2.5) |
+| Photo | id, plant_id?, log_entry_id?, blob (IndexedDB), taken_at, note, phase_tag |
 
 Task planning is in MVP: tasks can hang off plants or locations, carry a
 stage hint (e.g. "topping after 5 nodes → vegetative"), a due date and a
@@ -76,7 +77,22 @@ static/              # app JS (storage adapter, alpine components), CSS
 templates/           # Django templates (pages per entity + dashboard)
 ```
 
-## Phase 2 notes (do not build yet)
+## Phase 2.5 notes — Journal (daily-driver)
+
+The journal is what makes the app usable on a regular schedule:
+
+- **LogEntry** is a first-class entity, grow-scoped like the History.
+  Free text is the core; the nullable numbers (amount_l, ph, ec, temp_c)
+  cover the frequent watering/feeding cases without a rigid form.
+- Quick-add is global: a "+ Log" topbar button on every page pre-selects
+  the active grow, so a watering note takes seconds.
+- Log entries render through the existing history/timeline/popup domain
+  modules — one collection, three views.
+- Photos decouple from plants: `plant_id` becomes nullable and an
+  optional `log_entry_id` links images to journal entries (grow-level
+  shots work). The photo store/bundle logic is unchanged.
+
+## Phase 2 note — hosted/server storage (do not build yet)
 
 - Django models mirror the JSON schemas 1:1 (field names identical)
 - Auth: `django-allauth` or simple token; multi-user via FK on every entity

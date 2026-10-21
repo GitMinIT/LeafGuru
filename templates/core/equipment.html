@@ -5,22 +5,20 @@
 {% block content %}
 <h1>Equipment</h1>
 <div class="crud-toolbar">
-    <button type="button" data-crud-new>Create</button>
     <label class="task-filter">
         <span class="muted">Search</span>
         <input type="search" data-crud-search placeholder="Name, specs, notes…">
     </label>
     <label class="task-filter">
-        <span class="muted">Assign</span>
-        <select id="equip-assign-location"></select>
+        <span class="muted">Category</span>
+        <select data-equip-filter-category>
+            <option value="">All</option>
+        </select>
     </label>
-    <button type="button" data-assign-action>Assign</button>
-    <span class="muted">to</span>
-    <select id="equip-assign-equipment" data-assign-equipment></select>
     <p class="muted" data-crud-flash hidden aria-live="polite"></p>
 </div>
-<p class="muted" data-crud-empty>No equipment yet.</p>
-<ul class="crud-list" data-crud-list hidden></ul>
+<p class="muted" data-crud-empty>No equipment yet — use the + tile to add your first item.</p>
+<div class="equip-grid" data-equip-grid></div>
 
 <dialog data-crud-dialog class="crud-dialog">
     <form>
@@ -47,17 +45,26 @@
                     <option value="sold">Sold</option>
                 </select>
             </label>
+            <fieldset data-equip-icon class="log-categories">
+                <legend>Picture or emoji</legend>
+                <div class="equip-icon-picker">
+                    <span class="equip-icon-preview" data-icon-preview></span>
+                    <label class="log-chip">Upload image <input type="file" data-icon-file accept="image/jpeg,image/png,image/webp" hidden></label>
+                    <button type="button" class="log-chip" data-icon-clear>Clear picture</button>
+                </div>
+                <div class="equip-emoji-grid" data-emoji-grid></div>
+            </fieldset>
             <label>Specs <input name="specs" maxlength="500"></label>
-            <label>Purchase date <input type="date" name="purchaseDate"></label>
+            <label>Purchase date <input type="text" data-date-input name="purchaseDate" maxlength="12"></label>
             <label>Cost <input type="number" name="cost" min="0" step="0.01"></label>
             <label>Currency <input id="equip-currency" maxlength="8" placeholder="EUR"></label>
             <label>Grow <select id="equip-grow"></select></label>
             <label>Available everywhere <input type="checkbox" id="equip-everywhere"></label>
+            <label>Current location <select id="equip-location"></select></label>
             <label>Notes <textarea name="notes" maxlength="5000" rows="2"></textarea></label>
         </div>
         <p class="muted crud-error" data-crud-error hidden aria-live="polite"></p>
         <div class="crud-dialog-actions">
-            <button type="button" data-crud-cancel>Cancel</button>
             <button type="submit">Save</button>
         </div>
     </form>

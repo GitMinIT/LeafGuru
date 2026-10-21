@@ -15,8 +15,41 @@ function makeElement(tag = "div") {
     replaceChildren(...nodes) { el.children = [...nodes]; },
     addEventListener(type, fn) { (el._listeners ??= {})[type] ??= []; el._listeners[type].push(fn); },
     dispatch(type, event = {}) { (el._listeners?.[type] ?? []).forEach((fn) => fn(event)); },
-    setAttribute(k, v) { el.attrs[k] = v; },
+    setAttribute(k, v) {
+      el.attrs[k] = String(v);
+      // real DOM: data-* attributes appear on .dataset (camelCased)
+      if (/^data-([a-z-]+)$/i.test(k)) {
+        const key = k.slice(5).replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+        el.dataset[key] = String(v);
+      }
+    },
+    getAttribute(k) { return k in el.attrs ? el.attrs[k] : null; },
     querySelector(sel) {
+      // attribute selectors ([data-x]): match real children by attrs first
+      const attrMatch = /^\[([\w-]+)\]$/.exec(sel);
+      if (attrMatch) {
+        const found = (function scan(node) {
+          for (const child of node.children ?? []) {
+            if (child.attrs && attrMatch[1] in child.attrs) return child;
+            const nested = scan(child);
+            if (nested) return nested;
+          }
+          return null;
+        })(el);
+        if (found) return found;
+      }
+      // tag selectors: scan real children by tag first
+      if (/^[a-z]+$/.test(sel)) {
+        const found = (function scan(node) {
+          for (const child of node.children ?? []) {
+            if (child.tag === sel) return child;
+            const nested = scan(child);
+            if (nested) return nested;
+          }
+          return null;
+        })(el);
+        if (found) return found;
+      }
       (el._nested ??= new Map());
       if (!el._nested.has(sel)) el._nested.set(sel, makeElement(/^form$/.test(sel) ? "form" : "div"));
       return el._nested.get(sel);
@@ -30,7 +63,7 @@ function makeElement(tag = "div") {
       }
     },
     closest(sel) { return sel === "dialog" ? (el._dialog ?? null) : el; },
-    reset() { el.dataset.editingId = ""; el._inputs = {}; },
+    reset() { el.dataset.editingId = ""; /* real forms keep their element registry */ },
     click() {}, close() { el._closed = true; }, showModal() { el._shown = true; }, scrollIntoView() {},
   };
   if (tag === "form") {
@@ -43,7 +76,19 @@ function makeElement(tag = "div") {
     el.append = (...nodes) => { origAppend(...nodes); nodes.forEach(register); };
     const origAppendChild = el.appendChild;
     el.appendChild = (n) => { origAppendChild(n); register(n); return n; };
-    el.elements = new Proxy({}, { get: (_, name) => el._inputs[name] });
+    el.elements = new Proxy({}, {
+      get: (_, name) => {
+        if (typeof name !== "string") return el._inputs[name];
+        // real forms expose every descendant control — auto-create stub
+        // inputs so dialog opens don't crash in tests
+        if (!(name in el._inputs)) {
+          const input = makeElement("input");
+          input.name = name;
+          el._inputs[name] = input;
+        }
+        return el._inputs[name];
+      }
+    });
   }
   return el;
 }

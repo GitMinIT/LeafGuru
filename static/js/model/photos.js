@@ -35,8 +35,10 @@
     MAX_BYTES,
     ALLOWED,
 
-    /** validate + build a photo record (blob kept as-is for IndexedDB) */
-    buildRecord({ plant, file, note = "", phaseTag = null, at = null }) {
+    /** validate + build a photo record (blob kept as-is for IndexedDB).
+     * Pass { plant } and/or { logEntry, plantIds } — plant-level photos
+     * keep their plantId, journal photos link via logEntryId. */
+    buildRecord({ plant = null, logEntry = null, file, note = "", phaseTag = null, at = null }) {
       if (!ALLOWED.includes(file.type)) {
         throw new Error(window.LeafGuru.i18n.t("plant.photoUnsupported"));
       }
@@ -46,10 +48,11 @@
       const now = at ?? new Date().toISOString();
       return {
         id: window.LeafGuru.uuid(),
-        plantId: plant.id,
+        plantId: plant?.id ?? logEntry?.plantIds?.[0] ?? null,
+        logEntryId: logEntry?.id ?? null,
         blob: file,
         mimeType: file.type,
-        takenAt: now,
+        takenAt: logEntry?.at ?? now,
         note,
         phaseTag,
         createdAt: now,

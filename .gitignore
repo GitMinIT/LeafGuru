@@ -224,3 +224,6 @@ secrets/
 db.sqlite3
 staticfiles/
 *.log
+
+# working-session context (not part of the app)
+SESSION_CONTEXT.md

@@ -89,10 +89,22 @@
         "$ref": "task.schema.json"
       }
     },
+    "logEntries": {
+      "type": "array",
+      "items": {
+        "$ref": "log-entry.schema.json"
+      }
+    },
     "photos": {
       "type": "array",
       "items": {
         "$ref": "photo.schema.json"
+      }
+    },
+    "entityEdits": {
+      "type": "array",
+      "items": {
+        "$ref": "entity-edit.schema.json"
       }
     }
   }

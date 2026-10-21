@@ -1,0 +1,195 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "log-entry.schema.json",
+  "title": "LeafGuru LogEntry",
+  "type": "object",
+  "required": [
+    "id",
+    "growId",
+    "at",
+    "categories",
+    "text"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "growId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "the grow this journal entry belongs to"
+    },
+    "at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "when it happened (defaults to now)"
+    },
+    "categories": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "watering",
+          "feeding",
+          "training",
+          "defoliation",
+          "treatment",
+          "observation",
+          "fermentation",
+          "note",
+          "other"
+        ]
+      },
+      "minItems": 1,
+      "description": "one or more categories for this entry"
+    },
+    "category": {
+      "enum": [
+        null,
+        "watering",
+        "feeding",
+        "training",
+        "defoliation",
+        "treatment",
+        "observation",
+        "fermentation",
+        "note",
+        "other"
+      ],
+      "description": "deprecated: single category (pre-multi-select records)"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2000
+    },
+    "amountL": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "amount given, litres (watering/feeding)"
+    },
+    "ph": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 14,
+      "description": "pH of the solution"
+    },
+    "ec": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "description": "EC of the solution (mS/cm)"
+    },
+    "tempC": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "description": "temperature, °C"
+    },
+    "humidityPct": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100,
+      "description": "relative humidity % (curing/fermentation/climate notes)"
+    },
+    "product": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 200,
+      "description": "nutrient/treatment product used"
+    },
+    "dose": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 200,
+      "description": "dose per litre (e.g. '2 ml/L') for feeding/treatment"
+    },
+    "technique": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 120,
+      "description": "training technique (topping, LST, supercropping, scrog …)"
+    },
+    "stressLevel": {
+      "enum": [
+        null,
+        "low",
+        "medium",
+        "high"
+      ],
+      "description": "stress level of the applied training/defoliation/treatment"
+    },
+    "defoliationStyle": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 120,
+      "description": "defoliation style (lollipop, full strip, selective …)"
+    },
+    "defoliationPercent": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100,
+      "description": "removed foliage in % of the plant"
+    },
+    "fermentationNote": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "maxLength": 1000,
+      "description": "fermentation/curing details (jar, smell shift, burping)"
+    },
+    "plantIds": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "default": [],
+      "description": "plants this entry applies to (empty = whole grow)"
+    },
+    "locationId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "optional location context"
+    },
+    "createdAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updatedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}

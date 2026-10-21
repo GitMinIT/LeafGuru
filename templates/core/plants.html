@@ -33,7 +33,7 @@
                 <option value="seedling">Seedling</option>
             </select>
         </label>
-        <label>Germination date <input type="date" name="germinationDate"></label>
+        <label>Germination date <input type="text" data-date-input name="germinationDate"></label>
         <label>Location <select id="plant-location" name="locationId"></select></label>
         <label>Grow <select id="plant-grow" name="growId"></select></label>
         <button type="submit">Create</button>
@@ -58,23 +58,30 @@
                     <option value="male">Male</option>
                 </select>
             </label>
-            <label>Germination date <input type="date" name="germinationDate"></label>
+            <label>Germination date <input type="text" data-date-input name="germinationDate"></label>
             <label>Status
                 <select id="edit-status">
                     <option value="growing">Growing</option>
                     <option value="harvested">Harvested</option>
                     <option value="dried">Dried</option>
+                    <option value="fermented">Fermented</option>
                     <option value="cured">Cured</option>
                     <option value="died">Died</option>
                 </select>
             </label>
+            <label>Harvest yield (g) <input type="number" step="0.1" min="0" id="edit-yield"></label>
+            <label>Harvest date <input type="text" data-date-input id="edit-harvested"></label>
+            <label>Buds (g) <input type="number" step="0.1" min="0" id="edit-bud"></label>
+            <label>Leaves (g) <input type="number" step="0.1" min="0" id="edit-leaf"></label>
+            <label>Sugar leaves (g) <input type="number" step="0.1" min="0" id="edit-sugarleaf"></label>
+            <label>Stems (g) <input type="number" step="0.1" min="0" id="edit-stem"></label>
+            <label>Smell / terpenes <input id="edit-smell" maxlength="200" placeholder="e.g. citrus, diesel"></label>
             <label>Location <select id="edit-location"></select></label>
             <label>Grow <select id="edit-grow"></select></label>
             <label>Notes <textarea name="notes" maxlength="5000" rows="2"></textarea></label>
         </div>
         <p class="muted crud-error" data-crud-error hidden aria-live="polite"></p>
         <div class="crud-dialog-actions">
-            <button type="button" data-edit-cancel>Cancel</button>
             <button type="submit">Save</button>
         </div>
     </form>
@@ -87,6 +94,7 @@
         <span data-detail-stage></span> ·
         <span data-detail-location></span>
         <span data-detail-age></span>
+        <span data-detail-yield hidden></span>
     </p>
 
     <div class="plant-actions form-grid">

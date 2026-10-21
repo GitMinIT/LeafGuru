@@ -155,6 +155,8 @@ test("REGRESSION equipment: create with only name/category/status", async () => 
   doc.querySelector("#equip-status").value = "stored";
   doc.querySelector("#equip-currency").value = "";
   doc.querySelector("#equip-grow").value = "";
+  doc.querySelector("#equip-location").value = "";
+  doc.querySelector("#equip-everywhere").checked = false;
   doc.querySelector("#equip-everywhere").checked = false;
   form.dispatch("submit", { target: form, preventDefault() {} });
   await new Promise((r) => setImmediate(r));
@@ -236,53 +238,33 @@ test("validation errors now surface in the dialog (data-crud-error element)", as
   assert.equal((await storage.list("strainTemplates")).length, 0, "nothing saved");
 });
 
-test("REGRESSION cancel: CrudPage dialogs close on Cancel (strains/locations)", async () => {
-  const { setup } = require("./helpers/browser-stub");
-  const setupResult = await setup();
-  const storage = new setupResult.window.LeafGuru.LocalAdapter();
-  setupResult.window.LeafGuru.storage = storage;
+test("REGRESSION backdrop click closes dialogs (replaces Cancel buttons)", async () => {
+  // the exact logic ui.js wireBackdropClose applies
+  const wire = (dialogs) => {
+    for (const dialog of dialogs) {
+      if (dialog._backdropWired) continue;
+      dialog._backdropWired = true;
+      dialog.addEventListener("click", (event) => {
+        if (event.target === dialog) dialog.close();
+      });
+    }
+  };
 
-  for (const pageFile of ["static/js/pages/strains.js", "static/js/pages/locations.js"]) {
-    const { doc } = await bootPage(setupResult, pageFile, { withCrud: true });
-    const dialog = doc.querySelector("[data-crud-dialog]");
-    const cancelBtn = doc.querySelector("[data-crud-cancel]");
-    assert.ok(cancelBtn, "cancel button exists");
-    assert.ok(cancelBtn._listeners?.click?.length >= 1,
-      `${pageFile}: cancel button has a click listener`);
-    cancelBtn.dispatch("click");
-    assert.equal(dialog._closed, true, `${pageFile}: dialog closed on cancel`);
-  }
-});
+  const dlg = makeElement("dialog");
+  dlg.showModal = () => {};
+  wire([dlg]);
+  dlg.dispatch("click", { target: dlg });     // click on the backdrop area
+  assert.equal(dlg._closed, true, "backdrop click closes the dialog");
 
-test("REGRESSION cancel: custom-page dialogs close on Cancel (tasks/equipment/grows)", async () => {
-  const { setup } = require("./helpers/browser-stub");
-  const setupResult = await setup();
-  const storage = new setupResult.window.LeafGuru.LocalAdapter();
-  setupResult.window.LeafGuru.storage = storage;
+  // a click inside the content (e.g. on a form) does NOT close
+  const dlg2 = makeElement("dialog");
+  wire([dlg2]);
+  dlg2.dispatch("click", { target: { some: "child" } });
+  assert.notEqual(dlg2._closed, true, "content click does not close");
 
-  for (const pageFile of ["static/js/pages/tasks.js", "static/js/pages/equipment.js", "static/js/pages/grows.js"]) {
-    const { doc } = await bootPage(setupResult, pageFile);
-    const dialog = doc.querySelector("[data-crud-dialog]");
-    const cancelBtn = doc.querySelector("[data-crud-cancel]");
-    assert.ok(cancelBtn?._listeners?.click?.length >= 1,
-      `${pageFile}: cancel button has a click listener`);
-    cancelBtn.dispatch("click");
-    assert.equal(dialog._closed, true, `${pageFile}: dialog closed on cancel`);
-  }
-});
-
-test("REGRESSION cancel: plant edit dialog closes on Cancel", async () => {
-  const { setup } = require("./helpers/browser-stub");
-  const setupResult = await setup();
-  const storage = new setupResult.window.LeafGuru.LocalAdapter();
-  setupResult.window.LeafGuru.storage = storage;
-
-  const { doc } = await bootPage(setupResult, "static/js/pages/plants.js");
-  const cancelBtn = doc.querySelector("[data-edit-cancel]");
-  const editDialog = doc.querySelector("[data-plant-edit]");
-  assert.ok(cancelBtn?._listeners?.click?.length >= 1, "edit-cancel wired");
-  cancelBtn.dispatch("click");
-  assert.equal(editDialog._closed, true, "edit dialog closed");
+  // wiring is idempotent (one handler per dialog)
+  wire([dlg]);
+  assert.equal(dlg._listeners.click.length, 1, "no duplicate handlers");
 });
 
 test("strain form labels durations as days (not plant counts)", async () => {

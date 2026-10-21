@@ -1,0 +1,46 @@
+{% extends "core/base.html" %}
+
+{% block title %}Settings — LeafGuru{% endblock %}
+
+{% block content %}
+<h1>Settings</h1>
+<p class="muted">UI preferences — stored in this browser, independent of your data (survives import/export).</p>
+
+<section class="card">
+    <h2>Locale</h2>
+    <form class="form-grid" data-settings-form>
+        <label>Language
+            <select data-setting="language">
+                <option value="en">English</option>
+            </select>
+        </label>
+        <label>Date format
+            <select data-setting="dateFormat">
+                <option value="iso">ISO (2026-09-14)</option>
+                <option value="dmy">Day first (14.09.2026)</option>
+                <option value="mdy">Month first (09/14/2026)</option>
+                <option value="long">Long (September 14, 2026)</option>
+            </select>
+        </label>
+        <label>Time format
+            <select data-setting="hourFormat">
+                <option value="h24">24-hour (20:30)</option>
+                <option value="h12">12-hour (8:30 PM)</option>
+            </select>
+        </label>
+        <label>Timezone
+            <select data-setting="timezone">
+                <option value="local">Local browser timezone</option>
+            </select>
+        </label>
+        <button type="submit">Save</button>
+        <button type="button" data-settings-reset>Reset to defaults</button>
+    </form>
+    <p class="muted" data-settings-preview></p>
+    <p class="muted" data-settings-status aria-live="polite"></p>
+</section>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/pages/settings.js"></script>
+{% endblock %}

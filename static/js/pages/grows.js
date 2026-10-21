@@ -65,13 +65,16 @@
         status.textContent = t("grow.status." + grow.status);
         const dates = document.createElement("span");
         dates.className = "crud-cell";
-        dates.textContent = [grow.startDate, grow.endDate].filter(Boolean).join(" → ") || "–";
+        dates.textContent = [grow.startDate, grow.endDate]
+          .filter(Boolean).map((d) => window.LeafGuru.format.date(d))
+          .join(" → ") || "–";
         const counts = document.createElement("span");
         counts.className = "crud-cell";
         const nLocs = (grow.locationIds ?? []).length;
         const nPlants = cache.plants.filter((p) => p.growId === grow.id).length;
         const nTasks = cache.tasks.filter((x) => x.growId === grow.id).length;
-        counts.textContent = `${nLocs} ${t("nav.locations")} · ${nPlants} ${t("nav.plants")} · ${nTasks} ${t("nav.tasks")}`;
+        counts.textContent = `${nLocs} ${t("nav.locations")} · ${nPlants} ${t("nav.plants")} · ${nTasks} ${t("nav.tasks")}`
+          + (grow.isDefault ? ` · ★ ${t("grow.default")}` : "");
         const actions = document.createElement("span");
         actions.className = "crud-cell task-actions";
         actions.append(
@@ -102,9 +105,10 @@
       $("[data-crud-form-title]").textContent = record
         ? `${t("common.edit")}: ${record.name}` : t("grow.createTitle");
       $("#grow-status").value = record?.status ?? "planned";
-      $("#grow-start").value = record?.startDate ?? "";
-      $("#grow-end").value = record?.endDate ?? "";
+      window.LeafGuru.dateInput.set($("#grow-start"), record?.startDate ?? new Date().toISOString().slice(0, 10));
+      window.LeafGuru.dateInput.set($("#grow-end"), record?.endDate ?? null);
       $("#grow-notes").value = record?.notes ?? "";
+      $("#grow-default").checked = record?.isDefault ?? false;
       form.elements["name"].value = record?.name ?? "";
       // locations multi-select
       const locSel = $("#grow-locations");
@@ -127,11 +131,20 @@
       const record = editingId ? await storage.get("grows", editingId) : {};
       record.name = form.elements["name"].value.trim();
       record.status = $("#grow-status").value;
-      record.startDate = $("#grow-start").value || null;
-      record.endDate = $("#grow-end").value || null;
+      record.startDate = window.LeafGuru.dateInput.parse($("#grow-start"));
+      record.endDate = window.LeafGuru.dateInput.parse($("#grow-end"));
       record.notes = $("#grow-notes").value.trim();
+      record.isDefault = $("#grow-default").checked;
       record.locationIds = [...$("#grow-locations").selectedOptions].map((o) => o.value);
       try {
+        // enforce a single default grow
+        if (record.isDefault) {
+          const others = (await storage.list("grows")).filter((g) => g.isDefault && g.id !== record.id);
+          for (const other of others) {
+            other.isDefault = false;
+            await storage.put("grows", other);
+          }
+        }
         await storage.put("grows", record);
         $("[data-crud-dialog]").close();
         await refresh();
@@ -183,7 +196,7 @@
       fill("[data-detail-equipment]", equip, (e) =>
         `${e.name} — ${t("equipment.categories." + e.category)}${e.availableEverywhere ? " · " + t("equipment.availableEverywhere") : ""}`);
       fill("[data-detail-tasks]", tasks, (k) =>
-        `${k.title}${k.dueDate ? ` (${t("task.dueDate")}: ${k.dueDate})` : ""}`);
+        `${k.title}${k.dueDate ? ` (${t("task.dueDate")}: ${window.LeafGuru.format.date(k.dueDate)})` : ""}`);
 
       // equipment cost summary per currency
       const costs = window.LeafGuru.growDomain.costSummary(cache.equipment, grow.id);
@@ -196,19 +209,118 @@
         costsUl.append(li);
       }
 
+      // harvest statistics
+      const harvest = window.LeafGuru.growDomain.harvestSummary({
+        plants: cache.plants, equipmentList: cache.equipment, growId: grow.id
+      });
+      const harvestUl = $("[data-detail-harvest]");
+      harvestUl.replaceChildren();
+      $("[data-detail-harvest-title]").hidden = !harvest;
+      if (harvest) {
+        const liYield = document.createElement("li");
+        liYield.textContent = `${t("grow.harvestPlants", { count: harvest.plantCount })}` +
+          (harvest.withYield
+            ? ` · ${t("grow.totalYield", { grams: Math.round(harvest.totalYieldG) })}` +
+              (harvest.avgYieldG != null ? ` · ${t("grow.avgYield", { grams: Math.round(harvest.avgYieldG) })}` : "")
+            : "");
+        harvestUl.append(liYield);
+        const parts = [
+          harvest.totalBudG > 0 ? `${t("plant.budG")}: ${Math.round(harvest.totalBudG)} g` : null,
+          harvest.totalLeafG > 0 ? `${t("plant.leafG")}: ${Math.round(harvest.totalLeafG)} g` : null,
+          harvest.totalSugarLeafG > 0 ? `${t("plant.sugarLeafG")}: ${Math.round(harvest.totalSugarLeafG)} g` : null,
+          harvest.totalStemG > 0 ? `${t("plant.stemG")}: ${Math.round(harvest.totalStemG)} g` : null
+        ].filter(Boolean);
+        if (parts.length) {
+          const liParts = document.createElement("li");
+          liParts.textContent = parts.join(" · ");
+          harvestUl.append(liParts);
+        }
+        for (const c of harvest.costPerG) {
+          const li = document.createElement("li");
+          li.textContent = t("grow.costPerGram", {
+            value: c.costPerG.toFixed(2), currency: c.currency || t("common.unknown")
+          });
+          harvestUl.append(li);
+        }
+      }
+
+      // actual stage durations across the grow's plants
+      const stageLogs = cache.stageLogs ?? await storage.list("stageLogs");
+      const averages = window.LeafGuru.growDomain.stageAverages({
+        plants: cache.plants, stageLogs, growId: grow.id
+      });
+      const stageUl = $("[data-detail-stage-durations]");
+      stageUl.replaceChildren();
+      $("[data-detail-durations-title]").hidden = Object.keys(averages).length === 0;
+      for (const [stage, a] of Object.entries(averages)) {
+        const li = document.createElement("li");
+        li.textContent = a.count > 1
+          ? `${t("stages." + stage)}: ${t("grow.durationAvgRange", { avg: Math.round(a.avgDays), min: a.minDays, max: a.maxDays, count: a.count })}`
+          : `${t("stages." + stage)}: ${t("grow.durationOne", { count: a.avgDays })}`;
+        stageUl.append(li);
+      }
+
+      // multi-series growth chart: all plants of the grow + expected-height overlay
+      const chartEl = $("[data-detail-chart]");
+      chartEl.replaceChildren();
+      const growPlants = cache.plants.filter((p) => p.growId === grow.id);
+      const measurements = cache.measurements ?? await storage.list("measurements");
+      const chart = window.LeafGuru.chart;
+      const series = growPlants
+        .map((plant) => ({
+          name: plant.name,
+          points: chart.seriesFromMeasurements(
+            measurements.filter((m) => m.plantId === plant.id), "height")
+        }))
+        .filter((s) => s.points.length > 0);
+      const totalPoints = series.reduce((n, s) => n + s.points.length, 0);
+      $("[data-detail-chart-title]").hidden = totalPoints < 2;
+      if (totalPoints >= 2) {
+        // expected-height overlay: distinct expected heights of the
+        // charted plants' strain templates
+        const templateIds = new Set();
+        for (const plant of growPlants) {
+          if (plant.strainTemplateId && series.some((s) => s.name === plant.name)) {
+            templateIds.add(plant.strainTemplateId);
+          }
+        }
+        const hLines = [];
+        for (const tplId of templateIds) {
+          const tpl = await storage.get("strainTemplates", tplId);
+          const label = series.length > 1 || hLines.length > 0
+            ? `${t("strain.expectedHeightShort")} ${tpl?.expectedHeightCm} cm` : undefined;
+          if (tpl?.expectedHeightCm != null) {
+            hLines.push({ y: tpl.expectedHeightCm, label: label ?? undefined });
+          }
+        }
+        const { svg, legend } = chart.multiLineChart(series, { yLabel: "cm", hLines });
+        const wrap = document.createElement("div");
+        wrap.className = "chart-grow";
+        wrap.append(svg, legend);
+        chartEl.append(wrap);
+      }
+
       $("[data-grow-detail]").showModal();
     }
 
     // wire DOM
     $("[data-crud-new]").addEventListener("click", () => openForm(null));
     $("[data-crud-dialog] form").addEventListener("submit", submitForm);
-    $("[data-crud-cancel]").addEventListener("click", () => $("[data-crud-dialog]").close());
-    $("[data-detail-close]").addEventListener("click", () => $("[data-grow-detail]").close());
     $("[data-crud-search]").addEventListener("input", (event) => {
       searchTerm = event.target.value.trim();
       renderList();
     });
 
     await refresh();
+
+    // deep link: /grows/?grow=<id> (e.g. from the Timeline) opens the detail
+    try {
+      const linkedGrow = new URLSearchParams(window.location?.search ?? "").get("grow");
+      if (linkedGrow) {
+        const linked = cache.grows.find((g) => g.id === linkedGrow);
+        if (linked) await openDetail(linked);
+        window.history?.replaceState?.(null, "", "/grows/");
+      }
+    } catch { /* deep links are optional in tests */ }
   });
 })();

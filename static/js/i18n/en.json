@@ -41,7 +41,8 @@
     "date": "Date",
     "today": "Today",
     "never": "Never",
-    "noSearchResults": "No matching records."
+    "noSearchResults": "No matching records.",
+    "at": "at"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -66,6 +67,7 @@
     "flowering": "Flowering",
     "harvest": "Harvest",
     "drying": "Drying",
+    "fermented": "Fermented",
     "cured": "Cured"
   },
   "location": {
@@ -105,6 +107,8 @@
     "cost": "Cost",
     "purchaseDate": "Purchase date",
     "availableEverywhere": "Available everywhere",
+    "addTile": "Add",
+    "iconTooBig": "Image too large (max 512 KB).",
     "createTitle": "Create equipment",
     "assign": "Assign",
     "unassign": "Unassign",
@@ -124,6 +128,7 @@
     "createHint": "Describe the variety. The expectations below are typical values for this variety — individual plants may differ.",
     "expectedHeight": "Typical final height (cm)",
     "stageDurations": "Typical time per stage (days)",
+    "expectedHeightShort": "expected",
     "durationSeedling": "Days as seedling",
     "durationVegetative": "Days in vegetative stage",
     "durationFlowering": "Days in flowering stage",
@@ -143,6 +148,7 @@
       "growing": "Growing",
       "harvested": "Harvested",
       "dried": "Dried",
+      "fermented": "Fermented",
       "cured": "Cured",
       "died": "Died"
     },
@@ -183,7 +189,13 @@
     "editMeasurement": "Edit measurement (type|value|unit|note)",
     "confirmCascade": "This plant has {count} linked records (stage logs, measurements, location changes, photos). Delete them all?",
     "stageProgress": "day {day} of ~{expected}",
-    "stageOverdue": "{count}d past schedule"
+    "stageOverdue": "{count}d past schedule",
+    "harvestYield": "Harvest yield",
+    "budG": "Buds",
+    "leafG": "Leaves",
+    "sugarLeafG": "Sugar leaves",
+    "stemG": "Stems",
+    "smellTerpenes": "Smell / terpenes"
   },
   "task": {
     "title": "Tasks",
@@ -204,7 +216,16 @@
     "overdue": "Overdue",
     "markDone": "Done",
     "markSkipped": "Skip",
-    "reopen": "Reopen"
+    "reopen": "Reopen",
+    "moveTo": "Move to {status}"
+  },
+  "settings": {
+    "title": "Settings",
+    "localTimezone": "Local browser timezone",
+    "example": "Example",
+    "savedReload": "Saved — reload to apply everywhere.",
+    "reloadNow": "Reload now",
+    "resetDone": "Reset to defaults."
   },
   "data": {
     "export": "Export data",
@@ -240,11 +261,108 @@
     "detail": "Detail",
     "day": "Day",
     "equipmentCosts": "{count} equipment items",
+    "default": "Default",
+    "harvestPlants": "{count} plants harvested",
+    "totalYield": "total yield {grams} g",
+    "avgYield": "ø {grams} g per plant",
+    "costPerGram": "cost per gram: {value} {currency}",
+    "durationOne": "{count} days (1 plant)",
+    "durationAvgRange": "ø {avg} days ({min}–{max}, {count} plants)",
+    "growthComparison": "Growth comparison",
     "status": {
       "planned": "Planned",
       "active": "Active",
       "harvested": "Harvested",
       "closed": "Closed"
+    }
+  },
+  "timeline": {
+    "title": "Timeline",
+    "openEntry": "Open entry",
+    "harvest": "Harvest: {name}",
+    "growStart": "Start: {name}",
+    "growEnd": "End: {name}"
+  },
+  "calendar": {
+    "months": ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"]
+  },
+  "log": {
+    "title": "Journal",
+    "pickGrow": "Pick a grow first.",
+    "pickCategory": "Pick at least one category.",
+    "entryTitle": "Log entry",
+    "categories": {
+      "watering": "Watering",
+      "feeding": "Feeding",
+      "training": "Training",
+      "defoliation": "Defoliation",
+      "treatment": "Treatment",
+      "observation": "Observation",
+      "fermentation": "Fermentation",
+      "note": "Note",
+      "other": "Other"
+    },
+    "categoriesMulti": "Categories (pick one or more)",
+    "category": "Categories",
+    "amountL": "Amount (L)",
+    "ph": "pH",
+    "ec": "EC (mS/cm)",
+    "tempC": "Temp (°C)",
+    "humidityPct": "Humidity (%)",
+    "product": "Product",
+    "dose": "Dose",
+    "technique": "Technique",
+    "stressLevel": "Stress level",
+    "defoliationStyle": "Defoliation style",
+    "defoliationPercent": "Defoliation (%)",
+    "fermentationNote": "Fermentation notes",
+    "when": "When",
+    "text": "What happened?",
+    "plants": "Plants (optional)",
+    "photos": "Photos"
+  },
+  "history": {
+    "title": "History",
+    "pickGrow": "— pick a grow —",
+    "emptyGrow": "No grows yet — create a grow to see its history.",
+    "empty": "No events recorded for this grow yet.",
+    "locationChange": "Location change",
+    "taskPlanned": "Task planned",
+    "taskDone": "Task completed",
+    "taskSkipped": "Task skipped",
+    "measurement": "Measurement",
+    "equipmentPurchase": "Equipment purchased",
+    "equipmentAssignment": "Equipment assigned",
+    "germination": "Germination",
+    "entered": "Stage entered",
+    "left": "Stage left",
+    "durationDays": "Days in stage",
+    "from": "From",
+    "to": "To",
+    "assignedTo": "Assigned to",
+    "takenAt": "Taken at",
+    "value": "Value",
+    "rawRecord": "Raw record",
+    "rawShow": "Show raw record",
+    "rawHide": "Hide raw record",
+    "changeLog": "Change log",
+    "noEdits": "No changes recorded (created before tracking).",
+    "kinds": {
+      "growStart": "Grow start",
+      "growEnd": "Grow end",
+      "germination": "Germination",
+      "stage": "Stage change",
+      "harvest": "Harvest",
+      "measurement": "Measurement",
+      "locationChange": "Move",
+      "photo": "Photo",
+      "log": "Journal",
+      "taskPlanned": "Task planned",
+      "taskDone": "Task done",
+      "taskSkipped": "Task skipped",
+      "equipmentPurchase": "Equipment",
+      "equipmentAssignment": "Assignment"
     }
   }
 }

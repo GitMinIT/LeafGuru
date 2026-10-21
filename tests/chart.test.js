@@ -77,3 +77,64 @@ test("flat series (all same value) does not divide by zero", async () => {
   const poly = svg.children.find((c) => c.tag === "polyline");
   assert.ok(!poly.attrs.points.includes("NaN"), "no NaN in points");
 });
+
+test("multiLineChart: one polyline per series, distinct colors + legend", async () => {
+  const { window } = await setup();
+  const chart = window.LeafGuru.chart;
+  const series = [
+    { name: "Alpha", points: [
+      { x: "2026-09-01T00:00:00Z", y: 5 }, { x: "2026-09-08T00:00:00Z", y: 12 }, { x: "2026-09-15T00:00:00Z", y: 24 }] },
+    { name: "Beta", points: [
+      { x: "2026-09-02T00:00:00Z", y: 4 }, { x: "2026-09-09T00:00:00Z", y: 10 }] }
+  ];
+  const { svg, legend } = chart.multiLineChart(series, { yLabel: "cm" });
+  const polys = svg.children.filter((c) => c.tag === "polyline");
+  assert.equal(polys.length, 2, "one polyline per series");
+  assert.equal(polys[0].attrs.stroke, chart.PALETTE[0]);
+  assert.equal(polys[1].attrs.stroke, chart.PALETTE[1]);
+  assert.equal(svg.children.filter((c) => c.tag === "circle").length, 5, "dots for every point");
+  assert.equal(legend.children.length, 2, "legend entry per series");
+  assert.match(legend.children[0].children[0].attrs.style, new RegExp(chart.PALETTE[0]));
+  assert.ok(String(legend.children[1].textContent).includes("Beta"));
+  // tooltips carry the series name
+  const dot = svg.children.find((c) => c.tag === "circle");
+  assert.match(dot.children[0].textContent, /Alpha/);
+});
+
+test("multiLineChart: expected-height overlay line + label, shared axis", async () => {
+  const { window } = await setup();
+  const chart = window.LeafGuru.chart;
+  const series = [
+    { name: "Alpha", points: [
+      { x: "2026-09-01T00:00:00Z", y: 5 }, { x: "2026-09-15T00:00:00Z", y: 24 }] }
+  ];
+  const { svg } = chart.multiLineChart(series, {
+    yLabel: "cm",
+    hLines: [{ y: 110, label: "expected 110 cm" }]
+  });
+  const hline = svg.children.filter((c) => c.tag === "line" && c.attrs.class === "chart-hline");
+  assert.equal(hline.length, 1, "reference line present");
+  assert.equal(hline[0].attrs["stroke-dasharray"], "5 5", "dashed");
+  const label = svg.children.filter((c) => c.tag === "text" && c.attrs.class === "chart-hline-label");
+  assert.equal(label.length, 1);
+  assert.match(label[0].textContent, /expected 110 cm/);
+  // overlay is included in the y-scale: no NaN, hline inside viewBox
+  const [x, y] = hline[0].attrs.y1 === hline[0].attrs.y2 ? [hline[0].attrs.x1, hline[0].attrs.y1] : [0, 0];
+  assert.ok(Number(y) >= 0 && Number(y) <= 240, `overlay y=${y} in range`);
+});
+
+test("multiLineChart: empty/single-point input renders placeholder", async () => {
+  const { window } = await setup();
+  const chart = window.LeafGuru.chart;
+  const { svg } = chart.multiLineChart([]);
+  assert.ok(svg.children.find((c) => c.tag === "text"));
+  const single = chart.multiLineChart([{ name: "A", points: [{ x: "2026-09-01T00:00:00Z", y: 5 }] }]);
+  assert.equal(single.svg.children.filter((c) => c.tag === "polyline").length, 0);
+  // series with zero points are skipped, others still render
+  const mixed = chart.multiLineChart([
+    { name: "empty", points: [] },
+    { name: "B", points: [{ x: "2026-09-01T00:00:00Z", y: 1 }, { x: "2026-09-02T00:00:00Z", y: 2 }] }
+  ]);
+  assert.equal(mixed.svg.children.filter((c) => c.tag === "polyline").length, 1);
+  assert.equal(mixed.legend.children.length, 1);
+});

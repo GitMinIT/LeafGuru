@@ -8,7 +8,7 @@
 
   window.LeafGuru = window.LeafGuru || {};
 
-  const STAGES = ["planned", "germinating", "seedling", "vegetative", "flowering", "harvest", "drying", "cured"];
+  const STAGES = ["planned", "germinating", "seedling", "vegetative", "flowering", "harvest", "drying", "fermented", "cured"];
 
   window.LeafGuru.plantDomain = {
     stages: STAGES,

@@ -41,16 +41,163 @@
 - [x] Page-level smoke tests (DOM stub): renderList recursion
       regression, row/action rendering per page
 
-## Phase 2 — Insights (in progress)
+## Phase 2 — Insights ✅
 - [x] Stage countdowns vs. strain template durations — plant detail shows
       "day N of ~M" (+ days past schedule) from StageLog + stageDurations
 - [x] Cost tracking per grow — equipment cost summary per currency in
       grow detail (shared availableEverywhere items excluded)
-- [ ] Harvest statistics (yield, duration per stage, costs) — needs
-      schema extension (yield per plant)
-- [ ] Timeline/calendar visualization
-- [ ] Growth charts: multi-series (all plants of a grow), expected-height
-      overlay from strain template
+- [x] Harvest statistics — plant schema extended (harvestYieldG,
+      harvestedAt, editable in plant dialog); grow detail shows plants
+      harvested, total/avg yield and equipment cost per gram
+- [x] Actual stage durations per grow — avg/min–max days per stage from
+      closed StageLog entries (grow detail, next to template expectations)
+- [x] Timeline/calendar visualization — month grid (Mon-first) with
+      per-day events: stage changes, harvests, grow start/end, open tasks
+      (`static/js/model/timeline-domain.js`, pure + tested; page /timeline/)
+- [x] Example dataset for import testing — `examples/leafguru-example.json`
+      (finished grow with harvest stats + active grow; covered by
+      tests/example-data.test.js: schema-valid, imports, round-trips)
+- [x] **History** (spontaneous addition, off the original plan): per-grow
+      scrollable event log at /history/ — every dated record of one grow
+      (grow start/end, germinations, stage changes, harvests,
+      measurements, location moves, photos, tasks planned/done/skipped,
+      equipment purchases/assignments incl. availableEverywhere) in one
+      chronological list with sticky date headers. Clicking a row — or an
+      event in the Timeline — opens a shared verbose popup: formatted
+      detail fields + the raw record JSON. Pure collection logic in
+      `static/js/model/history-domain.js`, popup view in
+      `static/js/model/history-view.js` (shared with the timeline).
+- [x] Growth charts: multi-series — all height histories of a grow's
+      plants in one chart (distinct colors, legend, per-point tooltips),
+      plus dashed expected-height overlay(s) from the strain templates.
+      `chart.multiLineChart()` in `static/js/model/chart.js`; rendered in
+      the grow detail dialog.
+
+## Phase 2.5 — Journal (daily-driver feature) ✅
+
+The app can configure a grow but cannot journal it day-to-day. This phase
+closes that gap: the user opens the app, picks the grow, and notes what
+just happened — watering, feeding, training, treatment, observations —
+with optional numbers and photos. Target: under 15 seconds from opening
+the app to a saved entry.
+
+- [x] **LogEntry entity** — new schema `log-entry.schema.json`:
+      id, growId (required), at (timestamp), category enum (watering /
+      feeding / training / defoliation / treatment / observation /
+      note / other), text (required), optional nullable numbers for the
+      frequent cases (amountL, ph, ec, tempC), plantIds[] (optional),
+      locationId (optional). Additive — old bundles import unchanged.
+- [x] **Photos on entries** — photo schema: plantId becomes nullable,
+      optional logEntryId; grow-level and entry-level images work in the
+      existing IndexedDB store + export/import (base64, as before).
+      Fixed a pre-existing bug on the way: photo.schema.json demanded
+      blob as string, but live records store real Blobs — photo upload
+      from the Plants page never passed validation.
+- [x] **Quick-add UI** — "+ Log" button in the topbar on every page
+      (defaults to the active grow, remembers the last used grow) and
+      "+ Log entry" on the History page; dialog with category, text,
+      optional numbers, plant multi-select, location, photo picker;
+      errors render in the dialog
+- [x] **Journal rendering** — entries flow into History (per-grow list),
+      Timeline (per-day cells) and the shared event popup (numbers,
+      linked-photo thumbnails, delete entry incl. its photos) via the
+      existing domain modules
+- [x] **Tests** — log-entry domain (pure builder), photo/log link
+      round-trip, quick-add dialog create flows (minimal + full + no
+      grow error), history + timeline integration, example dataset
+      extension (4 journal entries + linked photo)
+
+Deferred (noted, not built here): activity presets with saved defaults
+(e.g. one-click "standard watering"), task completion from a log entry,
+watering-cadence hints ("last watered 3d ago").
+
+### Phase 2.7 — refinements (user feedback after daily use)
+
+- [x] **Fix "Delete all data"** — root cause: `logEntries` was added
+      without bumping IndexedDB `DB_VERSION`, so existing browsers never
+      ran `onupgradeneeded`, the store was missing and every transaction
+      (incl. wipe) threw NotFoundError. DB_VERSION is now 3, the upgrade
+      creates missing stores and drops unknown ones; regression test
+      guards the version bump.
+- [x] **Default grow** — `grow.isDefault` flag (checkbox in the grow
+      form, single default enforced on save, ★ marker in lists);
+      all grow selects (plants, tasks, equipment, history, quick-log)
+      prefill the default grow, fallback first active.
+- [x] **Harvest details on cured plants** — optional grams of buds,
+      leaves, sugar leaves and stems plus smell/terpenes text on the
+      plant (edit dialog + detail display); grow harvest summary sums
+      the parts per grow.
+- [x] **"Fermented" stage/status** — fermentation can change a lot:
+      new plant status + stage (schemas, stage lists, isHarvested,
+      stage-duration order, i18n).
+- [x] **Multi-category journal entries** — `logEntry.categories[]`
+      (min 1; legacy single `category` still read); the +Log dialog has
+      category chips with multi-select, and only the fields matching the
+      picked categories are shown (amount/pH/EC for watering/feeding/
+      treatment, EC only for watering/feeding, temp for observation/
+      note/other).
+- [x] **Settings page + "When" prefill** — browser-local settings store
+      (`static/js/model/settings-store.js`, localStorage — deliberately
+      not part of the data bundle): language, date format (ISO / day
+      first / month first / long), hour format (24h / 12h AM-PM),
+      timezone (local or IANA zone). Saving applies instantly (page
+      reload). The +Log dialog's "When" is a text input rendered in the
+      configured format (a real browser ignores settings for
+      datetime-local) and parses back in the settings zone; history
+      headers, plant detail and the event popup render dates through the
+      new format module (`static/js/model/format.js`).
+      Settings page at /settings/.
+- [x] **Category-matched log fields + per-category detail fields** —
+      the +Log dialog shows only the fields matching the picked
+      categories: watering (amount/pH/EC/temp), feeding (+product/dose),
+      training (technique, stress level), defoliation (style, %,
+      stress), treatment (amount/product/dose/stress), observation
+      (temp/humidity), fermentation (temp/humidity/fermentation note).
+      New optional log fields: product, dose, technique, stressLevel,
+      defoliationStyle, defoliationPercent, humidityPct,
+      fermentationNote. New log category "fermentation".
+- [x] **Popup UX + traceability** — dialogs close on backdrop click
+      (shared `ui.wireBackdropClose`; all Cancel/Close buttons removed);
+      the event popup shows the entity's change log: the adapter records
+      an append-only edit trail (`entityEdits` store, `DB_VERSION = 4`)
+      with a per-put diff (created / key: from → to) for every entity —
+      e.g. "sex: unknown → female" — surfaced in the event popup.
+- [x] **Global date-input refactor** — `data-date-input` /
+      `data-datetime-input` inputs (grow start/end incl. "Create grow"
+      prefill, germination, harvest, purchase, due, "When") all
+      fill/parse through `dateInput.js` in one place; settings apply
+      globally without touching page code.
+- [x] **Equipment grid rework** — list view replaced by a grid of
+      square tiles: picture or emoji in the centre (category emoji as
+      fallback), short name in the lower third, meta line (category ·
+      location); first tile is the + tile to add. Hovering shows a gear
+      in the upper-left corner (edit). The dialog picks an emoji from a
+      grid or uploads an image (data URL, 512 KB cap — schema:
+      `equipment.icon` / `equipment.image`, mutually exclusive with a
+      fallback to category emoji); items stay categorizable (filter +
+      per-category default emoji) and location assignment moved into the
+      dialog (from–to history preserved).
+- [x] **Quality-of-life pass** — calendar/clock picker on every date
+      field (`data-date-input`/`data-datetime-input` popover: month
+      grid + hour/minute selects honoring dateFormat/hourFormat/
+      timezone; `static/js/model/date-picker.js`); dialog forms in a
+      wrapping grid so fields sit at natural width instead of
+      full-dialog width; missing i18n keys fixed (equipment + tile
+      label); Tasks gains a Kanban board view (open/done/skipped
+      columns, click-to-move cards, board/list toggle) as an addition
+      to the list; "fermented" added to the task stage-hint select.
+- [x] **Date-input regression fix + DnD + timeline links** —
+      bare `data-date-input` attributes were misread as datetime
+      fields, so germinationDate/harvestedAt got full ISO timestamps on
+      save (the reported "Validation failed: germinationDate invalid
+      date" on a sex-only edit); dateInput now detects date-only by
+      attribute presence and `set(input, null)` leaves optional fields
+      empty instead of prefilling "now". Kanban cards drag-and-drop
+      between columns (HTML5 DnD, drop highlight, move = status change
+      incl. protocol). Status filter shows only in list view. Timeline
+      chips link to their entity (plant detail / grow detail / grow
+      history) via deep links; the change log in the event popup
+      protocols sex changes and everything else.
 
 ## Phase 3 — Sensors
 - [ ] Sensor entity (already a category in Equipment)

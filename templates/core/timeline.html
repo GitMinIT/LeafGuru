@@ -1,0 +1,30 @@
+{% extends "core/base.html" %}
+
+{% block title %}Timeline — LeafGuru{% endblock %}
+
+{% block content %}
+<h1>Timeline</h1>
+<div class="crud-toolbar">
+    <button type="button" data-timeline-prev aria-label="Previous month">‹</button>
+    <strong data-timeline-title></strong>
+    <button type="button" data-timeline-next aria-label="Next month">›</button>
+    <button type="button" data-timeline-today>Today</button>
+</div>
+<p class="muted">Stage changes, harvests, grow start/end dates and due tasks — per day.</p>
+<section class="card">
+    <div class="tl-grid" data-timeline-grid></div>
+</section>
+
+<dialog data-event-popup class="crud-dialog event-popup">
+    <h2 data-popup-title></h2>
+    <dl data-popup-body class="event-popup__body"></dl>
+    <div class="crud-dialog-actions">
+    </div>
+</dialog>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/model/timeline-domain.js"></script>
+<script src="/static/js/model/history-view.js"></script>
+<script src="/static/js/pages/timeline.js"></script>
+{% endblock %}

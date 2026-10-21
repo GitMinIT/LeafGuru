@@ -52,5 +52,21 @@
     dialogFlash(form, e.name === "LeafGuruValidationError" ? formatErrors(e) : e.message, true);
   }
 
-  window.LeafGuru.ui = { formatErrors, dialogFlash, reportSubmitError };
+  /**
+   * Close every <dialog> on click outside its content box (the backdrop
+   * area). Wire per dialog once — replaces per-dialog Cancel buttons.
+   */
+  function wireBackdropClose() {
+    for (const dialog of document.querySelectorAll("dialog")) {
+      if (dialog._backdropWired) continue;
+      dialog._backdropWired = true;
+      dialog.addEventListener("click", (event) => {
+        // clicks land on the dialog element itself only when the backdrop
+        // (the dialog's padding box outside its content) was hit
+        if (event.target === dialog) dialog.close();
+      });
+    }
+  }
+
+  window.LeafGuru.ui = { formatErrors, dialogFlash, reportSubmitError, wireBackdropClose };
 })();

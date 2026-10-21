@@ -5,7 +5,6 @@
   "type": "object",
   "required": [
     "id",
-    "plantId",
     "takenAt"
   ],
   "properties": {
@@ -14,12 +13,23 @@
       "format": "uuid"
     },
     "plantId": {
-      "type": "string",
-      "format": "uuid"
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "plant this photo belongs to (null for grow/log-level shots)"
+    },
+    "logEntryId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "uuid",
+      "description": "journal entry this photo was attached to"
     },
     "blob": {
-      "type": "string",
-      "description": "IndexedDB: stored as Blob; export serializes base64 data URL"
+      "description": "IndexedDB: stored as Blob/File object; export/import serializes to base64 data URL string"
     },
     "mimeType": {
       "enum": [

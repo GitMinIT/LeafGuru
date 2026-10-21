@@ -23,18 +23,67 @@
         <a href="/equipment/" data-nav="equipment">Equipment</a>
         <a href="/strains/" data-nav="strains">Strains</a>
         <a href="/tasks/" data-nav="tasks">Tasks</a>
-        <a href="/data/" data-nav="settings">Data</a>
+        <a href="/timeline/" data-nav="timeline">Timeline</a>
+        <a href="/history/" data-nav="history">History</a>
+        <a href="/settings/" data-nav="settings">Settings</a>
+        <a href="/data/" data-nav="data">Data</a>
     </nav>
+    <button type="button" class="topbar__log" data-quick-log>+ Log</button>
 </header>
 <main class="page">
     {% block content %}{% endblock %}
 </main>
+
+<dialog data-log-dialog class="crud-dialog">
+    <form>
+        <h2>Log entry</h2>
+        <div class="crud-fields">
+            <label>Grow <select data-log-grow required></select></label>
+            <label>When <input type="text" data-datetime-input data-log-at maxlength="30" placeholder="date + time"></label>
+            <fieldset data-log-categories class="log-categories">
+                <legend>Categories</legend>
+            </fieldset>
+            <label class="log-form__text">What happened? <textarea name="text" maxlength="2000" rows="2" required placeholder="e.g. watered with 2L, pH 6.3"></textarea></label>
+            <label data-log-field="amountL">Amount (L) <input type="number" step="0.1" min="0" name="amountL"></label>
+            <label data-log-field="ph">pH <input type="number" step="0.1" min="0" max="14" name="ph"></label>
+            <label data-log-field="ec">EC (mS/cm) <input type="number" step="0.1" min="0" name="ec"></label>
+            <label data-log-field="tempC">Temp (°C) <input type="number" step="0.1" name="tempC"></label>
+            <label data-log-field="humidityPct">Humidity (%) <input type="number" step="1" min="0" max="100" name="humidityPct"></label>
+            <label data-log-field="product">Product <input name="product" maxlength="200" placeholder="nutrient / treatment used"></label>
+            <label data-log-field="dose">Dose <input name="dose" maxlength="200" placeholder="e.g. 2 ml/L"></label>
+            <label data-log-field="technique">Technique <input name="technique" maxlength="120" placeholder="topping, LST, supercropping, scrog…"></label>
+            <label data-log-field="stressLevel">Stress level
+                <select name="stressLevel">
+                    <option value="">–</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </label>
+            <label data-log-field="defoliationStyle">Defoliation style <input name="defoliationStyle" maxlength="120" placeholder="lollipop, full strip, selective…"></label>
+            <label data-log-field="defoliationPercent">Defoliation (%) <input type="number" step="1" min="0" max="100" name="defoliationPercent"></label>
+            <label data-log-field="fermentationNote" class="log-form__text">Fermentation notes <textarea name="fermentationNote" maxlength="1000" rows="2" placeholder="jar, smell shift, burping…"></textarea></label>
+            <label>Plants (multi-select, optional) <select data-log-plants multiple size="4"></select></label>
+            <label>Location <select data-log-location></select></label>
+            <label>Photos <input type="file" data-log-photos accept="image/jpeg,image/png,image/webp" multiple></label>
+        </div>
+        <p class="muted crud-error" data-log-error hidden aria-live="polite"></p>
+        <div class="crud-dialog-actions">
+            <button type="submit">Save</button>
+        </div>
+    </form>
+</dialog>
+
 <script>
     window.LeafGuru = window.LeafGuru || {};
     window.LeafGuru.page = document.querySelector("body").dataset.page || "";
 </script>
 <script src="/static/js/version.js"></script>
 <script src="/static/js/model/uuid.js"></script>
+<script src="/static/js/model/settings-store.js"></script>
+<script src="/static/js/model/format.js"></script>
+<script src="/static/js/model/date-input.js"></script>
+<script src="/static/js/model/date-picker.js"></script>
 <script src="/static/js/i18n/loader.js"></script>
 <script src="/static/js/model/schema-loader.js"></script>
 <script src="/static/js/model/validator.js"></script>
@@ -42,7 +91,22 @@
 <script src="/static/js/adapter/local-adapter.js"></script>
 <script src="/static/js/model/data-io.js"></script>
 <script src="/static/js/model/photos.js"></script>
+<script src="/static/js/model/log-domain.js"></script>
+<script src="/static/js/model/grow-domain.js"></script>
+<script src="/static/js/model/quick-log.js"></script>
 <script src="/static/js/model/ui.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.querySelector("[data-quick-log]");
+        if (btn) btn.addEventListener("click", () => window.LeafGuru.quickLog.open());
+        const form = document.querySelector("[data-log-dialog] form");
+        if (form) form.addEventListener("submit", (e) => window.LeafGuru.quickLog.submit(e));
+        // every dialog: click outside its content closes it
+        window.LeafGuru.ui.wireBackdropClose();
+        // date fields: calendar / clock picker
+        window.LeafGuru.dateTimePicker.bind();
+    });
+</script>
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>
