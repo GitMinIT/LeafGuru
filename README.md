@@ -74,6 +74,35 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
 - Example dataset: `examples/leafguru-example.json` — import it on the
   Data page to explore the app with realistic data
 
+## Deployment modes
+
+Auth is a **deployment switch**, not a feature — the same image serves
+every mode:
+
+| `LEAFGURU_AUTH` | accounts | data lives in | for |
+|---|---|---|---|
+| `none` (default) | no | the server DB, one shared workspace | self-hosting on a LAN |
+| `required` | yes, one workspace each | the server DB | the hosted service |
+
+```bash
+# self-hosted, no accounts (the default)
+docker compose up -d --build
+# → http://localhost:8090
+
+# hosted service: accounts, per-user data
+LEAFGURU_AUTH=required \
+LEAFGURU_SECRET_KEY=... \
+LEAFGURU_DATABASE_URL=postgres://... \
+  docker compose up -d --build
+
+# create an account for a customer (no public sign-up)
+docker compose exec leafguru python manage.py create_account alice alice@example.com
+```
+
+The browser app also works with **no server at all** — the data then
+lives in the browser (IndexedDB). The Data page shows where the data
+lives and offers a one-time move to the server.
+
 ## Development
 
 ```bash
