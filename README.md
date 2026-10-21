@@ -124,12 +124,23 @@ validation). A real Chromium run is therefore part of the workflow:
 docker compose -f /home/daniel/Projects/LeafGuru/docker-compose.yml up -d --build
 
 # 2. drive it in a real browser (Playwright container, browsers preinstalled)
-docker run --rm --network host \
-  -v /home/daniel/Projects/LeafGuru:/w \
-  -v <scripts-dir>:/probe -w /w \
-  mcr.microsoft.com/playwright:v1.48.0-jammy \
-  node /probe/sweep.js
+tests/browser/run.sh              # all checks
+tests/browser/run.sh sweep        # one script
 ```
+
+The scripts live in `tests/browser/`:
+
+| script | covers |
+|---|---|
+| `sweep.js` | every page: create -> list -> edit -> delete, Kanban toggle, stage change, journal, timeline + history popups, settings, data page |
+| `profiles.js` | profile switcher, create/duplicate/delete, and that the demo grow never touches the user data |
+| `demo-catalog.js` | the demo grow and the strain catalog (search, prefill, save) |
+| `screenshots.js` | captures every page (incl. mobile) for visual review |
+
+They need `playwright-core` in `node_modules/` (git-ignored):
+`npm install --no-save playwright-core`. The Playwright image ships
+Chromium at `/ms-playwright/chromium-1140/chrome-linux/chrome`; the npm
+package `playwright` is NOT needed (and installs time out).
 
 The sweep exercises every page's primary flow (create → list → edit →
 delete, Kanban toggle, stage change, journal entry, timeline popup,
