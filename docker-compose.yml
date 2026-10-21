@@ -8,3 +8,11 @@ services:
     environment:
       - LEAFGURU_DEBUG=0
       - LEAFGURU_ALLOWED_HOSTS=*
+      # the database and the uploaded photos live on the volume below,
+      # so rebuilding the image does not throw the data away
+      - LEAFGURU_DATA_DIR=/data
+    volumes:
+      - leafguru-data:/data
+
+volumes:
+  leafguru-data:

@@ -16,6 +16,12 @@ from pathlib import Path
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Where the runtime data lives: the sqlite database and the uploaded
+# photos. Point LEAFGURU_DATA_DIR at a mounted volume and the data
+# survives an image rebuild; the default keeps a self-hoster at zero
+# configuration.
+DATA_DIR = Path(os.environ.get("LEAFGURU_DATA_DIR", BASE_DIR))
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -147,7 +153,7 @@ else:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": DATA_DIR / "db.sqlite3",
         }
     }
 
@@ -187,7 +193,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 # Photos (server mode). The directory is created on demand.
-MEDIA_ROOT = Path(os.environ.get("LEAFGURU_MEDIA_ROOT", BASE_DIR / "media"))
+MEDIA_ROOT = Path(os.environ.get("LEAFGURU_MEDIA_ROOT", DATA_DIR / "media"))
 MEDIA_URL = "/media/"
 
 STATIC_URL = 'static/'
