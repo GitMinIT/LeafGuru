@@ -4,12 +4,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#101a17">
+    <meta name="theme-color" content="#0b1210">
+    <meta name="color-scheme" content="dark">
+    <meta name="description" content="LeafGuru — plan and track your grow: locations, equipment, strains, plants, tasks, measurements and a daily journal.">
     <title>{% block title %}LeafGuru{% endblock %}</title>
+    <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/static/css/base.css">
     {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body data-page="{{ page_key|default:'' }}">
 <header class="topbar">
     <a class="brand" href="/">
         <span class="brand__mark" aria-hidden="true">🌿</span>

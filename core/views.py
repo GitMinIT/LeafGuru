@@ -13,32 +13,38 @@ PAGES = {
 }
 
 
+def _page(request, template, key):
+    """Render a page with the context the shell needs (page key drives
+    the active nav state and the body data-page attribute)."""
+    return render(request, template, {"page_key": key})
+
+
 def dashboard(request):
-    return render(request, "core/dashboard.html")
+    return _page(request, "core/dashboard.html", "dashboard")
 
 
 def data(request):
     """Settings/data page: import, export, storage usage, danger zone."""
-    return render(request, "core/data.html")
+    return _page(request, "core/data.html", "data")
 
 
 def timeline(request):
     """Timeline/calendar visualization: per-day events across entities."""
-    return render(request, "core/timeline.html")
+    return _page(request, "core/timeline.html", "timeline")
 
 
 def history(request):
     """Per-grow event log: full history of one grow as a scrollable list."""
-    return render(request, "core/history.html")
+    return _page(request, "core/history.html", "history")
 
 
 def settings(request):
     """Settings page: language, date format, timezone (browser-local)."""
-    return render(request, "core/settings.html")
+    return _page(request, "core/settings.html", "settings")
 
 
 def _entity_page(request, key):
-    ctx = {"entity_title": PAGES[key], "entity_key": key}
+    ctx = {"entity_title": PAGES[key], "entity_key": key, "page_key": key}
     return render(request, f"core/{key}.html", ctx)
 
 
