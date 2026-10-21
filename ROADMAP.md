@@ -207,10 +207,52 @@ watering-cadence hints ("last watered 3d ago").
 - [ ] Threshold alerts (browser notification / email)
 
 ## Phase 4 — Multi-user / hosted
-- [ ] Registration + auth (allauth), per-user data isolation
-- [ ] Postgres deployment profile, object storage for photos
-- [ ] ServerAdapter flip (same JSON model), one-time local→server import
-- [ ] Server-side backups
+
+**Goal:** a real multi-user instance on Daniel's VPS (alongside
+pompui.de), where every account sees only its own data. The local
+browser app keeps working as the offline/default client.
+
+### 4.1 Server foundations
+- [ ] Django models mirroring `schemas/*.schema.json` 1:1 (field names
+      identical) — a `User` FK on every entity
+- [ ] `django-ninja` REST API: one endpoint per entity, same JSON
+      shapes as the browser bundle
+- [ ] Auth: `django-allauth` (email + password, optional OAuth);
+      session cookie for the browser client, token for API clients
+- [ ] Postgres via `DATABASE_URL`; SQLite stays the dev default
+- [ ] Media storage for photos (filesystem volume, S3-compatible later)
+
+### 4.2 ServerAdapter (the client flip)
+- [ ] `ServerAdapter` implements the existing `StorageAdapter`
+      interface — no page code changes
+- [ ] Per-user isolation is a `userId` filter in the API layer, the
+      same place the profile filter is today
+- [ ] Photo upload/download instead of IndexedDB blobs
+- [ ] Offline fallback: keep LocalAdapter as the default, offer
+      "sign in to sync" (local-first stays the default)
+
+### 4.3 Migration
+- [ ] One-time local→server import: read the local bundle, POST it
+      per entity, map local ids to server ids
+- [ ] Duplicate detection (id + updatedAt) so re-running is safe
+- [ ] Per-profile import: each browser profile can land in its own
+      server-side workspace
+
+### 4.4 Operations
+- [ ] Server-side backups (Postgres dump + media archive)
+- [ ] Profile → workspace mapping: a browser profile maps to one
+      server workspace, so the demo profile stays a demo on the server
+- [ ] Rate limiting + upload size limits on the public endpoints
+
+### 4.5 Decision to make before starting
+- Public sign-up (anyone can register) or invite-only? Public needs
+  rate limiting, abuse handling and a "delete my account" path; this
+  is the single biggest scope difference.
+
+### 4.6 Phasing
+The order matters: models → API → ServerAdapter → import → auth polish.
+Each step is independently shippable, and the local app keeps working
+throughout — a half-finished server side never breaks the client.
 
 ## Phase 5 — Polish
 - [ ] Additional locales via i18n JSON files

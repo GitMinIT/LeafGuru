@@ -99,3 +99,28 @@ The journal is what makes the app usable on a regular schedule:
 - Postgres via `DATABASE_URL`; media (photos) move from IndexedDB blobs to
   server storage; a one-time import migrates local JSON into the DB
 - Backup story shifts from "user exports JSON" to server-side dumps
+
+## Data profiles (phase 2.6, shipped 2026-10-21)
+
+A **profile** is an independent data set in one browser: its own
+IndexedDB database, its own plants, tasks and journal.
+
+- The default profile keeps the legacy database name (`leafguru`), so
+  existing installs keep their data untouched — no migration, no risk.
+  Every other profile gets `leafguru-<id>`.
+- The active profile id lives in localStorage; the DATA lives in
+  IndexedDB, one database per profile.
+- Profiles can be duplicated (a full copy through export/import, photos
+  included) and deleted (the database goes with them).
+- The demo grow loads into its own `Demo` profile, so it can never
+  overwrite real data.
+
+**Why isolation lives in the storage layer, not on the record:** all 12
+entity schemas set `additionalProperties: false`. A `profileId` field on
+every record would fail validation. Isolation therefore belongs where
+the database is chosen — which is exactly where the server version will
+put the `userId` filter.
+
+**Relation to multi-user:** a profile is a user, one level down. The
+adapter interface does not change between them; only what is behind it
+does. Profiles are the local rehearsal of the hosted version.

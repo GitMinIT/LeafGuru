@@ -59,10 +59,14 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
 - Search on all list pages; full JSON export/import (schema-validated,
   versioned; photos included)
 - English UI, all strings externalized (`static/js/i18n/en.json`)
+- **Profiles**: independent data sets in one browser (own plants, tasks,
+  journal). Switch, duplicate or delete them from the topbar or the Data
+  page. The default profile keeps the data that was already there
 - **Demo grow**: one click on the Data page generates a complete example
   dataset (2 grows, 6 plants in every stage, equipment, tasks, journal
-  entries) and imports it — all dates relative to today, so it always
-  looks like a grow in progress
+  entries) into its own `Demo` profile — your own data is never
+  touched. All dates are relative to today, so it always looks like a
+  grow in progress
 - **Strain catalog**: 9,500+ well-known strains (breeder, genotype,
   potency, aroma) bundled with the app; pick one and the strain form is
   filled in with typical stage durations and height. Search by name or
