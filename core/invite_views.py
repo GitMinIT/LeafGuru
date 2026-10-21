@@ -33,7 +33,7 @@ def accept_invite_view(request, token):
     if not auth_required():
         return HttpResponseRedirect(reverse("dashboard"))
 
-    invite = Invitation.objects.filter(token=token).first()
+    invite = Invitation.find_by_token(token)
     if invite is None or not invite.is_valid:
         return render(request, "core/invite.html", {"expired": True})
 

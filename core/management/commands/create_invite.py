@@ -21,7 +21,7 @@ from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 
-from core.models import Invitation
+from core.models import Invitation, hash_invite_token
 
 
 class Command(BaseCommand):
@@ -63,13 +63,13 @@ class Command(BaseCommand):
         invite = Invitation.objects.create(
             username=username,
             email=email,
-            token=token,
+            token_hash=hash_invite_token(token),
             workspace_name=options["workspace"],
             expires_at=timezone.now() + timedelta(days=options["days"]),
         )
 
         base = (options["url"] or getattr(settings, "PUBLIC_URL", "") or "").rstrip("/")
-        link = f"{base}/invite/{invite.token}/"
+        link = f"{base}/invite/{token}/"
 
         self.stdout.write(self.style.SUCCESS("invitation created"))
         self.stdout.write(f"  for      : {invite.username}"
@@ -82,3 +82,5 @@ class Command(BaseCommand):
         self.stdout.write("")
         self.stdout.write("  Hand this link to the customer. It is single-use and "
                           "expires; issue a new one if it is lost.")
+        self.stdout.write("  Only a hash of the token is stored, so the link "
+                          "cannot be recovered from the database later.")

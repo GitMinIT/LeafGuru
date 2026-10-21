@@ -14,14 +14,19 @@ from django.test import TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from core.models import Invitation, Plant, Workspace
+from core.models import Invitation, Plant, Workspace, hash_invite_token
 
 
 def make_invite(token="tok", username="alice", **kwargs):
+    """
+    Create an invitation for a given raw token.
+
+    Only the hash is stored, exactly like the real flow does.
+    """
     return Invitation.objects.create(
         username=username,
         email=kwargs.pop("email", "alice@example.com"),
-        token=token,
+        token_hash=hash_invite_token(token),
         workspace_name=kwargs.pop("workspace_name", "Default"),
         expires_at=kwargs.pop("expires_at", timezone.now() + timedelta(days=7)),
         **kwargs,
@@ -34,6 +39,27 @@ class InvitationModelTests(TestCase):
         self.assertTrue(invite.is_valid)
         self.assertFalse(invite.is_used)
         self.assertFalse(invite.is_expired)
+
+    def test_the_token_is_not_stored_in_the_clear(self):
+        """
+        The token in the link is a bearer secret. A database leak must
+        not hand out usable account links.
+        """
+        invite = make_invite(token="super-secret-token")
+        stored = Invitation.objects.get(pk=invite.pk).token_hash
+        self.assertNotIn("super-secret-token", stored)
+        self.assertNotEqual(stored, "super-secret-token")
+
+    def test_the_invitation_is_found_by_the_raw_token(self):
+        invite = make_invite(token="super-secret-token")
+        found = Invitation.find_by_token("super-secret-token")
+        self.assertIsNotNone(found)
+        self.assertEqual(found.pk, invite.pk)
+
+    def test_an_unknown_token_finds_nothing(self):
+        make_invite(token="super-secret-token")
+        self.assertIsNone(Invitation.find_by_token("wrong-token"))
+        self.assertIsNone(Invitation.find_by_token(""))
 
     def test_a_used_invitation_is_not_valid(self):
         invite = make_invite(used_at=timezone.now())
@@ -53,8 +79,21 @@ class CreateInviteCommandTests(TestCase):
                      stdout=out, url="https://leaf.example.com")
         invite = Invitation.objects.get(username="alice")
         self.assertEqual(invite.email, "alice@example.com")
-        self.assertIn(invite.token, out.getvalue())
         self.assertIn("https://leaf.example.com/invite/", out.getvalue())
+
+    def test_the_printed_link_works_but_the_token_is_not_stored(self):
+        out = StringIO()
+        call_command("create_invite", "alice", "alice@example.com",
+                     stdout=out, url="https://leaf.example.com")
+        printed = out.getvalue()
+        invite = Invitation.objects.get(username="alice")
+
+        # the raw token from the link resolves to the invitation
+        raw = printed.split("/invite/")[1].split("/")[0]
+        self.assertEqual(Invitation.find_by_token(raw).pk, invite.pk)
+
+        # ...but it is not what the database holds
+        self.assertNotIn(raw, invite.token_hash)
 
     def test_the_command_refuses_an_existing_user(self):
         get_user_model().objects.create_user(
@@ -68,8 +107,9 @@ class AcceptInviteTests(TestCase):
     """The customer sets their own password."""
 
     def setUp(self):
-        self.invite = make_invite()
-        self.url = reverse("accept_invite", args=[self.invite.token])
+        self.raw_token = "tok-alice-raw"
+        self.invite = make_invite(token=self.raw_token)
+        self.url = reverse("accept_invite", args=[self.raw_token])
 
     def test_the_form_renders(self):
         res = self.client.get(self.url)

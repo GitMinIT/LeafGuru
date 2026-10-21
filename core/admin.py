@@ -14,8 +14,8 @@ class InvitationAdmin(admin.ModelAdmin):
     list_display = ["username", "email", "workspace_name", "created_at",
                     "expires_at", "used_at"]
     list_filter = ["used_at"]
-    search_fields = ["username", "email", "token"]
-    readonly_fields = ["token", "created_at", "used_at"]
+    search_fields = ["username", "email", "token_hash"]
+    readonly_fields = ["token_hash", "created_at", "used_at"]
 
 
 @admin.register(Workspace)

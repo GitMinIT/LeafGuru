@@ -20,6 +20,25 @@ import uuid
 from django.conf import settings
 from django.db import models
 from django.db.models import Q
+from django.utils.crypto import salted_hmac
+
+#: The invitation token is a bearer secret: whoever holds the link can
+#: create the account. Storing it in the clear means a database leak
+#: (a dump, a stolen backup, a curious admin) hands out usable
+#: account links. So only a keyed hash of the token is stored, the same
+#: way Django stores its own password-reset tokens.
+#:
+#: The token itself is 256 bits of randomness, so a hash of it cannot
+#: be brute-forced, and the lookup by hash is a plain indexed query.
+INVITE_TOKEN_SALT = "leafguru.invitation"
+INVITE_TOKEN_ALGORITHM = "sha256"
+
+
+def hash_invite_token(raw_token):
+    """Return the stored form of an invitation token."""
+    return salted_hmac(
+        INVITE_TOKEN_SALT, raw_token, algorithm=INVITE_TOKEN_ALGORITHM
+    ).hexdigest()
 
 
 class Workspace(models.Model):
@@ -374,12 +393,14 @@ class Invitation(models.Model):
 
     The operator creates the invitation; the customer sets their own
     password via the link. The token is single-use and expires.
+
+    Only a hash of the token is stored — see `hash_invite_token`.
     """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     username = models.CharField(max_length=150)
     email = models.EmailField(blank=True, default="")
-    token = models.CharField(max_length=64, unique=True, db_index=True)
+    token_hash = models.CharField(max_length=64, unique=True, db_index=True)
     workspace_name = models.CharField(max_length=120, default="Default")
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
@@ -393,6 +414,18 @@ class Invitation(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    @classmethod
+    def find_by_token(cls, raw_token):
+        """
+        Look an invitation up by the token from the link.
+
+        The token in the URL is the raw secret; the database only holds
+        its hash, so the lookup hashes it and searches for that.
+        """
+        if not raw_token:
+            return None
+        return cls.objects.filter(token_hash=hash_invite_token(raw_token)).first()
 
     @property
     def is_used(self):
