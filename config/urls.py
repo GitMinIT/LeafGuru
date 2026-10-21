@@ -10,7 +10,7 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 
-from core import auth_views, views
+from core import auth_views, invite_views, views
 from core.api import api
 
 urlpatterns = [
@@ -18,6 +18,7 @@ urlpatterns = [
     path("api/v1/", api.urls),
     path("login/", auth_views.login_view, name="login"),
     path("logout/", auth_views.logout_view, name="logout"),
+    path("invite/<str:token>/", invite_views.accept_invite_view, name="accept_invite"),
     path("", views.dashboard, name="dashboard"),
     path("grows/", views.grows, name="grows"),
     path("plants/", views.plants, name="plants"),

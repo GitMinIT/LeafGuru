@@ -1,7 +1,19 @@
-"""Core app: app-shell views. Phase 1 = local-first; all data lives in the
-browser (IndexedDB). These views serve pages and static helpers only."""
+"""Core app: app-shell views.
+
+The pages are the app shell; all data is fetched by the client through
+the storage adapter (IndexedDB locally, the REST API on a server). The
+page views therefore only render HTML.
+
+When the deployment needs accounts (LEAFGURU_AUTH=required), the pages
+require a signed-in user as well — the API enforces that already, and
+the shell follows.
+"""
 
 from django.shortcuts import render
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
+
+from core.auth import auth_required
 
 PAGES = {
     "grows": "Grows",
@@ -13,9 +25,33 @@ PAGES = {
 }
 
 
+def _require_login(request):
+    """
+    Redirect to the login form when the deployment needs accounts and
+    nobody is signed in. Returns a response to return instead of
+    rendering, or None when the request may continue.
+    """
+    if not auth_required():
+        return None
+    user = getattr(request, "user", None)
+    if user is not None and user.is_authenticated:
+        return None
+    from django.shortcuts import redirect
+
+    next_url = request.get_full_path()
+    if not url_has_allowed_host_and_scheme(
+        next_url, allowed_hosts={request.get_host()}, require_https=request.is_secure()
+    ):
+        next_url = reverse("dashboard")
+    return redirect(f"{reverse('login')}?next={next_url}")
+
+
 def _page(request, template, key):
     """Render a page with the context the shell needs (page key drives
     the active nav state and the body data-page attribute)."""
+    blocked = _require_login(request)
+    if blocked is not None:
+        return blocked
     return render(request, template, {"page_key": key})
 
 
@@ -44,6 +80,9 @@ def settings(request):
 
 
 def _entity_page(request, key):
+    blocked = _require_login(request)
+    if blocked is not None:
+        return blocked
     ctx = {"entity_title": PAGES[key], "entity_key": key, "page_key": key}
     return render(request, f"core/{key}.html", ctx)
 

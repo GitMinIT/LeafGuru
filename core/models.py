@@ -368,6 +368,52 @@ class EntityEdit(BaseRecord):
         return f"{self.entity} {self.entity_id}"
 
 
+class Invitation(models.Model):
+    """
+    A one-time invitation to create an account.
+
+    The operator creates the invitation; the customer sets their own
+    password via the link. The token is single-use and expires.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    username = models.CharField(max_length=150)
+    email = models.EmailField(blank=True, default="")
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    workspace_name = models.CharField(max_length=120, default="Default")
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    used_at = models.DateTimeField(null=True, blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="sent_invitations",
+    )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    @property
+    def is_used(self):
+        return self.used_at is not None
+
+    @property
+    def is_expired(self):
+        from django.utils import timezone
+
+        return self.expires_at <= timezone.now()
+
+    @property
+    def is_valid(self):
+        """Can this invitation still be used?"""
+        return not self.is_used and not self.is_expired
+
+    def __str__(self):
+        state = "used" if self.is_used else ("expired" if self.is_expired else "open")
+        return f"invite {self.username} ({state})"
+
+
 # --- entity registry, shared with the API layer --------------------------
 
 #: entity name -> (model, schema file). The order matches the bundle

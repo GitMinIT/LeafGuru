@@ -45,6 +45,10 @@ AUTH_REQUIRED = AUTH_MODE == "required"
 # The shared workspace used when AUTH_MODE == "none".
 SHARED_WORKSPACE_NAME = os.environ.get("LEAFGURU_WORKSPACE", "Default")
 
+# The public base URL of this instance — invitation links are built from
+# it (e.g. https://leaf.example.com). Falls back to a relative link.
+PUBLIC_URL = os.environ.get("LEAFGURU_PUBLIC_URL", "").strip().rstrip("/")
+
 
 # Application definition
 
@@ -101,6 +105,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.leafguru_auth',
             ],
         },
     },

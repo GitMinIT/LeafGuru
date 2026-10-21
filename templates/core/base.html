@@ -37,6 +37,12 @@
         <span class="profile-switch__label" aria-hidden="true">Profile</span>
         <select data-profile-switch aria-label="Active data profile"></select>
     </label>
+    {% if auth_required and auth_user.is_authenticated %}
+    <span class="topbar__user">
+        <span class="topbar__user-name" title="{{ auth_user.get_username }}">{{ auth_user.get_username }}</span>
+        <a class="topbar__logout btn--ghost" href="{% url 'logout' %}">Sign out</a>
+    </span>
+    {% endif %}
     <button type="button" class="topbar__log" data-quick-log>+ Log</button>
 </header>
 <main class="page">

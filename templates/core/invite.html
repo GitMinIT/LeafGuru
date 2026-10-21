@@ -1,0 +1,39 @@
+{% extends "core/base.html" %}
+
+{% block title %}Set your password — LeafGuru{% endblock %}
+
+{% block content %}
+<div class="auth-shell">
+    <section class="card auth-card">
+        <h1>Welcome{% if invite %}, {{ invite.username }}{% endif %}</h1>
+        <p class="muted">Choose a password to activate your LeafGuru account.</p>
+        {% if invite and invite.email %}
+        <p class="muted auth-note">Account: {{ invite.email }}</p>
+        {% endif %}
+
+        {% if expired %}
+        <p class="crud-error" role="alert">
+            This invitation has expired or was already used.
+            Ask the service operator for a new one.
+        </p>
+        {% else %}
+        {% if error %}
+        <p class="crud-error" role="alert">{{ error }}</p>
+        {% endif %}
+        <form method="post" class="form-grid auth-form">
+            {% csrf_token %}
+            <label>New password
+                <input type="password" name="password" autocomplete="new-password"
+                       minlength="8" required autofocus>
+            </label>
+            <label>Repeat password
+                <input type="password" name="password2" autocomplete="new-password"
+                       minlength="8" required>
+            </label>
+            <button type="submit">Activate my account</button>
+        </form>
+        <p class="muted auth-note">At least 8 characters.</p>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

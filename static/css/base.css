@@ -1115,6 +1115,60 @@ legend { padding: 0; }
     color: var(--muted);
 }
 
+/* ---------------------------------------------------------------- auth */
+
+/* the sign-in / invite pages are a centred card on a plain background */
+.auth-shell {
+    min-height: calc(100vh - var(--topbar-h) - 4rem);
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+}
+.auth-card {
+    width: min(26rem, 100%);
+    margin-bottom: 0;
+}
+.auth-card h1 { margin-bottom: 0.3rem; }
+.auth-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.8rem;
+    margin-top: 1.1rem;
+}
+.auth-form button[type="submit"] {
+    background: var(--accent);
+    color: var(--accent-ink);
+    border-color: var(--accent);
+    justify-self: start;
+}
+.auth-form button[type="submit"]:hover {
+    background: color-mix(in srgb, var(--accent) 88%, white);
+}
+.auth-note {
+    margin: 1rem 0 0;
+    font-size: 0.8rem;
+}
+
+/* the signed-in user in the topbar */
+.topbar__user {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+}
+.topbar__user-name {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.topbar__logout {
+    font-size: 0.78rem;
+    padding: 0.25rem 0.6rem;
+}
+
 /* ------------------------------------------------------------- profiles */
 
 .profile-list {
