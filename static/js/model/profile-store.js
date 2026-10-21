@@ -134,6 +134,39 @@
     },
 
     /**
+     * Copy a profile's data into a NEW profile.
+     *
+     * The copy goes through the normal export/import path, so photos come
+     * along and the result is a full, valid data set — not a shallow
+     * pointer. The source profile is left untouched.
+     *
+     * @param {string} sourceId profile to copy from
+     * @param {string} name name of the new profile
+     * @returns the new profile record
+     */
+    async duplicate(sourceId, name) {
+      const source = this.get(sourceId);
+      if (!source) throw new Error(`unknown profile: ${sourceId}`);
+      const clean = String(name ?? "").trim();
+      if (!clean) throw new Error("profile name is required");
+
+      // a fresh id that cannot collide with an existing profile
+      let base = slugify(clean);
+      let id = base;
+      let n = 2;
+      while (readProfiles().some((p) => p.id === id)) id = `${base}-${n++}`;
+
+      const created = this.create(clean, { id });
+
+      // copy the data: export from the source profile, import into the new one
+      const sourceAdapter = new window.LeafGuru.LocalAdapter({ profileId: sourceId });
+      const targetAdapter = new window.LeafGuru.LocalAdapter({ profileId: id });
+      const bundle = await sourceAdapter.exportBundle();
+      await targetAdapter.importBundle(bundle);
+      return created;
+    },
+
+    /**
      * Remove every trace of a profile from the browser: the profile entry
      * AND its IndexedDB database. Async (IndexedDB delete is).
      */

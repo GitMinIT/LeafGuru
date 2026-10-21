@@ -83,7 +83,10 @@
     "detail": "Detail",
     "equipmentHere": "Equipment here",
     "plantsHere": "Plants here",
-    "growsUsing": "Grows using this location"
+    "growsUsing": "Grows using this location",
+    "equipmentShort": "Gear",
+    "plantsShort": "Plants",
+    "growsShort": "Grows"
   },
   "equipment": {
     "title": "Equipment",
@@ -145,7 +148,8 @@
     "catalogAll": "All strains",
     "catalogLoading": "Loading catalog…",
     "catalogUnavailable": "Strain catalog unavailable.",
-    "catalogSource": "Catalog data: Kushy dataset (MIT)"
+    "catalogSource": "Catalog data: Kushy dataset (MIT)",
+    "heightShort": "Height"
   },
   "plant": {
     "title": "Plants",
@@ -411,6 +415,10 @@
     "switched": "Switched to profile \"{name}\".",
     "defaultName": "Default",
     "demoName": "Demo",
-    "dataIn": "Data in this profile"
+    "dataIn": "Data in this profile",
+    "duplicate": "Duplicate",
+    "duplicatePrompt": "Name for the copy of profile \"{name}\":",
+    "duplicated": "Profile \"{name}\" created as a copy.",
+    "duplicateHint": "Copies all data (plants, tasks, journal, photos) into a new, independent profile."
   }
 }

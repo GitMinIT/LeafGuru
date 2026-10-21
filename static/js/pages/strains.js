@@ -31,6 +31,28 @@
           } },
         { path: "characteristics" }
       ],
+      cardRenderer: (rec) => {
+        const durations = rec.stageDurations ?? {};
+        const facts = [];
+        // short stage names read better on a card than the long form labels
+        for (const [stage, key] of [["seedling", "stages.seedling"],
+          ["vegetative", "stages.vegetative"], ["flowering", "stages.flowering"]]) {
+          if (durations[stage] != null) {
+            facts.push({ label: t(key), value: `${durations[stage]}d` });
+          }
+        }
+        if (rec.expectedHeightCm != null) {
+          facts.push({ label: t("strain.heightShort"), value: `~${rec.expectedHeightCm} cm` });
+        }
+        return {
+          title: rec.name,
+          subtitle: rec.characteristics || rec.breeder || null,
+          badge: rec.genotype && rec.genotype !== "unknown"
+            ? { text: t("strain.genotypes." + rec.genotype), kind: rec.genotype }
+            : null,
+          facts,
+        };
+      },
       fields: [
         // identity — what the variety is
         { path: "name", label: "strain.name", type: "string", required: true },

@@ -74,6 +74,11 @@
         emptyEl.textContent = this.cfg.emptyHint ?? t("messages.noRecords");
       }
       for (const rec of rows) {
+        // a page can render cards instead of flat rows
+        if (this.cfg.cardRenderer) {
+          listEl.append(this._renderCard(rec));
+          continue;
+        }
         const row = document.createElement("li");
         row.className = "crud-row";
         for (const col of this.cfg.listColumns) {
@@ -103,6 +108,88 @@
       }
     }
 
+    /**
+     * Render one record as a card.
+     *
+     * The page supplies the content (title, subtitle, badge, facts); the
+     * shared Edit/Delete actions are appended here so every card behaves
+     * the same way.
+     */
+    _renderCard(rec) {
+      const spec = this.cfg.cardRenderer(rec) ?? {};
+      const card = document.createElement("li");
+      card.className = `entity-card${this.cfg.cardClass ? " " + this.cfg.cardClass : ""}`;
+
+      const body = document.createElement("div");
+      body.className = "entity-card__body";
+
+      const head = document.createElement("div");
+      head.className = "entity-card__head";
+
+      const title = document.createElement("span");
+      title.className = "entity-card__title";
+      title.textContent = spec.title ?? rec.name ?? rec.title ?? rec.id;
+      head.append(title);
+
+      if (spec.badge?.text) {
+        const badge = document.createElement("span");
+        badge.className = `entity-badge entity-badge--${spec.badge.kind ?? "neutral"}`;
+        badge.textContent = spec.badge.text;
+        head.append(badge);
+      }
+      body.append(head);
+
+      if (spec.subtitle) {
+        const sub = document.createElement("span");
+        sub.className = "entity-card__subtitle muted";
+        sub.textContent = spec.subtitle;
+        body.append(sub);
+      }
+
+      if (spec.facts?.length) {
+        const facts = document.createElement("dl");
+        facts.className = "entity-card__facts";
+        for (const fact of spec.facts) {
+          // each fact is a <div> wrapper so the label and the value stay
+          // together (dl > div > dt+dd is valid HTML)
+          const pair = document.createElement("div");
+          const dt = document.createElement("dt");
+          dt.textContent = fact.label;
+          const dd = document.createElement("dd");
+          dd.textContent = fact.value;
+          pair.append(dt, dd);
+          facts.append(pair);
+        }
+        body.append(facts);
+      }
+      card.append(body);
+
+      const actions = document.createElement("span");
+      actions.className = "entity-card__actions";
+      if (this.cfg.rowActions) {
+        for (const btn of this.cfg.rowActions(rec) ?? []) actions.append(btn);
+      }
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "btn--ghost";
+      editBtn.textContent = t("common.edit");
+      editBtn.addEventListener("click", () => this.openForm(rec));
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "btn--danger";
+      delBtn.textContent = t("common.delete");
+      delBtn.addEventListener("click", () => this._remove(rec));
+      actions.append(editBtn, delBtn);
+      card.append(actions);
+
+      // the whole card opens the detail (if the page provides one)
+      if (spec.onOpen) {
+        body.addEventListener("click", () => spec.onOpen(rec));
+        body.classList.add("entity-card__body--clickable");
+      }
+      return card;
+    }
+
     /** search filter + column sort (stable) over the cached records */
     _visibleRecords() {
       let rows = this.records;
@@ -126,8 +213,10 @@
           return dir * cmp || a.id.localeCompare(b.id);
         });
       } else {
+        // newest first; name as the tie-breaker so the order is stable
         rows = rows.slice().sort((a, b) =>
-          (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+          (b.createdAt ?? "").localeCompare(a.createdAt ?? "")
+          || String(a.name ?? a.title ?? "").localeCompare(String(b.name ?? b.title ?? "")));
       }
       return rows;
     }

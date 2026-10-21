@@ -68,6 +68,9 @@
       $("[data-location-detail]").showModal();
     }
 
+    // cached cross-entity data for the card counts
+    let cache = { equipment: [], plants: [], grows: [] };
+
     const page = new window.LeafGuru.CrudPage({
       entity: "locations",
       entityTitleKey: "location.title",
@@ -87,6 +90,31 @@
         { path: "active", format: (v) => (v ? t("common.active") : t("common.inactive")) },
         { path: "notes" }
       ],
+      cardRenderer: (rec) => {
+        // live back-references: what is in this location right now
+        const equipCount = ld.equipmentAt(cache.equipment, rec.id).length;
+        const plantCount = ld.plantsAt(cache.plants, rec.id).length;
+        const growCount = ld.growsUsing(cache.grows, rec.id).length;
+        const sizeParts = [];
+        if (rec.size?.widthCm && rec.size?.depthCm)
+          sizeParts.push(`${rec.size.widthCm}×${rec.size.depthCm} cm`);
+        if (rec.size?.heightCm) sizeParts.push(`H ${rec.size.heightCm} cm`);
+        if (rec.size?.areaM2) sizeParts.push(`${rec.size.areaM2} m²`);
+        return {
+          title: rec.name,
+          subtitle: sizeParts.join(" · ") || rec.notes || null,
+          badge: {
+            text: t(rec.type === "indoor" ? "location.indoor" : "location.outdoor"),
+            kind: rec.type === "indoor" ? "accent" : "sativa",
+          },
+          facts: [
+            { label: t("location.equipmentShort"), value: String(equipCount) },
+            { label: t("location.plantsShort"), value: String(plantCount) },
+            { label: t("location.growsShort"), value: String(growCount) },
+          ],
+          onOpen: (r) => openDetail(r),
+        };
+      },
       rowActions: (rec) => [actionBtn(t("location.detail"), () => openDetail(rec))],
       fields: [
         { path: "name", label: "common.name", type: "string", required: true },
@@ -101,6 +129,15 @@
     });
 
     await page.mount();
+
+    // keep the card counts in sync with the other entities
+    const refreshCache = async () => {
+      [cache.equipment, cache.plants, cache.grows] = await Promise.all([
+        storage.list("equipment"), storage.list("plants"), storage.list("grows")
+      ]);
+      page.renderList();
+    };
+    await refreshCache();
 
     // type field is an enum — replace the auto text input AFTER mount()
     // has created the inputs (mount is synchronous)

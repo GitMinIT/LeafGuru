@@ -10,7 +10,14 @@ const vm = require("node:vm");
 
 function makeElement(tag = "div") {
   const el = {
-    tag, children: [], dataset: {}, style: {}, textContent: "", value: "", hidden: false,
+    tag, children: [], dataset: {}, style: {}, value: "", hidden: false,
+    _text: "",
+    // real DOM: textContent aggregates the descendants
+    get textContent() {
+      if (this._text) return this._text;
+      return (this.children ?? []).map((c) => c.textContent ?? "").join("");
+    },
+    set textContent(v) { this._text = String(v); },
     checked: false, type: "text", name: "", className: "", attrs: {},
     classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
     title: "",
@@ -237,7 +244,7 @@ test("plants page: list renders with detail/edit/delete actions", async () => {
   assert.equal(actions.children[2].textContent, "Delete");
 });
 
-test("locations page: CrudPage renders rows + detail action", async () => {
+test("locations page: renders entity cards with a detail action", async () => {
   const { setup } = require("./helpers/browser-stub");
   const setupResult = await setup();
   const storage = new setupResult.window.LeafGuru.LocalAdapter();
@@ -248,12 +255,35 @@ test("locations page: CrudPage renders rows + detail action", async () => {
 
   const doc = await bootPage(setupResult, "static/js/pages/locations.js", { withCrud: true });
   const listEl = doc._bySelector.get("[data-crud-list]");
-  assert.equal(listEl.children.length, 2, "two location rows rendered");
-  const row = listEl.children[0];
-  // name, type, size, active, notes + actions (detail, edit, delete)
-  assert.equal(row.children.length, 6);
-  assert.equal(row.children.at(-1).children.length, 3, "detail, edit, delete buttons");
-  assert.equal(row.children.at(-1).children[0].textContent, "Detail");
+  assert.equal(listEl.children.length, 2, "two location cards rendered");
+
+  // find the card by name — do not depend on the list order
+  const card = listEl.children.find((c) =>
+    c.children[0]?.children[0]?.children[0]?.textContent === "Box");
+  assert.ok(card, "the Box location is rendered as a card");
+  assert.equal(card.className, "entity-card", "cards carry the entity-card class");
+  // body + actions
+  assert.equal(card.children.length, 2);
+  const body = card.children[0];
+  assert.equal(body.className, "entity-card__body");
+  const actions = card.children[1];
+  assert.equal(actions.className, "entity-card__actions");
+  assert.equal(actions.children.length, 3, "detail, edit, delete buttons");
+  assert.equal(actions.children[0].textContent, "Detail");
+
+  // the title is the location name
+  const head = body.children[0];
+  assert.equal(head.className, "entity-card__head");
+  assert.equal(head.children[0].textContent, "Box");
+  // the type badge
+  assert.equal(head.children[1].className, "entity-badge entity-badge--accent");
+  assert.equal(head.children[1].textContent, "Indoor");
+  // the back-reference counts
+  const facts = body.children[2];
+  assert.equal(facts.className, "entity-card__facts");
+  assert.equal(facts.children.length, 3, "3 label/value pairs");
+  assert.equal(facts.children[0].children[0].textContent, "Gear");
+  assert.equal(facts.children[0].children[1].textContent, "0");
 });
 
 test("tasks page: rows render with done/skip/edit actions + overdue count", async () => {
@@ -346,7 +376,7 @@ test("tasks page: kanban board view renders cards per column", async () => {
   assert.equal(doneList.children.length, 2, "card moved to the done column");
 });
 
-test("strains page: CrudPage renders stage-duration rows", async () => {
+test("strains page: renders entity cards with stage durations and a genotype badge", async () => {
   const { setup } = require("./helpers/browser-stub");
   const setupResult = await setup();
   const storage = new setupResult.window.LeafGuru.LocalAdapter();
@@ -361,7 +391,28 @@ test("strains page: CrudPage renders stage-duration rows", async () => {
   const doc = await bootPage(setupResult, "static/js/pages/strains.js", { withCrud: true });
   const listEl = doc._bySelector.get("[data-crud-list]");
   assert.equal(listEl.children.length, 1);
-  const row = listEl.children[0];
-  assert.match(row.children[4].textContent, /Seedling 14d/);
-  assert.match(row.children[4].textContent, /Flowering 56d/);
+  const card = listEl.children[0];
+  assert.equal(card.className, "entity-card");
+
+  const body = card.children[0];
+  const head = body.children[0];
+  assert.equal(head.children[0].textContent, "Northern Dream");
+  // genotype badge
+  assert.equal(head.children[1].className, "entity-badge entity-badge--hybrid");
+  assert.equal(head.children[1].textContent, "Hybrid");
+
+  // the facts carry the typical stage durations
+  const facts = body.children[2];
+  assert.equal(facts.className, "entity-card__facts");
+  // one <div> per fact, each holding a dt (label) + dd (value)
+  assert.equal(facts.children.length, 4, "3 stage durations + height");
+  const factText = facts.children.map((c) => c.textContent).join(" | ");
+  assert.match(factText, /Seedling14d/);
+  assert.match(factText, /Vegetative30d/);
+  assert.match(factText, /Flowering56d/);
+  assert.match(factText, /Height~120 cm/);
+
+  // edit + delete actions
+  const actions = card.children[1];
+  assert.equal(actions.children.length, 2, "edit + delete");
 });

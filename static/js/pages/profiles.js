@@ -80,6 +80,27 @@
           actions.append(use);
         }
 
+        // duplicate: copy this profile's data into a new one
+        const dup = document.createElement("button");
+        dup.type = "button";
+        dup.className = "btn--ghost";
+        dup.textContent = t("profile.duplicate");
+        dup.title = t("profile.duplicateHint");
+        dup.addEventListener("click", async () => {
+          const next = window.prompt(
+            t("profile.duplicatePrompt", { name: profile.name }),
+            `${profile.name} (copy)`);
+          if (!next || !next.trim()) return;
+          try {
+            const created = await profiles.duplicate(profile.id, next.trim());
+            statusEl.textContent = t("profile.duplicated", { name: created.name });
+            render();
+          } catch (e) {
+            statusEl.textContent = e.message;
+          }
+        });
+        actions.append(dup);
+
         if (profile.id !== profiles.DEFAULT_ID) {
           const rename = document.createElement("button");
           rename.type = "button";

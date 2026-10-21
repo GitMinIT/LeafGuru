@@ -153,3 +153,48 @@ test("profiles: the demo seed lands in the demo profile, not the user's", async 
   const demoPlants = await demoStorage.list("plants");
   assert.equal(demoPlants.length, 6, "the demo profile has the demo plants");
 });
+
+test("profiles: duplicating a profile copies its data into a new profile", async () => {
+  const w = await boot();
+  const p = w.LeafGuru.profiles;
+
+  // source profile with data
+  const source = p.create("Season A");
+  const srcStorage = new w.LeafGuru.LocalAdapter({ profileId: source.id });
+  await srcStorage.put("plants", { name: "Plant A", stage: "seedling", status: "growing" });
+  await srcStorage.put("tasks", { title: "Task A", status: "open" });
+
+  const copy = await p.duplicate(source.id, "Season B");
+  assert.ok(copy.id.startsWith("season-b"), "new id derived from the name");
+  assert.notEqual(copy.id, source.id);
+
+  // the copy has the data
+  const copyStorage = new w.LeafGuru.LocalAdapter({ profileId: copy.id });
+  const copyPlants = await copyStorage.list("plants");
+  const copyTasks = await copyStorage.list("tasks");
+  assert.equal(copyPlants.length, 1);
+  assert.equal(copyPlants[0].name, "Plant A");
+  assert.equal(copyTasks.length, 1);
+  assert.equal(copyTasks[0].title, "Task A");
+
+  // the source is untouched
+  const srcAfter = await srcStorage.list("plants");
+  assert.equal(srcAfter.length, 1, "the source keeps its data");
+});
+
+test("profiles: duplicating twice creates distinct profiles", async () => {
+  const w = await boot();
+  const p = w.LeafGuru.profiles;
+  const source = p.create("Season");
+  const a = await p.duplicate(source.id, "Copy");
+  const b = await p.duplicate(source.id, "Copy");
+  assert.notEqual(a.id, b.id, "the second copy gets a distinct id");
+  assert.ok(p.list().some((x) => x.id === a.id));
+  assert.ok(p.list().some((x) => x.id === b.id));
+});
+
+test("profiles: duplicating an unknown profile fails", async () => {
+  const w = await boot();
+  const p = w.LeafGuru.profiles;
+  await assert.rejects(() => p.duplicate("nope", "Copy"), /unknown profile/);
+});

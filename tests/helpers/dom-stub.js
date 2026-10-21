@@ -7,7 +7,14 @@
  */
 function makeElement(tag = "div") {
   const el = {
-    tag, children: [], dataset: {}, style: {}, textContent: "", value: "", hidden: false,
+    tag, children: [], dataset: {}, style: {}, value: "", hidden: false,
+    _text: "",
+    get textContent() {
+      if (this._text) return this._text;
+      // real DOM: textContent aggregates the descendants
+      return (this.children ?? []).map((c) => c.textContent ?? "").join("");
+    },
+    set textContent(v) { this._text = String(v); },
     parentNode: null, open: false,
     checked: false, type: "text", name: "", className: "", attrs: {}, title: "",
     selectedOptions: [],
