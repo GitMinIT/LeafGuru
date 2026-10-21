@@ -60,12 +60,13 @@
     {% endif %}
 </header>
 
-{% if pompui_impressum_url %}
+{% if pompui_home_url %}
+{# The AI notice is mandatory on pompui.de, so it shows when the app is
+   hosted there. A standalone install has no pompui.de impressum to
+   point at, so it stays out of the way. #}
 <a class="ai-note" href="{{ pompui_impressum_url }}"
    title="Diese Seite wurde mit Unterstützung von KI erstellt"
    aria-label="Hinweis: Diese Seite wurde mit Unterstützung von KI erstellt. Zum Impressum.">✳ Mit KI erstellt</a>
-{% endif %}
-{% if pompui_home_url %}
 <a class="pompui-home" href="{{ pompui_home_url }}"
    title="Zurück zur POMPUI Startseite"
    aria-label="Zurück zur POMPUI Startseite">
