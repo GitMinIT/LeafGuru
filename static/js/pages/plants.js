@@ -11,7 +11,7 @@
   window.addEventListener("DOMContentLoaded", async () => {
     await window.LeafGuru.i18n.init();
     await window.LeafGuru.loadSchemas();
-    window.LeafGuru.storage = new window.LeafGuru.LocalAdapter();
+    window.LeafGuru.storage = await window.LeafGuru.createStorage();
     const d = window.LeafGuru.plantDomain;
     const chart = window.LeafGuru.chart;
     const t = (k, p) => window.LeafGuru.i18n.t(k, p);

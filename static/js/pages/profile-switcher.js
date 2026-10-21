@@ -2,22 +2,30 @@
  * LeafGuru — profile switcher (topbar).
  *
  * Lists the data profiles in the topbar and switches between them. A
- * profile is an independent data set (its own IndexedDB database), so
- * switching reloads the page with the new profile active.
+ * profile is an independent set of grow data:
+ *   local mode  -> an IndexedDB database in this browser
+ *   server mode -> a workspace on the server
+ *
+ * Switching reloads the page with the new profile active.
  */
 (function () {
   "use strict";
 
   window.addEventListener("DOMContentLoaded", async () => {
-    const profiles = window.LeafGuru.profiles;
     const sel = document.querySelector("[data-profile-switch]");
-    if (!sel || !profiles) return;
+    if (!sel || !window.LeafGuru.profileApi) return;
 
+    const api = window.LeafGuru.profileApi();
     const t = (k, p) => window.LeafGuru.i18n?.t?.(k, p) ?? k;
 
-    function render() {
-      const list = profiles.list();
-      const active = profiles.activeId();
+    async function render() {
+      let list = [];
+      try {
+        list = await api.list();
+      } catch {
+        list = [];
+      }
+      const active = api.activeId();
       sel.replaceChildren();
       for (const p of list) {
         const opt = new Option(p.name, p.id);
@@ -25,8 +33,7 @@
         sel.append(opt);
       }
       // "+ New" entry
-      const add = new Option(t("profile.new") ?? "+ New profile…", "__new__");
-      sel.append(add);
+      sel.append(new Option(t("profile.new") ?? "+ New profile…", "__new__"));
     }
 
     sel.addEventListener("change", async () => {
@@ -34,20 +41,25 @@
       if (value === "__new__") {
         const name = window.prompt(t("profile.newPrompt") ?? "Name for the new profile:");
         if (name && name.trim()) {
-          const created = profiles.ensure(name.trim());
-          profiles.setActive(created.id);
-          location.reload();
+          try {
+            const created = await api.create(name.trim());
+            api.setActive(created.id);
+            location.reload();
+          } catch (e) {
+            window.alert(e.message);
+            render();
+          }
         } else {
           render();
         }
         return;
       }
-      if (value === profiles.activeId()) return;
-      profiles.setActive(value);
+      if (value === api.activeId()) return;
+      api.setActive(value);
       location.reload();
     });
 
-    render();
+    await render();
 
     // the profile list can change elsewhere on the page (create, rename,
     // delete) — keep the switcher in sync

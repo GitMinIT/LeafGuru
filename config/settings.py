@@ -28,6 +28,23 @@ DEBUG = os.environ.get("LEAFGURU_DEBUG", "0") == "1"
 
 ALLOWED_HOSTS = os.environ.get("LEAFGURU_ALLOWED_HOSTS", "*").split(",")
 
+# --- LeafGuru deployment mode --------------------------------------------
+# AUTH_MODE decides whether the server has accounts:
+#   "none"     -> no accounts. One shared workspace, no sign-in. This is
+#                 the default, so a self-hoster gets a working app with
+#                 zero configuration.
+#   "required" -> every user must sign in; each account owns a
+#                 workspace. For the hosted service.
+AUTH_MODE = os.environ.get("LEAFGURU_AUTH", "none").strip().lower()
+if AUTH_MODE not in ("none", "required"):
+    raise ValueError(
+        f"LEAFGURU_AUTH must be 'none' or 'required', got {AUTH_MODE!r}"
+    )
+AUTH_REQUIRED = AUTH_MODE == "required"
+
+# The shared workspace used when AUTH_MODE == "none".
+SHARED_WORKSPACE_NAME = os.environ.get("LEAFGURU_WORKSPACE", "Default")
+
 
 # Application definition
 
@@ -53,6 +70,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# When accounts are required, a real secret key is mandatory — the
+# default development key would otherwise be used in production.
+if AUTH_REQUIRED and not os.environ.get("LEAFGURU_SECRET_KEY"):
+    if not DEBUG:
+        raise ValueError(
+            "LEAFGURU_SECRET_KEY must be set when LEAFGURU_AUTH=required"
+        )
+SECRET_KEY = os.environ.get("LEAFGURU_SECRET_KEY", SECRET_KEY)
+
+# Session cookie hardening (only meaningful when accounts are used).
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SECURE = os.environ.get("LEAFGURU_SECURE_COOKIES", "0") == "1"
+CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+
+# Where the login page lives (used by the auth helper + templates).
+LOGIN_URL = "/login/"
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -77,12 +112,39 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# SQLite by default (zero-config self-hosting). Set LEAFGURU_DATABASE_URL
+# for Postgres on the hosted service, e.g.
+#   postgres://user:pass@host:5432/leafguru
+DATABASE_URL = os.environ.get("LEAFGURU_DATABASE_URL", "").strip()
+
+if DATABASE_URL:
+    if DATABASE_URL.startswith("postgres"):
+        DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.postgresql",
+                "NAME": DATABASE_URL.rsplit("/", 1)[-1] or "leafguru",
+                "USER": DATABASE_URL.split("://", 1)[-1].split("@")[0].split(":")[0],
+                "PASSWORD": (
+                    DATABASE_URL.split("://", 1)[-1].split("@")[0].split(":", 1)[1]
+                    if ":" in DATABASE_URL.split("://", 1)[-1].split("@")[0] else ""
+                ),
+                "HOST": DATABASE_URL.split("@", 1)[-1].split(":")[0] if "@" in DATABASE_URL else "",
+                "PORT": DATABASE_URL.rsplit(":", 1)[-1] if "@" in DATABASE_URL and ":" in DATABASE_URL.rsplit("@", 1)[-1] else "",
+                "CONN_MAX_AGE": 60,
+            }
+        }
+    else:
+        raise ValueError(
+            "LEAFGURU_DATABASE_URL: only postgres:// URLs are supported "
+            f"(got {DATABASE_URL.split(':', 1)[0]!r})"
+        )
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
     }
-}
 
 
 # Password validation
@@ -118,6 +180,10 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+# Photos (server mode). The directory is created on demand.
+MEDIA_ROOT = Path(os.environ.get("LEAFGURU_MEDIA_ROOT", BASE_DIR / "media"))
+MEDIA_URL = "/media/"
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']

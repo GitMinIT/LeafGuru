@@ -352,12 +352,24 @@
    * Returns { profile, bundle, switched }.
    */
   async function seedDemoProfile({ switchTo = true } = {}) {
+    const bundle = buildDemoGrow();
+
+    // --- server mode: the demo is its own workspace -------------------
+    if (window.LeafGuru.isServerMode?.()) {
+      const workspaces = window.LeafGuru.workspaces;
+      const profile = await workspaces.create("Demo");
+      workspaces.setActive(profile.id);
+      const storage = new window.LeafGuru.ServerAdapter();
+      await storage.importBundle(bundle);
+      return { profile, bundle, switched: true };
+    }
+
+    // --- local mode: the demo is its own IndexedDB profile ------------
     const profiles = window.LeafGuru.profiles;
     if (!profiles) throw new Error("profiles are not available");
     const profile = profiles.ensure("Demo", { id: profiles.DEMO_ID });
     // an adapter bound to the demo profile -> its own database
     const storage = new window.LeafGuru.LocalAdapter({ profileId: profile.id });
-    const bundle = buildDemoGrow();
     await storage.importBundle(bundle);
     let switched = false;
     if (switchTo && profiles.activeId() !== profile.id) {

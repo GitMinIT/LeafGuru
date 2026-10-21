@@ -1,12 +1,15 @@
 /**
  * LeafGuru — profile management (Data page).
  *
- * A profile is an independent data set in this browser: its own plants,
- * tasks and journal, stored in its own IndexedDB database. This panel
- * creates, renames, switches and deletes profiles.
+ * A profile is an independent set of grow data. Where it lives depends
+ * on the storage mode:
+ *   local mode  -> an IndexedDB database in this browser
+ *   server mode -> a workspace on the server
  *
- * The default profile holds the data that was already in the browser and
- * cannot be deleted. Deleting a profile removes its data too.
+ * The panel creates, renames, duplicates, switches and deletes them.
+ * In local mode the default profile holds the data that was already in
+ * the browser and cannot be deleted; in server mode every workspace can
+ * be deleted.
  */
 (function () {
   "use strict";
@@ -15,19 +18,23 @@
     await window.LeafGuru.i18n.init();
     const t = (k, p) => window.LeafGuru.i18n.t(k, p);
     const $ = (sel) => document.querySelector(sel);
-    const profiles = window.LeafGuru.profiles;
 
     const listEl = $("[data-profile-list]");
     const statusEl = $("[data-profile-status]");
-    if (!listEl || !profiles) return;
+    if (!listEl || !window.LeafGuru.profileApi) return;
+
+    const api = window.LeafGuru.profileApi();
+    const isServer = window.LeafGuru.isServerMode?.() ?? false;
 
     /** how many records does a profile hold? */
     async function countRecords(profileId) {
       try {
-        const storage = new window.LeafGuru.LocalAdapter({ profileId });
-        const plants = await storage.list("plants");
-        const grows = await storage.list("grows");
-        const logs = await storage.list("logEntries");
+        const storage = isServer
+          ? new window.LeafGuru.ServerAdapter()
+          : new window.LeafGuru.LocalAdapter({ profileId });
+        const [plants, grows, logs] = await Promise.all([
+          storage.list("plants"), storage.list("grows"), storage.list("logEntries"),
+        ]);
         return { plants: plants.length, grows: grows.length, logs: logs.length };
       } catch {
         return { plants: 0, grows: 0, logs: 0 };
@@ -36,9 +43,10 @@
 
     async function render() {
       listEl.replaceChildren();
-      const activeId = profiles.activeId();
+      const activeId = api.activeId();
+      const all = await api.list();
 
-      for (const profile of profiles.list()) {
+      for (const profile of all) {
         const row = document.createElement("li");
         row.className = "profile-row";
         if (profile.id === activeId) row.classList.add("profile-row--active");
@@ -68,18 +76,6 @@
         const actions = document.createElement("span");
         actions.className = "profile-row__actions";
 
-        if (profile.id !== activeId) {
-          const use = document.createElement("button");
-          use.type = "button";
-          use.className = "btn--ghost";
-          use.textContent = t("common.use") ?? "Use";
-          use.addEventListener("click", () => {
-            profiles.setActive(profile.id);
-            location.reload();
-          });
-          actions.append(use);
-        }
-
         // duplicate: copy this profile's data into a new one
         const dup = document.createElement("button");
         dup.type = "button";
@@ -92,7 +88,7 @@
             `${profile.name} (copy)`);
           if (!next || !next.trim()) return;
           try {
-            const created = await profiles.duplicate(profile.id, next.trim());
+            const created = await api.duplicate(profile.id, next.trim());
             statusEl.textContent = t("profile.duplicated", { name: created.name });
             render();
           } catch (e) {
@@ -101,15 +97,29 @@
         });
         actions.append(dup);
 
-        if (profile.id !== profiles.DEFAULT_ID) {
+        if (profile.id !== activeId) {
+          const use = document.createElement("button");
+          use.type = "button";
+          use.className = "btn--ghost";
+          use.textContent = t("common.use") ?? "Use";
+          use.addEventListener("click", () => {
+            api.setActive(profile.id);
+            location.reload();
+          });
+          actions.append(use);
+        }
+
+        // the default profile holds the existing local data -> keep it
+        const isDefault = profile.id === window.LeafGuru.profiles?.DEFAULT_ID;
+        if (!isDefault) {
           const rename = document.createElement("button");
           rename.type = "button";
           rename.className = "btn--ghost";
           rename.textContent = t("profile.rename");
-          rename.addEventListener("click", () => {
+          rename.addEventListener("click", async () => {
             const next = window.prompt(t("profile.renamePrompt"), profile.name);
             if (next && next.trim()) {
-              profiles.rename(profile.id, next.trim());
+              await api.rename(profile.id, next.trim());
               statusEl.textContent = t("profile.renamed");
               render();
             }
@@ -124,9 +134,13 @@
             const ok = window.confirm(
               t("profile.deleteConfirm", { name: profile.name }));
             if (!ok) return;
-            await profiles.removeWithData(profile.id);
-            statusEl.textContent = t("profile.deleted");
-            render();
+            try {
+              await api.remove(profile.id);
+              statusEl.textContent = t("profile.deleted");
+              render();
+            } catch (e) {
+              statusEl.textContent = e.message;
+            }
           });
           actions.append(del);
         }
@@ -138,12 +152,16 @@
 
     const newBtn = $("[data-profile-new]");
     if (newBtn) {
-      newBtn.addEventListener("click", () => {
+      newBtn.addEventListener("click", async () => {
         const name = window.prompt(t("profile.newPrompt"), "");
         if (!name || !name.trim()) return;
-        const created = profiles.ensure(name.trim());
-        statusEl.textContent = t("profile.created", { name: created.name });
-        render();
+        try {
+          const created = await api.create(name.trim());
+          statusEl.textContent = t("profile.created", { name: created.name });
+          render();
+        } catch (e) {
+          statusEl.textContent = e.message;
+        }
       });
     }
 

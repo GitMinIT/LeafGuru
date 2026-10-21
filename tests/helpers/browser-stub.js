@@ -216,6 +216,8 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/model/validator.js");
   load("static/js/adapter/storage-adapter.js");
   load("static/js/adapter/local-adapter.js");
+  load("static/js/adapter/server-adapter.js");
+  load("static/js/adapter/storage-factory.js");
   load("static/js/model/data-io.js");
   load("static/js/model/photos.js");
   load("static/js/model/crud.js");

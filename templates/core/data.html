@@ -49,8 +49,15 @@
     <ul class="record-counts" data-record-counts></ul>
 </section>
 
-<section class="card">
-    <h2>Storage</h2>
+<section class="card" data-storage-card>
+    <h2>Where your data lives</h2>
+    <p class="muted" data-storage-mode-hint>…</p>
+    <div class="crud-toolbar">
+        <button type="button" data-action="use-local">Keep in this browser</button>
+        <button type="button" data-action="use-server">Use the server</button>
+        <button type="button" data-action="migrate">Move browser data to the server</button>
+    </div>
+    <p data-storage-status class="muted" aria-live="polite"></p>
     <p class="muted">Browser usage: <span data-storage-usage>…</span></p>
 </section>
 

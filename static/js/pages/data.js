@@ -7,7 +7,7 @@
   window.addEventListener("DOMContentLoaded", async () => {
     await window.LeafGuru.i18n.init();
     await window.LeafGuru.loadSchemas();
-    window.LeafGuru.storage = new window.LeafGuru.LocalAdapter();
+    window.LeafGuru.storage = await window.LeafGuru.createStorage();
 
     const $ = (sel) => document.querySelector(sel);
     const t = (k, p) => window.LeafGuru.i18n.t(k, p);
@@ -93,6 +93,68 @@
         status.textContent = t("messages.importFailed", { reason: e.message });
       }
     });
+
+    // --- where the data lives ------------------------------------------
+    const modeHint = $("[data-storage-mode-hint]");
+    const modeStatus = $("[data-storage-status]");
+    const useLocal = $("[data-action='use-local']");
+    const useServer = $("[data-action='use-server']");
+    const migrateBtn = $("[data-action='migrate']");
+    const serverAvailable = !!window.LeafGuru.serverStatus?.server;
+
+    async function showStorageMode() {
+      if (!modeHint) return;
+      const mode = window.LeafGuru.storageMode
+        ?? (window.LeafGuru.isServerMode?.() ? "server" : "local");
+      if (!serverAvailable) {
+        modeHint.textContent = t("data.storageNoServerHint");
+        if (useLocal) useLocal.disabled = true;
+        if (useServer) useServer.disabled = true;
+        if (migrateBtn) migrateBtn.disabled = true;
+        return;
+      }
+      modeHint.textContent = t(mode === "server"
+        ? "data.storageServerHint" : "data.storageLocalHint");
+      if (useLocal) useLocal.disabled = mode === "local";
+      if (useServer) useServer.disabled = mode === "server";
+      if (migrateBtn) {
+        migrateBtn.disabled = mode === "server";
+        migrateBtn.hidden = mode === "server";
+      }
+    }
+    await showStorageMode();
+
+    if (useLocal) {
+      useLocal.addEventListener("click", () => {
+        window.LeafGuru.setStorageMode("local");
+      });
+    }
+    if (useServer) {
+      useServer.addEventListener("click", () => {
+        if (!window.confirm(t("data.useServerConfirm"))) return;
+        window.LeafGuru.setStorageMode("server");
+      });
+    }
+    if (migrateBtn) {
+      migrateBtn.addEventListener("click", async () => {
+        const status = modeStatus;
+        const ok = window.confirm(t("data.migrateConfirm"));
+        if (!ok) return;
+        try {
+          status.textContent = t("data.migrating");
+          const counts = await window.LeafGuru.migration.migrateToServer({
+            onProgress: (msg) => { status.textContent = msg; },
+          });
+          const total = Object.values(counts).reduce((n, v) => n + v, 0);
+          status.textContent = t("data.migrated", { count: total });
+          if (window.confirm(t("data.useServerNow"))) {
+            window.LeafGuru.setStorageMode("server");
+          }
+        } catch (e) {
+          status.textContent = e.message;
+        }
+      });
+    }
 
     $("[data-action='wipe']").addEventListener("click", async () => {
       const status = $("[data-wipe-status]");

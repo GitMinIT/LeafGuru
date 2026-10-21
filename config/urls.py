@@ -1,14 +1,23 @@
-"""LeafGuru URL configuration (phase 1 shell)."""
+"""LeafGuru URL configuration.
 
-from django.contrib import admin
+The API lives under /api/v1/. The page routes are unchanged, so the
+browser app keeps working whether it talks to the local adapter or to
+the server.
+"""
+
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib import admin
 from django.urls import path
 
-from core import views
+from core import auth_views, views
+from core.api import api
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/", api.urls),
+    path("login/", auth_views.login_view, name="login"),
+    path("logout/", auth_views.logout_view, name="logout"),
     path("", views.dashboard, name="dashboard"),
     path("grows/", views.grows, name="grows"),
     path("plants/", views.plants, name="plants"),
@@ -21,6 +30,10 @@ urlpatterns = [
     path("settings/", views.settings, name="settings"),
     path("data/", views.data, name="data"),
 ]
+
+# Uploaded photos (server mode). Always served: the workspace check
+# happens in the API, the file names are random UUIDs.
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATICFILES_DIRS[0])

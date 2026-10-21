@@ -257,7 +257,19 @@
     "demoGrowConfirm": "Load the demo grow into the \\\"Demo\\\" profile and switch to it?",
     "demoGrowLoaded": "Demo grow loaded",
     "catalog": "Strain catalog",
-    "wipeAllHint": "This only clears the profile you are currently in. Other profiles keep their data."
+    "wipeAllHint": "This only clears the profile you are currently in. Other profiles keep their data.",
+    "storageLocation": "Where your data lives",
+    "storageLocalHint": "The data lives in this browser (IndexedDB).",
+    "storageServerHint": "The data lives on the server — you can reach it from any device.",
+    "storageNoServerHint": "This browser keeps the data on this device (IndexedDB). There is no server configured.",
+    "useLocal": "Keep in this browser",
+    "useServer": "Use the server",
+    "migrateToServer": "Move browser data to the server",
+    "useServerConfirm": "Use the server from now on? The data that is in this browser stays here until you move it.",
+    "migrateConfirm": "Move the data from this browser to the server? The browser copy is kept until you delete it yourself.",
+    "migrating": "Moving the data…",
+    "migrated": "Moved {count} records to the server.",
+    "useServerNow": "Use the server from now on?"
   },
   "messages": {
     "saved": "Saved.",
@@ -419,6 +431,7 @@
     "duplicate": "Duplicate",
     "duplicatePrompt": "Name for the copy of profile \"{name}\":",
     "duplicated": "Profile \"{name}\" created as a copy.",
-    "duplicateHint": "Copies all data (plants, tasks, journal, photos) into a new, independent profile."
+    "duplicateHint": "Copies all data (plants, tasks, journal, photos) into a new, independent profile.",
+    "storageHint": "A profile is an independent set of grow data — its own plants, tasks and journal."
   }
 }

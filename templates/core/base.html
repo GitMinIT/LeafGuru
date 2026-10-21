@@ -1,4 +1,4 @@
-{% load static %}
+{% load static %}{% load tags %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -10,6 +10,8 @@
     <title>{% block title %}LeafGuru{% endblock %}</title>
     <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="/static/css/base.css">
+    {# the browser client sends this token with every write request #}
+    <meta name="csrf-token" content="{% csrf_token_header request %}">
     {% block extra_head %}{% endblock %}
 </head>
 <body data-page="{{ page_key|default:'' }}">
@@ -95,8 +97,12 @@
 <script src="/static/js/model/schema-loader.js"></script>
 <script src="/static/js/model/validator.js"></script>
 <script src="/static/js/model/profile-store.js"></script>
+<script src="/static/js/model/workspace.js"></script>
+<script src="/static/js/model/migration.js"></script>
 <script src="/static/js/adapter/storage-adapter.js"></script>
 <script src="/static/js/adapter/local-adapter.js"></script>
+<script src="/static/js/adapter/server-adapter.js"></script>
+<script src="/static/js/adapter/storage-factory.js"></script>
 <script src="/static/js/model/data-io.js"></script>
 <script src="/static/js/model/demo-data.js"></script>
 <script src="/static/js/model/strain-catalog.js"></script>

@@ -16,7 +16,7 @@
     // ensure i18n + schemas are ready even if the page init hasn't finished
     await window.LeafGuru.i18n.init();
     if (!Object.keys(window.LeafGuru.schemas ?? {}).length) await window.LeafGuru.loadSchemas();
-    window.LeafGuru.storage ??= new window.LeafGuru.LocalAdapter();
+    window.LeafGuru.storage ??= await window.LeafGuru.createStorage();
     const storage = window.LeafGuru.storage;
     const $ = (sel) => document.querySelector(sel);
     const dlg = $("[data-log-dialog]");
