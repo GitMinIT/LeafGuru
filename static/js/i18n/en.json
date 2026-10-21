@@ -133,7 +133,18 @@
     "durationVegetative": "Days in vegetative stage",
     "durationFlowering": "Days in flowering stage",
     "characteristics": "Characteristics",
-    "name": "Strain name"
+    "name": "Strain name",
+    "catalogHint": "Pick a well-known strain from the catalog — the stage durations and typical height are filled in for you.",
+    "catalogSearch": "Search strains (name or breeder)",
+    "catalogResults": "Catalog results",
+    "catalogEmpty": "No catalog match — use “Create” to add it manually.",
+    "catalogUse": "Use this strain",
+    "catalogAdd": "Add to my strains",
+    "catalogPopular": "Popular",
+    "catalogAll": "All strains",
+    "catalogLoading": "Loading catalog…",
+    "catalogUnavailable": "Strain catalog unavailable.",
+    "catalogSource": "Catalog data: Kushy dataset (MIT)"
   },
   "plant": {
     "title": "Plants",
@@ -235,7 +246,12 @@
     "confirmImport": "Replace all current data with the imported file?",
     "storageUsage": "Storage used",
     "dangerZone": "Danger zone",
-    "wipeAll": "Delete ALL local data"
+    "wipeAll": "Delete ALL local data",
+    "demoGrow": "Load demo grow",
+    "demoGrowHint": "Replace the current data with a complete example grow — plants, equipment, tasks and a journal — so you can explore every page.",
+    "demoGrowConfirm": "Replace all current data with the demo grow?",
+    "demoGrowLoaded": "Demo grow loaded.",
+    "catalog": "Strain catalog"
   },
   "messages": {
     "saved": "Saved.",
@@ -284,8 +300,20 @@
     "growEnd": "End: {name}"
   },
   "calendar": {
-    "months": ["January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"]
+    "months": [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December"
+    ]
   },
   "log": {
     "title": "Journal",

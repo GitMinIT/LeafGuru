@@ -926,6 +926,59 @@ legend { padding: 0; }
 }
 .equip-icon-preview img { width: 100%; height: 100%; object-fit: cover; }
 
+/* ------------------------------------------------------- strain catalog */
+
+.catalog-search {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.9rem;
+}
+.catalog-search input { max-width: 26rem; }
+
+.catalog-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.35rem;
+    max-height: 26rem;
+    overflow-y: auto;
+}
+
+.catalog-row {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.55rem 0.7rem;
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    transition: border-color var(--t-fast), background var(--t-fast);
+}
+.catalog-row:hover { border-color: var(--line); background: var(--surface-3); }
+
+.catalog-row__main {
+    display: grid;
+    gap: 0.1rem;
+    min-width: 0;
+    flex: 1;
+}
+.catalog-row__name { font-weight: 700; font-size: 0.92rem; }
+.catalog-row__meta {
+    font-size: 0.76rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.catalog-row button { flex: 0 0 auto; padding: 0.24rem 0.7rem; font-size: 0.8rem; }
+
+.catalog-source {
+    margin: 0.8rem 0 0;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
 /* ------------------------------------------------------------ empty state */
 
 [data-crud-empty], [data-empty], [data-grow-empty] {

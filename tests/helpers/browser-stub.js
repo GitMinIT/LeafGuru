@@ -120,6 +120,10 @@ async function setup({ locale = "en" } = {}) {
         const file = path.join(ROOT, "schemas", path.basename(url));
         return { ok: true, json: async () => JSON.parse(fs.readFileSync(file, "utf8")) };
       }
+      if (url.includes("/static/js/data/")) {
+        const file = path.join(ROOT, "static", "js", "data", path.basename(url));
+        return { ok: true, json: async () => JSON.parse(fs.readFileSync(file, "utf8")) };
+      }
       if (url.includes("/static/js/i18n/")) {
         const file = path.join(ROOT, "static", "js", "i18n", path.basename(url));
         return { ok: true, json: async () => JSON.parse(fs.readFileSync(file, "utf8")) };

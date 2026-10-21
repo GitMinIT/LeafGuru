@@ -155,15 +155,31 @@
       return col.format ? col.format(raw, rec) : String(raw);
     }
 
+    /** open the dialog for editing an existing record */
     openForm(record = null) {
+      this._openDialog(record, record?.id ?? "", record ? "edit" : "create");
+    }
+
+    /**
+     * Open the dialog for CREATING a new record, prefilled from a draft.
+     * The draft is only used to fill the fields — it is not tied to an id,
+     * so submitting creates a fresh record.
+     */
+    openDraft(draft) {
+      this._openDialog(draft, "", "create");
+    }
+
+    _openDialog(record, editingId, mode) {
       const dialog = document.querySelector("[data-crud-dialog]");
       const form = dialog.querySelector("form");
       form.reset();
       const errEl = dialog.querySelector("[data-crud-error]");
       if (errEl) { errEl.hidden = true; errEl.textContent = ""; }
-      form.dataset.editingId = record?.id ?? "";
+      form.dataset.editingId = editingId ?? "";
       dialog.querySelector("[data-crud-form-title]").textContent =
-        record ? `${t("common.edit")}: ${record.name ?? record.title ?? record.id.slice(0, 8)}` : `${t("common.create")} ${t(this.cfg.entityTitleKey)}`;
+        mode === "edit"
+          ? `${t("common.edit")}: ${record.name ?? record.title ?? editingId.slice(0, 8)}`
+          : `${t("common.create")} ${t(this.cfg.entityTitleKey)}`;
       for (const field of this.cfg.fields) {
         if (field.dynamic) { this._fillDynamic(field, record); continue; }
         this._fillField(form, field, record);

@@ -7,8 +7,22 @@
 <p class="muted" data-strain-page-hint>A strain is a variety of plant — a category, not a plant. Create your plants from a strain.</p>
 <div class="crud-toolbar">
     <button type="button" data-crud-new>Create</button>
+    <button type="button" class="ghost" data-catalog-toggle>Browse catalog</button>
     <p class="muted" data-crud-flash hidden aria-live="polite"></p>
 </div>
+
+<section class="card" data-catalog-panel hidden>
+    <h2>Strain catalog</h2>
+    <p class="muted">Pick a well-known strain — the typical stage durations and height are filled in for you. You can still adjust everything before saving.</p>
+    <label class="catalog-search">
+        <span class="muted">Search</span>
+        <input type="search" data-catalog-search placeholder="e.g. white widow, amnesia, purple kush" autocomplete="off">
+    </label>
+    <p class="muted" data-catalog-status aria-live="polite"></p>
+    <ul class="catalog-list" data-catalog-results></ul>
+    <p class="muted catalog-source">Catalog data: Kushy strain dataset (MIT).</p>
+</section>
+
 <p class="muted" data-crud-empty>No strains yet.</p>
 <ul class="crud-list" data-crud-list hidden></ul>
 
@@ -27,4 +41,5 @@
 {% block extra_scripts %}
 <script src="/static/js/model/crud.js"></script>
 <script src="/static/js/pages/strains.js"></script>
+<script src="/static/js/pages/strains-catalog.js"></script>
 {% endblock %}

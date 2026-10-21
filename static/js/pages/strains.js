@@ -63,5 +63,16 @@
       if (!record) select.value = "unknown";
       else select.value = record.genotype ?? "unknown";
     };
+
+    // The catalog picker opens the create dialog prefilled from a catalog
+    // entry (see static/js/pages/strains-catalog.js).
+    const origOpenDraft = page.openDraft.bind(page);
+    page.openDraft = (draft) => {
+      origOpenDraft(draft);
+      select.value = draft?.genotype ?? "unknown";
+    };
+
+    // exposed for the catalog picker
+    window.LeafGuru.strainsPage = page;
   });
 })();

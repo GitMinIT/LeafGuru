@@ -39,6 +39,22 @@
     }
     await showCounts();
 
+    // --- demo grow -----------------------------------------------------
+    $("[data-action='demo']").addEventListener("click", async () => {
+      const status = $("[data-demo-status]");
+      if (!window.confirm(t("data.demoGrowConfirm"))) return;
+      try {
+        const bundle = await window.LeafGuru.demoData.seedDemoGrow(window.LeafGuru.storage);
+        const total = Object.values(bundle).reduce(
+          (n, v) => n + (Array.isArray(v) ? v.length : 0), 0);
+        status.textContent = t("data.demoGrowLoaded") + ` (${total} records)`;
+        await showUsage();
+        await showCounts();
+      } catch (e) {
+        status.textContent = e.message;
+      }
+    });
+
     $("[data-action='export']").addEventListener("click", async () => {
       const status = $("[data-export-status]");
       try {
