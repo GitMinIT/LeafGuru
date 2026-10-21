@@ -160,6 +160,22 @@ async function bootPage(setupResult, pageFile, { withCrud = false } = {}) {
   return doc;
 }
 
+test("REGRESSION equipment page: category filter is populated with every category", async () => {
+  const { setup } = require("./helpers/browser-stub");
+  const setupResult = await setup();
+  const storage = new setupResult.window.LeafGuru.LocalAdapter();
+  setupResult.window.LeafGuru.storage = storage;
+  await storage.put("equipment", { name: "LED", category: "light", status: "in-use" });
+
+  const doc = await bootPage(setupResult, "static/js/pages/equipment.js");
+  const filter = doc._bySelector.get("[data-equip-filter-category]");
+  assert.ok(filter, "category filter select exists");
+  // "All" + one option per category (light, pot, soil, fan, filter,
+  // nutrient, sensor, other)
+  assert.equal(filter.children.length, 9,
+    "category filter offers All + every category (was 1: the function was never called)");
+});
+
 test("equipment page: grid renders + tile / add tile / hover gear", async () => {
   const { setup } = require("./helpers/browser-stub");
   const setupResult = await setup();

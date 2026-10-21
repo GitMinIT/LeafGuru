@@ -65,6 +65,7 @@
         storage.list("equipment"), storage.list("locations"), storage.list("grows")
       ]);
       cache = { equipment, locations, grows };
+      fillCategoryFilter();
       renderGrid();
     }
 
