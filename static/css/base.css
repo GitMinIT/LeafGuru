@@ -123,10 +123,19 @@ body {
     place-items: center;
     width: 1.9rem;
     height: 1.9rem;
-    font-size: 1.05rem;
     border-radius: var(--r-md);
     background: var(--accent-soft);
     border: 1px solid rgba(var(--accent-rgb), 0.3);
+}
+/* the leaf mark from the favicon, drawn inline so it needs no request */
+.brand__logo {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 3.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 .brand__name { font-size: 1.02rem; }
 
@@ -1278,3 +1287,80 @@ legend { padding: 0; }
         scroll-behavior: auto !important;
     }
 }
+
+/* ------------------------------------------------------- POMPUI chrome */
+
+/* the GitHub link in the topbar */
+.topbar__github {
+    display: grid;
+    place-items: center;
+    width: 1.9rem;
+    height: 1.9rem;
+    margin-left: auto;
+    border-radius: var(--r-md);
+    color: var(--text-dim);
+    transition: color 0.16s ease, background 0.16s ease;
+}
+.topbar__github:hover {
+    color: var(--accent);
+    background: var(--accent-soft);
+}
+.topbar__github svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    fill: currentColor;
+}
+
+/* the AI-notice badge (mandatory on pompui.de) */
+.ai-note {
+    position: fixed;
+    z-index: 200;
+    top: 0.6rem;
+    left: 0.6rem;
+    padding: 0.25rem 0.6rem;
+    border: 1px solid currentColor;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    letter-spacing: 0.02em;
+    opacity: 0.45;
+    background: rgba(0, 0, 0, 0.15);
+    color: inherit;
+    text-decoration: none;
+}
+.ai-note:hover { opacity: 0.85; }
+
+/* the button back to pompui.de */
+.pompui-home {
+    position: fixed;
+    z-index: 200;
+    bottom: 0.6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--text-dim);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-decoration: none;
+}
+.pompui-home:hover {
+    opacity: 1;
+    color: var(--accent);
+    border-color: var(--accent);
+}
+.pompui-home svg {
+    width: 0.9rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+/* keep the fixed Home button clear of the page content */
+body:has(.pompui-home) { padding-bottom: 3.2rem; }

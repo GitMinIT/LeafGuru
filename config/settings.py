@@ -32,7 +32,40 @@ SECRET_KEY = 'django-insecure-vibxclm(ng_m$l(v=iafxiywq@uiy4i$k7ubdwm%=)@1t_pu@s
 # Security: production override via env (LEAFGURU_DEBUG=1 enables dev mode)
 DEBUG = os.environ.get("LEAFGURU_DEBUG", "0") == "1"
 
-ALLOWED_HOSTS = os.environ.get("LEAFGURU_ALLOWED_HOSTS", "*").split(",")
+# --- allowed hosts --------------------------------------------------------
+# A wildcard accepts ANY Host header, which is how host-header
+# poisoning works. So the default is a concrete list: localhost, this
+# machine's own name and IP, and the host of LEAFGURU_PUBLIC_URL.
+#
+# LEAFGURU_ALLOWED_HOSTS overrides it (comma separated) when you need
+# more names.
+if os.environ.get("LEAFGURU_ALLOWED_HOSTS", "").strip():
+    ALLOWED_HOSTS = [
+        h.strip()
+        for h in os.environ["LEAFGURU_ALLOWED_HOSTS"].split(",")
+        if h.strip()
+    ]
+else:
+    import socket
+
+    def _local_hostnames():
+        """The names this machine answers to."""
+        names = {"localhost", "127.0.0.1", "[::1]"}
+        try:
+            names.add(socket.gethostname())
+            names.add(socket.getfqdn())
+        except Exception:
+            pass
+        # the primary outbound address (no traffic is sent)
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+                probe.connect(("192.0.2.1", 1))   # TEST-NET-1, unroutable
+                names.add(probe.getsockname()[0])
+        except Exception:
+            pass
+        return names
+
+    ALLOWED_HOSTS = sorted(_local_hostnames())
 
 # --- LeafGuru deployment mode --------------------------------------------
 # AUTH_MODE decides whether the server has accounts:
@@ -54,6 +87,17 @@ SHARED_WORKSPACE_NAME = os.environ.get("LEAFGURU_WORKSPACE", "Default")
 # The public base URL of this instance — invitation links are built from
 # it (e.g. https://leaf.example.com). Falls back to a relative link.
 PUBLIC_URL = os.environ.get("LEAFGURU_PUBLIC_URL", "").strip().rstrip("/")
+
+# Where the source lives, and where the app is hosted. The POMPUI
+# integration needs both: the GitHub link in the topbar and the
+# AI-notice badge that pompui.de requires on every hosted page.
+REPO_URL = os.environ.get(
+    "LEAFGURU_REPO_URL", "https://github.com/GitMinIT/LeafGuru"
+).strip().rstrip("/")
+POMPUI_URL = os.environ.get("LEAFGURU_POMPUI_URL", "").strip().rstrip("/")
+POMPUI_IMPRESSUM_URL = os.environ.get(
+    "LEAFGURU_POMPUI_IMPRESSUM_URL", "https://pompui.de/impressum"
+).strip()
 
 
 # Application definition
@@ -89,11 +133,41 @@ if AUTH_REQUIRED and not os.environ.get("LEAFGURU_SECRET_KEY"):
         )
 SECRET_KEY = os.environ.get("LEAFGURU_SECRET_KEY", SECRET_KEY)
 
-# Session cookie hardening (only meaningful when accounts are used).
+# --- behind a TLS-terminating proxy (nginx) ------------------------------
+# The proxy terminates TLS and forwards the original scheme. Without
+# this Django thinks every request arrived over plain HTTP, which
+# breaks the secure-cookie and host checks.
+BEHIND_PROXY = os.environ.get("LEAFGURU_BEHIND_PROXY", "0") == "1"
+if BEHIND_PROXY:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# --- session cookies ------------------------------------------------------
+# Secure cookies are the DEFAULT for a deployment that is reachable
+# over the internet (accounts required, or a public https URL). A LAN
+# self-hoster on plain HTTP keeps working.
+_IS_PUBLIC = AUTH_REQUIRED or PUBLIC_URL.startswith("https://")
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
-SESSION_COOKIE_SECURE = os.environ.get("LEAFGURU_SECURE_COOKIES", "0") == "1"
+SESSION_COOKIE_SECURE = os.environ.get(
+    "LEAFGURU_SECURE_COOKIES", "1" if _IS_PUBLIC else "0"
+) == "1"
 CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
+
+# Two weeks (Django's default) is a long time for a shared computer.
+SESSION_COOKIE_AGE = int(
+    os.environ.get("LEAFGURU_SESSION_AGE_DAYS", "7")
+) * 24 * 60 * 60
+SESSION_SAVE_EVERY_REQUEST = False
+
+# Behind a proxy the request's origin is the public URL, which is not
+# necessarily in ALLOWED_HOSTS.
+if PUBLIC_URL:
+    from urllib.parse import urlparse
+
+    CSRF_TRUSTED_ORIGINS = [PUBLIC_URL]
+    _public_host = urlparse(PUBLIC_URL).hostname
+    if _public_host and _public_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS = sorted(set(ALLOWED_HOSTS) | {_public_host})
 
 # Where the login page lives (used by the auth helper + templates).
 LOGIN_URL = "/login/"
