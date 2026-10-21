@@ -8,6 +8,7 @@
 function makeElement(tag = "div") {
   const el = {
     tag, children: [], dataset: {}, style: {}, textContent: "", value: "", hidden: false,
+    parentNode: null, open: false,
     checked: false, type: "text", name: "", className: "", attrs: {}, title: "",
     selectedOptions: [],
     classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } },
@@ -55,7 +56,7 @@ function makeElement(tag = "div") {
       return el._nested.get(sel);
     },
     querySelectorAll() { return []; },
-    appendChild(n) { el.children.push(n); return n; },
+    appendChild(n) { el.children.push(n); n.parentNode = el; return n; },
     replaceWith(node) {
       if (node && el._formOwner && el.name) {
         el._formOwner._inputs[el.name] = node;
@@ -63,19 +64,35 @@ function makeElement(tag = "div") {
       }
     },
     closest(sel) { return sel === "dialog" ? (el._dialog ?? null) : el; },
-    reset() { el.dataset.editingId = ""; /* real forms keep their element registry */ },
-    click() {}, close() { el._closed = true; }, showModal() { el._shown = true; }, scrollIntoView() {},
+    contains(node) { if (node === el) return true; return (el.children ?? []).some((c) => c.contains?.(node)); },
+    reset() { el.dataset.editingId = ""; },
+    click() {}, close() { el._closed = true; el.open = false; },
+    showModal() { el._shown = true; el.open = true; }, scrollIntoView() {},
   };
   if (tag === "form") {
     el._inputs = {};
+    el._controls = [];
     const register = (node) => {
-      if (node && node.name) { el._inputs[node.name] = node; node._formOwner = el; }
+      if (!node) return;
+      if (node.name) { el._inputs[node.name] = node; node._formOwner = el; }
+      if (node.tag === "input" || node.tag === "select" || node.tag === "textarea") {
+        el._controls.push(node);
+      }
       for (const child of node?.children ?? []) register(child);
     };
     const origAppend = el.append;
     el.append = (...nodes) => { origAppend(...nodes); nodes.forEach(register); };
     const origAppendChild = el.appendChild;
     el.appendChild = (n) => { origAppendChild(n); register(n); return n; };
+    // real forms: reset() restores every control to its default state
+    el.reset = () => {
+      el.dataset.editingId = "";
+      for (const input of el._controls) {
+        if (input.type === "checkbox") input.checked = false;
+        else input.value = "";
+        if (Array.isArray(input.selectedOptions)) input.selectedOptions = [];
+      }
+    };
     el.elements = new Proxy({}, {
       get: (_, name) => {
         if (typeof name !== "string") return el._inputs[name];

@@ -30,7 +30,6 @@
     const box = document.createElement("div");
     box.className = "date-picker";
     box.hidden = true;
-    document.body.append(box);
     // close on outside click
     document.addEventListener("click", (event) => {
       if (box.hidden) return;
@@ -154,8 +153,26 @@
     popover.style.top = `${Math.max(8, (Number(rect.bottom) || 40) + 4)}px`;
   }
 
+  /**
+   * Where the popover must live so it stays clickable.
+   *
+   * A modal <dialog> is promoted to the browser TOP LAYER, which paints
+   * above everything in the normal document flow — including a popover
+   * appended to <body>. The calendar would show up behind the dialog
+   * and every click on a day would hit the dialog instead. Anchoring the
+   * popover INSIDE the open dialog puts it back in the same top layer,
+   * above the dialog content.
+   */
+  function hostFor(input) {
+    const dialog = input?.closest?.("dialog");
+    if (dialog && dialog.open) return dialog;
+    return document.body;
+  }
+
   function open(input) {
     popover = popover ?? createPopover();
+    const host = hostFor(input);
+    if (popover.parentNode !== host) host.appendChild(popover);
     activeInput = input;
     view = null;
     selectedDay = null;

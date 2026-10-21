@@ -8,14 +8,15 @@ async function bootPicker(setupResult) {
   const fs = require("node:fs");
   const makeElement = (tag) => {
     const el = {
-      tag, children: [], dataset: {}, style: {}, textContent: "", value: "",
+      tag, children: [], dataset: {}, style: {}, textContent: "", value: "", parentNode: null,
       hidden: false, type: "text", className: "", attrs: {},
-      append(...nodes) { el.children.push(...nodes); },
+      append(...nodes) { el.children.push(...nodes); for (const n of nodes) n.parentNode = el; },
+      appendChild(n) { el.children.push(n); n.parentNode = el; return n; },
       replaceChildren(...nodes) { el.children = [...nodes]; },
       addEventListener(type, fn) { (el._listeners ??= {})[type] ??= []; el._listeners[type].push(fn); },
       dispatch(type, event = {}) { (el._listeners?.[type] ?? []).forEach((fn) => fn(event)); },
       setAttribute(k, v) { el.attrs[k] = String(v); },
-      contains() { return false; },
+      contains(node) { if (node === el) return true; return (el.children ?? []).some((c) => c.contains?.(node)); },
       classList: { add() {}, remove() {}, contains() { return false; } },
     };
     return el;
@@ -108,4 +109,55 @@ test("picker: datetime input shows clock row, apply commits date+time", async ()
   const _now = new Date(); 
   const _ym = `${_now.getUTCFullYear()}-${String(_now.getUTCMonth()+1).padStart(2,"0")}`;
   assert.equal(committed[0], `${_ym}-16T20:30:00.000Z`);
+});
+/**
+ * REGRESSION: the calendar popover must live inside an open modal dialog.
+ *
+ * A modal <dialog> is promoted to the browser TOP LAYER, which paints
+ * above anything in normal document flow. A popover appended to <body>
+ * therefore rendered *behind* the dialog and every click on a day cell
+ * was intercepted by the dialog — the "date field does nothing" bug.
+ */
+test("REGRESSION picker: popover is anchored inside an open modal dialog", async () => {
+  const setupResult = await setup();
+  const w = setupResult.window;
+  const { picker, doc } = await bootPicker(setupResult);
+  w.LeafGuru.settings.set("dateFormat", "iso");
+  w.LeafGuru.settings.set("timezone", "UTC");
+
+  const dialog = doc.createElement("dialog");
+  dialog.open = true;
+  const input = { dataset: { dateInput: "" }, value: "", getBoundingClientRect: () => ({ left: 10, bottom: 30 }) };
+  input.closest = (sel) => (sel === "dialog" ? dialog : null);
+  dialog.appendChild(input);
+
+  const clickHandlers = [];
+  doc.addEventListener = (type, fn) => { if (type === "click") clickHandlers.push(fn); };
+  picker.bind();
+  for (const handler of [...clickHandlers]) handler({ target: { closest: () => input } });
+
+  const pop = dialog.children.find((c) => c.className === "date-picker");
+  assert.ok(pop, "popover created inside the dialog");
+  assert.equal(pop.parentNode, dialog,
+    "popover must be a child of the open dialog, not <body>");
+  assert.equal(doc.body.children.includes(pop), false,
+    "popover must NOT be a child of <body> while a modal dialog is open");
+});
+
+test("REGRESSION picker: popover falls back to <body> outside any dialog", async () => {
+  const setupResult = await setup();
+  const w = setupResult.window;
+  const { picker, doc } = await bootPicker(setupResult);
+  w.LeafGuru.settings.set("dateFormat", "iso");
+  w.LeafGuru.settings.set("timezone", "UTC");
+
+  const input = { dataset: { dateInput: "" }, value: "", getBoundingClientRect: () => ({ left: 10, bottom: 30 }) };
+  const clickHandlers = [];
+  doc.addEventListener = (type, fn) => { if (type === "click") clickHandlers.push(fn); };
+  picker.bind();
+  for (const handler of [...clickHandlers]) handler({ target: { closest: () => input } });
+
+  const pop = doc.body.children[0];
+  assert.ok(pop, "popover created");
+  assert.equal(pop.parentNode, doc.body, "popover anchored to <body> when no dialog is open");
 });

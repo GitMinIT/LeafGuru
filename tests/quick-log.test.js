@@ -41,6 +41,7 @@ function logDialog() {
   const growSel = makeElement("select");
   growSel.setAttribute("data-log-grow", "");
   growSel.value = "";
+  form.appendChild(growSel); // real markup: the select is a form control
   const chipsWrap = makeElement("fieldset");
   chipsWrap.setAttribute("data-log-categories", "");
   const atInput = makeElement("input");

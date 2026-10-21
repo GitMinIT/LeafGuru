@@ -25,6 +25,12 @@
     const errEl = dlg.querySelector("[data-log-error]");
     errEl.hidden = true;
     errEl.textContent = "";
+    // Reset BEFORE the selects are rebuilt below: form.reset() restores
+    // every control to its default selection, which would otherwise wipe
+    // the grow pre-selection made a few lines down (and leave the
+    // "required" grow select empty -> the browser blocks the submit and
+    // the journal entry is silently never saved).
+    form.reset();
 
     // fills: grow select, category select, plant multi-select, location
     const [grows, plants, locations] = await Promise.all([
@@ -103,7 +109,6 @@
       for (const opt of [...plantSel.selectedOptions]) opt.selected = selected.has(opt.value);
     };
 
-    form.reset();
     // prefill "When" with the current datetime (settings format/zone)
     window.LeafGuru.dateInput.set(atInput, new Date().toISOString());
     updateCategoryFields();
