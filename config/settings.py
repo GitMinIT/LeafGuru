@@ -98,6 +98,13 @@ CSRF_COOKIE_SECURE = SESSION_COOKIE_SECURE
 # Where the login page lives (used by the auth helper + templates).
 LOGIN_URL = "/login/"
 
+# Upload limits. The client caps a photo at 10 MB; the server enforces
+# the same number, so a client cannot bypass the limit by ignoring the
+# check in the browser. Django's defaults only cover non-file fields.
+MAX_PHOTO_BYTES = 10 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = MAX_PHOTO_BYTES + 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = MAX_PHOTO_BYTES + 1024 * 1024
+
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [

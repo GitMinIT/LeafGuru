@@ -371,6 +371,35 @@ class Photo(BaseRecord):
         return f"photo {self.id}"
 
 
+class LoginAttempt(models.Model):
+    """
+    A failed sign-in, counted per (username, IP).
+
+    The hosted service has a real login form, and without a limit a
+    script can try thousands of passwords per minute. Invite-only
+    removes the *registration* abuse surface, not the *guessing* one.
+
+    Django 5.1 has no built-in login throttling (5.2 adds
+    LOGIN_ATTEMPTS_LIMIT), so the counter lives here.
+    """
+
+    username = models.CharField(max_length=150, db_index=True)
+    ip = models.CharField(max_length=64, db_index=True)
+    failures = models.PositiveIntegerField(default=0)
+    last_failure = models.DateTimeField()
+
+    class Meta:
+        ordering = ["-last_failure"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["username", "ip"], name="login_attempt_user_ip_unique"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.username}@{self.ip} ({self.failures} failures)"
+
+
 class EntityEdit(BaseRecord):
     """The change log: every edit of a record, with a field-level diff."""
 

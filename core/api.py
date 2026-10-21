@@ -29,6 +29,7 @@ import uuid
 from typing import Optional
 
 import jsonschema
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from ninja import Body, File, NinjaAPI, Schema
@@ -462,6 +463,12 @@ def photo_upload(request, file: UploadedFile = File(...),
     workspace = _workspace(request)
     if file.content_type not in ("image/jpeg", "image/png", "image/webp"):
         raise HttpError(422, "unsupported image type")
+    # the size limit is enforced here, not only in the browser
+    max_bytes = getattr(settings, "MAX_PHOTO_BYTES", 10 * 1024 * 1024)
+    if file.size > max_bytes:
+        raise HttpError(
+            413, f"the photo is larger than {max_bytes // (1024 * 1024)} MB"
+        )
     photo = Photo(
         id=uuid.uuid4(),
         workspace=workspace,

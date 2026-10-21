@@ -23,6 +23,7 @@ import uuid
 from django.contrib.auth import authenticate, get_user_model
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
+from django.utils import timezone
 
 from .models import Workspace
 
@@ -157,3 +158,76 @@ def authenticate_user(request, username, password):
         if candidate is not None:
             user = authenticate(request, username=candidate.username, password=password)
     return user
+
+
+# --- brute-force protection ------------------------------------------------
+
+#: how many failures from the same (username, IP) are allowed
+LOGIN_MAX_FAILURES = 10
+
+#: how long the account/IP pair is locked out after that, in minutes
+LOGIN_LOCKOUT_MINUTES = 15
+
+
+def client_ip(request):
+    """The address the request came from."""
+    try:
+        return (request.META.get("REMOTE_ADDR") or "unknown")[:64]
+    except Exception:
+        return "unknown"
+
+
+def _attempt_row(username, ip):
+    from .models import LoginAttempt
+
+    row, _ = LoginAttempt.objects.get_or_create(
+        username=username[:150],
+        ip=ip,
+        defaults={"failures": 0, "last_failure": timezone.now()},
+    )
+    return row
+
+
+def login_locked_out(request, username):
+    """
+    Is this (username, IP) currently locked out?
+
+    True when there were too many recent failures. The counter is
+    checked against a window, so an old burst does not lock anyone
+    out forever.
+    """
+    from django.utils import timezone
+
+    from .models import LoginAttempt
+
+    username = (username or "").strip()[:150]
+    if not username:
+        return False
+    row = LoginAttempt.objects.filter(username=username, ip=client_ip(request)).first()
+    if row is None or row.failures < LOGIN_MAX_FAILURES:
+        return False
+    window = timezone.now() - timezone.timedelta(minutes=LOGIN_LOCKOUT_MINUTES)
+    return row.last_failure >= window
+
+
+def record_login_failure(request, username):
+    """Count a failed sign-in."""
+    from django.utils import timezone
+
+    username = (username or "").strip()[:150]
+    if not username:
+        return
+    row = _attempt_row(username, client_ip(request))
+    row.failures += 1
+    row.last_failure = timezone.now()
+    row.save(update_fields=["failures", "last_failure"])
+
+
+def clear_login_failures(request, username):
+    """A successful sign-in wipes the counter."""
+    from .models import LoginAttempt
+
+    username = (username or "").strip()[:150]
+    if not username:
+        return
+    LoginAttempt.objects.filter(username=username, ip=client_ip(request)).delete()
