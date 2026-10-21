@@ -59,6 +59,14 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
 - Search on all list pages; full JSON export/import (schema-validated,
   versioned; photos included)
 - English UI, all strings externalized (`static/js/i18n/en.json`)
+- **Demo grow**: one click on the Data page generates a complete example
+  dataset (2 grows, 6 plants in every stage, equipment, tasks, journal
+  entries) and imports it — all dates relative to today, so it always
+  looks like a grow in progress
+- **Strain catalog**: 9,500+ well-known strains (breeder, genotype,
+  potency, aroma) bundled with the app; pick one and the strain form is
+  filled in with typical stage durations and height. Search by name or
+  breeder; the popular subset is listed by default
 - Example dataset: `examples/leafguru-example.json` — import it on the
   Data page to explore the app with realistic data
 
@@ -134,8 +142,10 @@ equipment category filter never being populated.
 core/           Django app (shell, views, export/import stubs)
 schemas/        JSON schemas — single source of truth for the data model
 examples/       leafguru-example.json — example dataset to import
+tools/          build-strain-catalog.js — regenerate the bundled catalog
 static/js/
   adapter/      StorageAdapter interface + LocalAdapter (IndexedDB)
+  data/         strain-catalog.json — bundled catalogue (9.5k strains)
   model/        validator (draft-07 subset, zero deps), domain modules,
                 settings store + date format (browser-local settings)
   i18n/         loader + en.json (all UI strings)
