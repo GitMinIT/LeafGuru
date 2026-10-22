@@ -74,6 +74,11 @@ def timeline(request):
     return _page(request, "core/timeline.html", "timeline")
 
 
+def sensors(request):
+    """Sensor readings: the environment, from the hardware or by hand."""
+    return _page(request, "core/sensors.html", "sensors")
+
+
 def history(request):
     """Per-grow event log: full history of one grow as a scrollable list."""
     return _page(request, "core/history.html", "history")

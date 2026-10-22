@@ -168,6 +168,7 @@ body[data-page="equipment"] .nav a[data-nav="equipment"],
 body[data-page="strains"]   .nav a[data-nav="strains"],
 body[data-page="tasks"]     .nav a[data-nav="tasks"],
 body[data-page="timeline"]  .nav a[data-nav="timeline"],
+body[data-page="sensors"]   .nav a[data-nav="sensors"],
 body[data-page="history"]   .nav a[data-nav="history"],
 body[data-page="settings"]  .nav a[data-nav="settings"],
 body[data-page="data"]      .nav a[data-nav="data"] {
@@ -1603,4 +1604,94 @@ body:has(.pompui-home) { padding-bottom: 3.2rem; }
     .preset-btn__icon { font-size: 1.3rem; }
     .hint { gap: 0.55rem; padding: 0.65rem 0.75rem; }
     .today-plant .muted:last-child { margin-left: 0; width: 100%; }
+}
+
+
+/* ======================================================================
+   Sensors page — where the environment shows up
+   ====================================================================== */
+
+.sensor-grid {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 0.65rem;
+}
+
+.sensor-card {
+    display: grid;
+    gap: 0.15rem;
+    padding: 0.75rem 0.85rem;
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    border-top-width: 3px;
+    border-radius: var(--r-md);
+    min-width: 0;
+}
+.sensor-card__name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+.sensor-card__value {
+    font-size: 1.35rem;
+    font-weight: 750;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+}
+.sensor-card__band,
+.sensor-card__when {
+    font-size: 0.72rem;
+}
+.sensor-card__note {
+    font-size: 0.72rem;
+    font-weight: 650;
+}
+
+/* inside the band: quiet */
+.sensor-card--ok { border-top-color: var(--accent); }
+/* outside the band: marked, in words as well as in colour */
+.sensor-card--out {
+    border-top-color: var(--warn);
+}
+.sensor-card--out .sensor-card__note { color: var(--warn); }
+/* no reading yet: a visible gap */
+.sensor-card--empty {
+    border-top-color: var(--line);
+    opacity: 0.72;
+}
+.sensor-card--empty .sensor-card__value { color: var(--muted); }
+
+.sensor-history {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.3rem;
+}
+.sensor-row {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    padding: 0.45rem 0.7rem;
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-md);
+    font-size: 0.85rem;
+}
+.sensor-row__metric { font-weight: 650; min-width: 7rem; }
+.sensor-row__value { font-weight: 700; min-width: 5.5rem; }
+.sensor-row .muted { font-size: 0.78rem; }
+.sensor-row button { margin-left: auto; padding: 0.2rem 0.55rem; font-size: 0.78rem; }
+
+@media (max-width: 720px) {
+    .sensor-grid { grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr)); }
+    .sensor-card__value { font-size: 1.15rem; }
+    .sensor-row__metric, .sensor-row__value { min-width: 0; }
+    .sensor-row button { margin-left: 0; }
 }

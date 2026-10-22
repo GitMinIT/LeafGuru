@@ -1,0 +1,60 @@
+{% extends "core/base.html" %}
+
+{% block title %}Sensors — LeafGuru{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/pages/sensors.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="today-hero">
+    <h1>Sensors</h1>
+    <p class="muted">
+        Readings from your environment — and the numbers you type in yourself.
+    </p>
+</div>
+
+<section class="card today-card">
+    <div class="crud-toolbar">
+        <h2 style="margin:0">Latest readings</h2>
+        <label class="task-filter" style="margin-left:auto">
+            <span class="muted">Metric</span>
+            <select data-sensor-filter></select>
+        </label>
+        <button type="button" data-sensor-new>Add a reading</button>
+    </div>
+    <p class="muted" data-sensor-latest-empty hidden>
+        No readings yet. Add one, or let a device post them.
+    </p>
+    <ul class="sensor-grid" data-sensor-latest hidden></ul>
+</section>
+
+<section class="card today-card">
+    <h2>Reading history</h2>
+    <p class="muted" data-sensor-history-empty hidden>No readings yet.</p>
+    <ul class="sensor-history" data-sensor-history hidden></ul>
+</section>
+
+<dialog data-sensor-dialog class="crud-dialog">
+    <form data-sensor-form>
+        <h2>Add a reading</h2>
+        <div class="crud-fields">
+            <label>What did you measure?
+                <select data-sensor-metric required>
+                    <option value="">—</option>
+                </select>
+            </label>
+            <label>Value <input type="number" step="any" data-sensor-value required></label>
+            <label>When <input type="text" data-sensor-when data-datetime-input maxlength="30"></label>
+            <label>Grow <select data-sensor-grow></select></label>
+            <label>Location <select data-sensor-location></select></label>
+            <label>Plant <select data-sensor-plants></select></label>
+            <label>Device <select data-sensor-device></select></label>
+        </div>
+        <p class="muted crud-error" data-sensor-error hidden aria-live="polite"></p>
+        <div class="crud-dialog-actions">
+            <button type="submit">Save</button>
+        </div>
+    </form>
+</dialog>
+{% endblock %}
