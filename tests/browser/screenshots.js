@@ -16,7 +16,8 @@ const EXECUTABLE = process.env.CHROME_PATH || "/ms-playwright/chromium-1140/chro
 const OUT = process.env.OUT_DIR || "/tmp/leafguru-shots";
 
 const PAGES = [
-  ["/", "dashboard"],
+  ["/", "today"],
+  ["/dashboard/", "dashboard"],
   ["/grows/", "grows"],
   ["/plants/", "plants"],
   ["/locations/", "locations"],

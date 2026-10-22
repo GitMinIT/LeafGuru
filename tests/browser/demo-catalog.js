@@ -75,11 +75,19 @@ async function run() {
 
   await page.screenshot({ path: `${OUT}/demo-data.png`, fullPage: true });
 
-  // the dashboard must show the demo content
-  await go("/");
+  // the dashboard must show the demo content (it lives at /dashboard/;
+  // "/" is the Today page now)
+  await go("/dashboard/");
   const dashText = await page.$eval("main.page", (e) => e.innerText);
   check("dashboard shows demo stats", /Demo Grow/i.test(dashText), dashText.slice(0, 120).replace(/\n/g, " | "));
   await page.screenshot({ path: `${OUT}/demo-dashboard.png`, fullPage: true });
+
+  // the Today page must show the demo plants too
+  await go("/");
+  const todayText = await page.$eval("main.page", (e) => e.innerText);
+  check("today page lists the demo plants", /Demo Grow/i.test(todayText),
+    todayText.slice(0, 160).replace(/\n/g, " | "));
+  await page.screenshot({ path: `${OUT}/demo-today.png`, fullPage: true });
 
   // plants page
   await go("/plants/");

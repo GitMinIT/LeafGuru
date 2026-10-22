@@ -8,6 +8,7 @@
     "tagline": "Plan and track your grow."
   },
   "nav": {
+    "today": "Today",
     "dashboard": "Dashboard",
     "locations": "Locations",
     "equipment": "Equipment",
@@ -519,14 +520,16 @@
     "activePlants": "Your plants",
     "noPlants": "No plants yet.",
     "quickActions": "Quick actions",
-    "actionWater": "Watered",
-    "actionFeed": "Fed",
-    "actionTrain": "Trained",
-    "actionObserve": "Looked in",
     "daysInStage": "day {day} in {stage}",
     "lastWatered": "Watered {when}",
     "neverWatered": "Not watered yet",
-    "growSummary": "{plants} plants · {grows} grows"
+    "growSummary": "{plants} plants · {grows} grows",
+    "actionWatering": "Watered",
+    "actionFeeding": "Fed",
+    "actionTraining": "Trained",
+    "actionObservation": "Looked in",
+    "actionDefoliation": "Defoliated",
+    "actionTreatment": "Treated"
   },
   "welcome": {
     "title": "Welcome to LeafGuru",

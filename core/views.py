@@ -55,6 +55,11 @@ def _page(request, template, key):
     return render(request, template, {"page_key": key})
 
 
+def today(request):
+    """The front door: what the plants could use today, in one look."""
+    return _page(request, "core/today.html", "today")
+
+
 def dashboard(request):
     return _page(request, "core/dashboard.html", "dashboard")
 

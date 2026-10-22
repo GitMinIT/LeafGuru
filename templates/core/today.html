@@ -1,0 +1,52 @@
+{% extends "core/base.html" %}
+
+{% block title %}Today — LeafGuru{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/model/presets.js"></script>
+<script src="/static/js/pages/today.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="today-hero">
+    <h1 data-today-greeting>Welcome back</h1>
+    <p class="muted" data-today-subline></p>
+</div>
+
+{# --- the quick entries: one tap logs the usual --------------------- #}
+<section class="card today-card" data-page-section="presets">
+    <h2>Quick entries</h2>
+    <p class="muted" data-today-presets-hint>
+        One tap logs the usual. You can add details afterwards.
+    </p>
+    <p class="muted" data-today-nogrow hidden>
+        Create a grow first — then your quick entries have somewhere to go.
+        <a href="/grows/">Create a grow</a>
+    </p>
+    <div class="preset-row" data-today-presets></div>
+    <p class="today-flash" data-today-flash hidden aria-live="polite"></p>
+</section>
+
+{# --- what could the plants use today? ------------------------------- #}
+<section class="card today-card" data-page-section="hints">
+    <h2>How you are doing</h2>
+    <p class="muted" data-today-hints-empty hidden>
+        Everything is in order. Nothing needs your attention right now.
+    </p>
+    <ul class="hint-list" data-today-hints hidden></ul>
+</section>
+
+{# --- due today ------------------------------------------------------- #}
+<section class="card today-card" data-page-section="due">
+    <h2>Due today</h2>
+    <p class="muted" data-today-tasks-empty hidden>Nothing due today.</p>
+    <ul class="today-task-list" data-today-tasks hidden></ul>
+</section>
+
+{# --- the plants ------------------------------------------------------ #}
+<section class="card today-card" data-page-section="plants">
+    <h2>Your plants</h2>
+    <p class="muted" data-today-plants-empty hidden>No plants yet.</p>
+    <ul class="today-plant-list" data-today-plants hidden></ul>
+</section>
+{% endblock %}
