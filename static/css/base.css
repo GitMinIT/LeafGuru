@@ -139,12 +139,26 @@ body {
 }
 .brand__name { font-size: 1.02rem; }
 
+/* One row, always. The nav has grown to 14 items; wrapping it onto a
+   second line pushed the content down and looked accidental. So it
+   never wraps: if it does not fit, it scrolls — and the active item
+   is scrolled into view (see nav.js). */
 .nav {
     display: flex;
     gap: 0.15rem;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
     margin-left: 0.25rem;
+    padding-bottom: 0.1rem;
+    /* the fade on the right edge says "there is more this way" */
+    -webkit-mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 1.5rem), transparent 100%);
+    mask-image: linear-gradient(to right, #000 0, #000 calc(100% - 1.5rem), transparent 100%);
 }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { flex: 0 0 auto; }
 .nav a {
     color: var(--text-dim);
     text-decoration: none;
@@ -1254,18 +1268,10 @@ legend { padding: 0; }
     .nav {
         order: 3;
         width: 100%;
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-        scrollbar-width: none;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.15rem;
         margin: 0 -0.25rem;
         padding-left: 0.25rem;
         padding-right: 0.25rem;
     }
-    .nav::-webkit-scrollbar { display: none; }
-    .nav a { flex: 0 0 auto; }
 }
 
 @media (max-width: 720px) {
@@ -1571,7 +1577,12 @@ body:has(.pompui-home) { padding-bottom: 3.2rem; }
     font-size: 0.88rem;
 }
 .today-task__title { font-weight: 650; }
-.today-task--overdue { border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); }
+/* an overdue task is a different thing from a hint: a red left
+   border, so the two do not read as the same kind of card */
+.today-task--overdue {
+    border-color: color-mix(in srgb, var(--danger) 35%, var(--line));
+    border-left: 3px solid var(--danger);
+}
 .today-task--overdue .today-task__title { color: var(--danger); }
 .today-task .muted { margin-left: auto; font-size: 0.78rem; }
 
@@ -1647,6 +1658,11 @@ body:has(.pompui-home) { padding-bottom: 3.2rem; }
 .sensor-card__band,
 .sensor-card__when {
     font-size: 0.72rem;
+    /* the band and its unit belong together: "45-70 %", not "45-70" on
+       one line and "%" on the next */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .sensor-card__note {
     font-size: 0.72rem;
@@ -1882,6 +1898,9 @@ body:has(.pompui-home) { padding-bottom: 3.2rem; }
 
 .journal-entry .muted { font-size: 0.78rem; }
 .journal-entry .muted:empty { display: none; }
+
+/* the search field does not push the rest of the toolbar around */
+.journal-toolbar input[type="search"] { max-width: 16rem; }
 
 .journal-entry button {
     margin-left: auto;
