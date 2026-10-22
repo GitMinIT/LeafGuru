@@ -4,14 +4,18 @@ Plan and track your grow: locations, equipment, strain templates, plants
 with stage timelines, tasks, measurements and photos — local-first in your
 browser, with JSON import/export and a path to a hosted multi-user version.
 
-**Status:** phase 2 (insights) and phase 2.5 (journal — the daily grow
-log) complete. So far: all entity CRUD with
-cross-entity wiring (grows, task links, equipment assignments, location
-back-references), plant lifecycle (edit, cascade delete, stage timeline,
-location moves), measurements with growth chart, photos, export/import,
-stage countdowns, per-grow cost tracking, harvest statistics (yield +
-cost per gram, actual stage durations), a timeline calendar and a
-per-grow history with a verbose event popup.
+**Status:** all entity CRUD with cross-entity wiring (grows, task
+links, equipment assignments, location back-references), plant
+lifecycle (edit, cascade delete, stage timeline, location moves),
+measurements with growth chart, photos, export/import, stage countdowns,
+per-grow cost tracking, harvest statistics (yield + cost per gram,
+actual stage durations), a timeline calendar and a per-grow history
+with a verbose event popup.
+
+On top of that, the app now has a **front door**: a Today page that
+greets you and says what your plants could use, one-tap journal
+entries, a care-hints engine, a journal you read back, a sensors page
+that the optional hardware will feed, and a welcome for the first run.
 See [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
 
 ## Features
@@ -73,6 +77,42 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
   breeder; the popular subset is listed by default
 - Example dataset: `examples/leafguru-example.json` — import it on the
   Data page to explore the app with realistic data
+
+### The front door
+
+- **Today** (`/`): the landing page. It greets you, shows what your
+  plants could use right now, and offers one-tap journal entries. The
+  old stats page is at `/dashboard/`
+- **Care hints**: small, kind nudges from the app's own data — a grow
+  that has not been watered in four days, a plant slower than its
+  strain usually is, a reading outside the comfortable band. The rules
+  are deliberate: silence is fine, we never invent a number you did
+  not record, a hint is never a scolding, and every hint has a next
+  step
+- **Quick entries**: one tap logs the usual — watered, fed, trained,
+  looked in, defoliated, treated. "Add details" then opens the full
+  dialog, pre-filled
+- **Journal** (`/journal/`): the daily story read back, grouped by
+  day, filterable by grow and kind, searchable
+- **Sensors** (`/sensors/`): readings from your environment, and the
+  numbers you type in yourself. A card per metric, so a sensor that
+  has not reported yet is a visible gap. The comfortable band is
+  shown under every value, and it narrows with the grow's stage
+- **The welcome**: on an empty app, four gentle steps (a place, a
+  plant, a journal, the numbers), each one linking into the app. "Show
+  me around first" loads the demo grow into its OWN profile, so it can
+  never touch real data. A user who already has data is never greeted
+
+### Sensor readings (the hardware's landing place)
+
+- A reading belongs to a *place*, not to a plant: a temperature probe
+  in a room can feed every plant in that room. So a reading may carry
+  a grow, a location, a plant and a device id, and it says where it
+  came from (typed in / a device / imported / calculated)
+- A device posts to the same API the app uses, so the page works with
+  no hardware at all — and starts making sense the moment some arrives
+- The metrics: temperature, humidity, pH, EC, light, soil moisture,
+  CO2, VPD, water level, nutrient level
 
 ## Deployment modes
 
