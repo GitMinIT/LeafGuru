@@ -14,6 +14,11 @@ services:
       # the database and the uploaded photos live on the volume below,
       # so rebuilding the image does not throw the data away
       - LEAFGURU_DATA_DIR=/data
+      # The auto-derived host list only knows the container name and its
+      # container IP, never the LAN address the server is reached at.
+      # Without this the site answers 400 (DisallowedHost) for
+      # http://<server-ip>:6016/. Keep the list explicit and minimal.
+      - LEAFGURU_ALLOWED_HOSTS=localhost,127.0.0.1,192.168.178.60,homegate
     volumes:
       - leafguru-data:/data
     # The app runs as its own unprivileged user (uid 1000). The entry
