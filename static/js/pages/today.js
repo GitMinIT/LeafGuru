@@ -26,16 +26,19 @@
 
     // --- load everything the page needs --------------------------------
     const state = {
-      grows: [], plants: [], tasks: [], logEntries: [],
+      grows: [], plants: [], tasks: [], logEntries: [], locations: [],
       sensorReadings: [], strainTemplates: [], stageLogs: []
     };
     await Promise.all([
       storage.list("grows"), storage.list("plants"), storage.list("tasks"),
-      storage.list("logEntries"), storage.list("sensorReadings"),
-      storage.list("strainTemplates"), storage.list("stageLogs")
-    ]).then(([grows, plants, tasks, logEntries, sensorReadings, strainTemplates, stageLogs]) => {
+      storage.list("logEntries"), storage.list("locations"),
+      storage.list("sensorReadings"), storage.list("strainTemplates"),
+      storage.list("stageLogs")
+    ]).then(([grows, plants, tasks, logEntries, locations,
+              sensorReadings, strainTemplates, stageLogs]) => {
       state.grows = grows; state.plants = plants; state.tasks = tasks;
-      state.logEntries = logEntries; state.sensorReadings = sensorReadings;
+      state.logEntries = logEntries; state.locations = locations;
+      state.sensorReadings = sensorReadings;
       state.strainTemplates = strainTemplates; state.stageLogs = stageLogs;
     });
 
@@ -278,5 +281,16 @@
     renderHints();
     renderDue();
     renderPlants();
+
+    // --- the welcome ------------------------------------------------------
+    // Only on a genuinely empty app, and only once. A user with data is
+    // never greeted again, and a user who dismissed the welcome is not
+    // asked a second time.
+    if (window.LeafGuru.onboarding?.isFirstRun({
+      plants: state.plants, grows: state.grows, locations: state.locations
+    }) && !window.LeafGuru.onboarding.hasSeenWelcome()) {
+      window.LeafGuru.welcome?.wire();
+      window.LeafGuru.welcome?.open();
+    }
   });
 })();

@@ -80,6 +80,23 @@
     {% block content %}{% endblock %}
 </main>
 
+<dialog data-welcome-dialog class="crud-dialog welcome-dialog">
+    <div class="welcome">
+        <p class="welcome__counter muted" data-welcome-counter></p>
+        <div data-welcome-body></div>
+        <div class="welcome__dots" data-welcome-dots aria-hidden="true"></div>
+        <p class="muted welcome__status" data-welcome-status aria-live="polite"></p>
+        <div class="welcome__actions">
+            <button type="button" class="btn--ghost" data-welcome-back>Back</button>
+            <button type="button" data-welcome-next>Next</button>
+        </div>
+        <div class="welcome__extras">
+            <button type="button" class="btn--ghost" data-welcome-demo>Show me around first</button>
+            <button type="button" class="btn--ghost" data-welcome-skip>Skip — I will figure it out</button>
+        </div>
+    </div>
+</dialog>
+
 <dialog data-log-dialog class="crud-dialog">
     <form>
         <h2>Log entry</h2>
@@ -147,9 +164,11 @@
 <script src="/static/js/model/log-domain.js"></script>
 <script src="/static/js/model/plant-domain.js"></script>
 <script src="/static/js/model/task-domain.js"></script>
+<script src="/static/js/model/onboarding.js"></script>
 <script src="/static/js/model/presets.js"></script>
 <script src="/static/js/model/sensor-domain.js"></script>
 <script src="/static/js/model/hints-domain.js"></script>
+<script src="/static/js/model/welcome.js"></script>
 <script src="/static/js/model/grow-domain.js"></script>
 <script src="/static/js/model/quick-log.js"></script>
 <script src="/static/js/model/ui.js"></script>

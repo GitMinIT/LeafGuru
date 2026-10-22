@@ -232,6 +232,7 @@ async function setup({ locale = "en" } = {}) {
   load("static/js/model/log-domain.js");
   load("static/js/model/sensor-domain.js");
   load("static/js/model/presets.js");
+  load("static/js/model/onboarding.js");
   load("static/js/model/hints-domain.js");
   load("static/js/model/ui.js");
   await sandbox.window.LeafGuru.loadSchemas();
