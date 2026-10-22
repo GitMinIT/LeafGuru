@@ -275,6 +275,55 @@ The order matters: models → API → ServerAdapter → import → auth polish.
 Each step is independently shippable, and the local app keeps working
 throughout — a half-finished server side never breaks the client.
 
+## Phase 4.8 — the front door, the hints, and the sensors
+
+The feature set was complete, but the app did not *welcome* anyone.
+A new user landed on a stats page full of zeroes. So this phase is
+about the feeling of the app, and about the bed the optional hardware
+will land on.
+
+- [x] **SensorReadings** — a new entity, end to end (schema, bundle,
+      IndexedDB store, Django model, API routes, migration). A reading
+      belongs to a *place*, not to a plant: a probe in a room can feed
+      every plant in that room. It carries a grow, a location, a plant
+      and a device id, and says where it came from
+- [x] **The care-hints engine** (`static/js/model/hints-domain.js`) —
+      turns the app's own data into small, kind nudges: a grow not
+      watered in four days, a plant slower than its strain, a reading
+      outside the comfortable band
+- [x] **Today** (`/`) — the front door. Greets you, shows the hints,
+      offers one-tap journal entries, lists the plants at a glance
+- [x] **Quick entries** (`static/js/model/presets.js`) — one tap logs
+      the usual; "add details" opens the full dialog, pre-filled
+- [x] **Journal** (`/journal/`) — the daily story read back, grouped
+      by day, filterable, searchable
+- [x] **Sensors** (`/sensors/`) — a card per metric, the comfortable
+      band under every value, and the band narrows with the grow's
+      stage
+- [x] **The welcome** — four gentle steps on an empty app, each one
+      linking into the app; "show me around first" loads the demo into
+      its OWN profile; a user with data is never greeted
+- [x] **A syntax guard** (`tests/syntax-guard.test.js`) — a page
+      script with a syntax error is invisible to the unit tests, which
+      load only the modules they need. This parses every shipped
+      .js file
+
+### The tone rules (these are the point)
+
+The hints are kind on purpose, and the rules are pinned by tests:
+- **silence is fine** — a healthy app produces no hints at all
+- **never invent a number** — no watering record means no watering
+  hint, and a reading older than six hours is not judged
+- **never a scolding** — severity says how much attention it deserves,
+  not how bad the grower is. A day late is a "thought"; five days
+  late is worth attention
+- **every hint has a next step**, or it is not worth showing
+- **colour is never the only signal** — severity is carried by a
+  border AND a badge, so it reads without colour vision
+- **the welcome is shown once**, and never to a user who has data
+
+---
+
 ## Phase 5 — Polish
 - [ ] Additional locales via i18n JSON files
 - [ ] Mobile PWA (installable, offline)
