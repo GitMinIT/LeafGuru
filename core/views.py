@@ -79,6 +79,11 @@ def sensors(request):
     return _page(request, "core/sensors.html", "sensors")
 
 
+def journal(request):
+    """The journal: the daily story of a grow, read back."""
+    return _page(request, "core/journal.html", "journal")
+
+
 def history(request):
     """Per-grow event log: full history of one grow as a scrollable list."""
     return _page(request, "core/history.html", "history")

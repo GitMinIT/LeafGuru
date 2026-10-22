@@ -30,6 +30,7 @@ urlpatterns = [
     path("tasks/", views.tasks, name="tasks"),
     path("timeline/", views.timeline, name="timeline"),
     path("sensors/", views.sensors, name="sensors"),
+    path("journal/", views.journal, name="journal"),
     path("history/", views.history, name="history"),
     path("settings/", views.settings, name="settings"),
     path("data/", views.data, name="data"),

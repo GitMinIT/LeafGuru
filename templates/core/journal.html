@@ -1,0 +1,40 @@
+{% extends "core/base.html" %}
+
+{% block title %}Journal — LeafGuru{% endblock %}
+
+{% block extra_scripts %}
+<script src="/static/js/pages/journal.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="today-hero">
+    <h1>Journal</h1>
+    <p class="muted">
+        The daily story of your grow — water, food, training, observations.
+    </p>
+</div>
+
+<div class="crud-toolbar">
+    <label class="task-filter">
+        <span class="muted">Grow</span>
+        <select data-journal-grow></select>
+    </label>
+    <label class="task-filter">
+        <span class="muted">Kind</span>
+        <select data-journal-category></select>
+    </label>
+    <label class="task-filter">
+        <span class="muted">Search</span>
+        <input type="search" data-journal-search placeholder="Search the journal…">
+    </label>
+    <p class="muted" data-journal-count></p>
+    <button type="button" data-journal-add style="margin-left:auto">+ Log entry</button>
+</div>
+
+<p class="muted" data-journal-empty hidden>
+    Nothing written yet. Every line you write makes the whole grow easier
+    to look back on.
+</p>
+
+<ul class="journal-list" data-journal-list hidden></ul>
+{% endblock %}

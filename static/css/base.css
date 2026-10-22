@@ -169,6 +169,7 @@ body[data-page="strains"]   .nav a[data-nav="strains"],
 body[data-page="tasks"]     .nav a[data-nav="tasks"],
 body[data-page="timeline"]  .nav a[data-nav="timeline"],
 body[data-page="sensors"]   .nav a[data-nav="sensors"],
+body[data-page="journal"]   .nav a[data-nav="journal"],
 body[data-page="history"]   .nav a[data-nav="history"],
 body[data-page="settings"]  .nav a[data-nav="settings"],
 body[data-page="data"]      .nav a[data-nav="data"] {
@@ -1810,4 +1811,89 @@ body:has(.pompui-home) { padding-bottom: 3.2rem; }
 @media (max-width: 720px) {
     .welcome__icon { font-size: 2.2rem; }
     .welcome__title { font-size: 1.1rem; }
+}
+
+
+/* ======================================================================
+   Journal page — the daily story, read back
+   ====================================================================== */
+
+.journal-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.3rem;
+}
+
+.journal-day {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 1.1rem 0 0.35rem;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid var(--line-soft);
+}
+.journal-day:first-child { margin-top: 0; }
+.journal-day__name {
+    font-weight: 750;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+}
+.journal-day__date { font-size: 0.76rem; }
+
+.journal-entry {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.55rem 0.7rem;
+    background: var(--surface-2);
+    border: 1px solid var(--line-soft);
+    border-radius: var(--r-md);
+}
+.journal-entry:hover { border-color: var(--line); }
+
+.journal-entry__cats {
+    display: flex;
+    gap: 0.25rem;
+    flex: 0 0 auto;
+    min-width: 7.5rem;
+    flex-wrap: wrap;
+}
+.journal-badge {
+    padding: 0.1rem 0.45rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: var(--r-pill);
+    white-space: nowrap;
+}
+
+.journal-entry__text {
+    flex: 1 1 14rem;
+    min-width: 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.journal-entry .muted { font-size: 0.78rem; }
+.journal-entry .muted:empty { display: none; }
+
+.journal-entry button {
+    margin-left: auto;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.78rem;
+    opacity: 0;
+    transition: opacity var(--t-fast);
+}
+.journal-entry:hover button,
+.journal-entry:focus-within button { opacity: 1; }
+
+@media (max-width: 720px) {
+    .journal-entry__cats { min-width: 0; width: 100%; }
+    .journal-entry button { opacity: 1; margin-left: 0; }
 }
