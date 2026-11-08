@@ -200,11 +200,105 @@ watering-cadence hints ("last watered 3d ago").
       protocols sex changes and everything else.
 
 ## Phase 3 — Sensors
-- [ ] Sensor entity (already a category in Equipment)
-- [ ] Ingestion endpoint `POST /api/v1/readings` (auth: device token)
+
+The reading entity already exists (phase 4.8: schema, bundle, IndexedDB
+store, Django model, API routes, migration, the /sensors/ page and the
+hints engine). What is missing is the hardware that feeds it. The plan
+below was decided 2026-11-08.
+
+- [x] **SensorReadings entity** — done in phase 4.8 (schema, bundle,
+      IndexedDB, Django model, API routes, migration)
+- [ ] **Device registry** — binds `deviceId` + auth token to a default
+      `locationId`/`growId`, a label and the enabled sensors; created
+      via management command / API, never by the devices themselves
+- [ ] **Ingestion endpoint** `POST /api/v1/readings` — batched
+      (`{ readings: [{ metric, value, unit?, recordedAt, plantId? }] }`),
+      device-token auth; the server stamps `deviceId` from the token and
+      the place from the registry when the reading does not carry one
 - [ ] Bridge adapters (MQTT / Home-Assistant / generic webhook)
-- [ ] Climate dashboards per location (temp/humidity/light/VPD)
+- [ ] Climate dashboards per location (temp/humidity/light/VPD charts
+      over time — the /sensors/ cards are the "latest value" view)
 - [ ] Threshold alerts (browser notification / email)
+
+### Hardware layout (decided)
+
+- **One ESP32 node per location, placed OUTSIDE the tent/room.** Only
+  the probes are inside, wired through a light-tight cable gland (or a
+  velcro cable-entry flap). Reasons: the board's heat cannot skew the
+  readings, mains/USB power and easy flashing, no light leak from the
+  board's LEDs (LED disabled in firmware), and a cooler ambient for the
+  electronics and the battery.
+- **The cable run** carries 5 V + GND, regulated down to 3.3 V at the
+  sensor end with a small LDO (at 3.3 V the voltage drop over a few
+  meters would starve the sensors). I2C runs at 50 kHz with ~2.2 kΩ
+  pull-ups on twisted SDA/SCL+GND pairs — fine to ~1–3 m; beyond that
+  use an I2C extender (P82B715 / PCA9600). Analog sensors (light,
+  capacitive soil) tolerate similar lengths on shielded cable; average
+  10–20 samples in firmware against mains noise.
+- **Probe placement:** SHT31 at canopy height but shaded from the lamp
+  (radiant heat ruins T/RH — radiation shield or a spot with airflow);
+  SCD41 also at canopy height with airflow over it (it self-heats);
+  light sensor flat on top of the canopy; soil probes mid-pot;
+  reservoir sensor above the tank.
+
+### Baseline + modular sensor set
+
+- **Baseline:** SCD41 (NDIR CO2) + SHT31 (temp/humidity) on one I2C
+  bus. The SCD41 reports T/RH too, but self-heating skews it — the
+  SHT31 is the accurate pair, and **VPD is computed on-device from it**
+  (`source: "derived"`).
+- **Optional sensors are config-driven modules:** each sensor registers
+  `{ metrics, read() }` and is enabled in the per-device config, so
+  adding one is a config entry, not a reflash of the logic. Adding
+  light = BH1750 (lux approximation) or Apogee SQ-420 via ADS1115 (real
+  PPFD).
+  - **light** — multiple probes make sense (PPFD falls off hard across
+    a canopy): 2–4 sensors, same `locationId`, distinguished by
+    `deviceId` (separate nodes) or `note`/`plantId` (probes on one node)
+  - **soilMoisture** — capacitive v1.2 (resistive corrodes), per pot,
+    carries `plantId`; drifts as salts build up — recalibrate or treat
+    as trend-only
+  - **waterLevel / nutrientLevel** — HC-SR04 ultrasonic or float switch
+    on reservoirs ("refill soon" hints)
+  - **ph / ec** — deferred: Atlas Scientific probes need USB (a Pi) and
+    calibration; manual pens + manual entry already work
+    (`source: "manual"`)
+
+### Multi-device model
+
+The schema already supports several devices per metric: every reading
+carries `deviceId` and optionally `plantId`/`locationId`/`growId`.
+The registry maps `deviceId` → default place, so a device posts bare
+readings and the server stamps the rest.
+
+**Client follow-up (planned with the first real hardware):** today the
+sensors page and the hints use `latestByMetric()` — the single newest
+reading per metric across ALL devices. With multiple probes per
+location that must become per-(metric, location) aggregation: metric
+cards show avg + min–max (the readings list already shows the device
+per row), and hints judge the location average instead of whichever
+probe happened to report last. Contained change in
+`sensor-domain.js` / `hints-domain.js`.
+
+### Power variants
+
+- **v1 prototype: mains USB** — simplest, and the SCD41 is happiest on
+  constant power.
+- **Battery + PV (later — outdoor/greenhouse nodes, or a panel inside
+  the tent):** deep sleep (~10 µA) between readings; total consumption
+  is ~0.1–0.3 Wh/day, dominated by the WiFi POST burst, so a single
+  18650 (~10 Wh) lasts about a month without any panel. TP4056 +
+  protection (DW01A); LiFePO4 for cycle life. A small PV cell in the
+  tent's top corner is covered by the grow light itself; in daylight
+  (outdoor) it is textbook; in a dark room a panel is useless. The
+  battery stays OUTSIDE the tent — heat hurts Li-ion. The CO2 sensor
+  goes on a switched 3.3 V rail with a ~10 s warm-up, or the battery
+  build uses a longer interval (30–60 min). Log the battery voltage as
+  a reading (`metric: "other"`, unit `V`) so the app can later hint at
+  a low battery.
+- **Raspberry Pi 4:** not a sensor node (mains, SD wear, overkill) —
+  reserved as a gateway later (MQTT broker / Home Assistant / USB
+  probes) if ever needed. v1: ESP32 posts straight to the endpoint.
 
 ## Phase 4 — Multi-user / hosted
 

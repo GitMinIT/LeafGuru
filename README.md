@@ -114,6 +114,15 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
 - The metrics: temperature, humidity, pH, EC, light, soil moisture,
   CO2, VPD, water level, nutrient level
 
+**Planned hardware** (ROADMAP phase 3): one ESP32 per location, mounted
+outside the tent with the probes wired in through a light-tight cable
+gland — baseline SCD41 (CO2) + SHT31 (temp/humidity), VPD derived
+on-device; light, soil-moisture and reservoir sensors as optional
+config-driven modules. Devices register once (device id + token →
+location) and then post batched readings to `POST /api/v1/readings`.
+Several devices per metric are supported. A battery + solar variant for
+outdoor nodes is planned for later.
+
 ## Deployment modes
 
 Auth is a **deployment switch**, not a feature — the same image serves

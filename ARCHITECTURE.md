@@ -16,7 +16,7 @@ photos.
 | Phase-2 storage | Server DB (SQLite → Postgres), registration/auth | Same schema, adapter flip |
 | Deployment | **Standalone** Docker (nginx + gunicorn), own compose | Not part of pompui.de stack |
 | UI language | **English**, strings externalized in `i18n/en.json` | Other locales added later without code changes |
-| Sensors | **Roadmap phase 3** | Data model prepared (reading entities), ingestion later |
+| Sensors | **Roadmap phase 3**: ESP32 nodes + device registry + `POST /api/v1/readings` | Reading entity shipped in phase 4.8; hardware ingestion planned (see ROADMAP) |
 | Legal | **Jurisdiction-neutral** | No built-in legal checks/limits |
 | Licence | MIT (already in repo) | |
 
@@ -124,3 +124,29 @@ put the `userId` filter.
 **Relation to multi-user:** a profile is a user, one level down. The
 adapter interface does not change between them; only what is behind it
 does. Profiles are the local rehearsal of the hosted version.
+
+## Phase 3 — sensor ingestion (planned, decided 2026-11-08)
+
+The `SensorReading` entity is shipped (phase 4.8); this is the hardware
+side. Full plan in ROADMAP phase 3 — the shape of it:
+
+- **Device registry** (server-side record): `deviceId`, hashed auth
+  token, label, default `locationId`/`growId`, enabled sensors. A device
+  is bound to its place once, by the operator — never self-registered.
+- **Ingestion:** `POST /api/v1/readings` with device-token auth, batched
+  readings. The server stamps `deviceId` from the token and the place
+  from the registry; a reading may still carry its own `plantId`
+  (a soil probe in one pot) or override the place.
+- **Hardware:** one ESP32 per location, mounted OUTSIDE the tent; only
+  the probes sit inside, wired through a light-tight cable gland
+  (5 V over the run, LDO to 3.3 V at the sensor end; I2C at 50 kHz,
+  ~1–3 m, extender beyond). Baseline: SCD41 (CO2) + SHT31 (T/RH), VPD
+  derived on-device. Light / soil / reservoir sensors are optional
+  config-driven modules. Several devices per metric are first-class.
+- **Later variants:** battery + PV (18650 + TP4056, panel in the tent
+  top corner or in daylight; battery stays outside the tent; CO2 on a
+  switched rail) for outdoor nodes; a Raspberry Pi 4 only as a gateway
+  (MQTT / Home Assistant / USB probes), never as a sensor node.
+- **Client follow-up:** per-(metric, location) aggregation on the
+  sensors page and in the hints (today: single latest reading per
+  metric across all devices).
